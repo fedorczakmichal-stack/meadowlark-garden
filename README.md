@@ -20,9 +20,8 @@ Both are static and self-contained; GitHub Pages serves them as-is.
 
 | Kanał | Branch | URL |
 |-------|--------|-----|
-| **Podgląd dev** (najnowszy kod) | `preview` | https://fedorczakmichal-stack.github.io/meadowlark-garden/preview/garden/ |
-| Hub podglądu | — | https://fedorczakmichal-stack.github.io/meadowlark-garden/preview/ |
+| **Podgląd dev** (najnowszy kod, jeden adres) | `preview` lub `cursor/*` | https://fedorczakmichal-stack.github.io/meadowlark-garden/preview/ |
 | Stabilny podgląd po merge | `main` | https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/ |
 | Landing | `main` | https://fedorczakmichal-stack.github.io/meadowlark-garden/ |
 
-**Jak to działa:** push na branch `preview` → workflow kopiuje kod do `preview/` na `main` → GitHub Pages odświeża podgląd w ~1 min. Merge do `main` (root) → trafia pod `/garden/` bez prefiksu preview.
+**Jak to działa:** push na `preview` lub `cursor/*` → workflow **zastępuje** `/preview/` na `main` (ten sam URL, nowy kod w ~1 min). Merge do `main` → stabilna wersja pod `/garden/`.
