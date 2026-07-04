@@ -11,6 +11,10 @@ const wins = (t, a, b) => smooth(win(t, a, b));
 // 0 → 1 → 0 bump inside [a,b]
 const pulse = (t, a, b) => { const p = win(t, a, b); return p <= 0 || p >= 1 ? 0 : Math.sin(p * Math.PI); };
 const osc = (ph, k = 1, off = 0) => Math.sin(TAU * (ph * k + off));
+// When the meadow director moves an animal along a rove lane, damp in-gait vertical bob —
+// the lane handles travel; the gait should sell the stride, not add a second bounce.
+const laneDy = v => window.__FABLE_ROAM ? v * 0.55 : v;
+const lanePitch = v => window.__FABLE_ROAM ? v * 0.7 : v;
 const N = v => Math.round(v * 100) / 100;
 const rot = (a, cx = 0, cy = 0) => `rotate(${N(a)} ${N(cx)} ${N(cy)})`;
 const trl = (x, y) => `translate(${N(x)} ${N(y)})`;
@@ -223,7 +227,7 @@ return {
     }
     if (mid === 'trot') {
       return draw({
-        dy: -1.1 * osc(t, 2, .3), pitch: 1.4 * osc(t, 2, .1),
+        dy: laneDy(-1.1 * osc(t, 2, .3)), pitch: lanePitch(1.4 * osc(t, 2, .1)),
         legs: walkLegs(t, { nf: 0, fh: 0, ff: .5, nh: .5 }, 19),
         headA: 1.6 * osc(t, 2, .55), tailA: 10 + 5 * osc(t, 1, .3), tailTip: 8 * osc(t, 2, .1),
         ticks: groundTicks(t, { y: GY, x1: -43, x2: 45, v: 52, n: 7, s: 1.15 })
@@ -231,7 +235,7 @@ return {
     }
     if (mid === 'gallop') {
       return draw({
-        dy: -2.4 * osc(t, 1, .1), pitch: 5.5 * osc(t, 1, .35),
+        dy: laneDy(-2.4 * osc(t, 1, .1)), pitch: lanePitch(5.5 * osc(t, 1, .35)),
         sx: 1 + .04 * osc(t, 1, .55), sy: 1 - .03 * osc(t, 1, .55),
         legs: walkLegs(t, { nf: 0, ff: .12, nh: .5, fh: .62 }, 28),
         headA: -4 + 3 * osc(t, 1, .5), earB: 1,
@@ -241,7 +245,7 @@ return {
     }
     // walk
     return draw({
-      dy: -0.6 * osc(t, 2, .12), pitch: 0.8 * osc(t, 2, .4),
+      dy: laneDy(-0.6 * osc(t, 2, .12)), pitch: lanePitch(0.8 * osc(t, 2, .4)),
       legs: walkLegs(t, { nh: 0, nf: .25, fh: .5, ff: .75 }, 13),
       headA: 2 * osc(t, 2, .55), tailA: 4 * osc(t, 2, .3), tailTip: 6 * osc(t, 2, .05),
       blink: pulse(t, .7, .73),
@@ -396,7 +400,7 @@ return {
     }
     if (mid === 'trot') {
       return draw({
-        dy: -1.5 * osc(t, 2, .28), pitch: 1.6 * osc(t, 2, .1),
+        dy: laneDy(-1.5 * osc(t, 2, .28)), pitch: lanePitch(1.6 * osc(t, 2, .1)),
         legs: gaitLegs(t, { nf: 0, fh: 0, ff: .5, nh: .5 }, 20),
         headA: -3 + 2 * osc(t, 2, .5), tailA: 8 * osc(t, 2, .2), earA: .2 * osc(t, 2, .3),
         ticks: groundTicks(t, { y: GY, x1: -37, x2: 41, v: 56, n: 7, s: 1.2 })
@@ -413,7 +417,7 @@ return {
     }
     // walk
     return draw({
-      dy: -0.7 * osc(t, 2, .12), pitch: 0.9 * osc(t, 2, .4),
+      dy: laneDy(-0.7 * osc(t, 2, .12)), pitch: lanePitch(0.9 * osc(t, 2, .4)),
       legs: gaitLegs(t, { nh: 0, nf: .25, fh: .5, ff: .75 }, 13),
       headA: 2.4 * osc(t, 2, .5), tailA: 5 * osc(t, 1, .3),
       blink: pulse(t, .66, .69),
@@ -784,7 +788,7 @@ return {
     }
     // amble — pacing: same-side pairs nearly together
     return draw({
-      dy: -0.8 * osc(t, 2, .12), pitch: 1.4 * osc(t, 1, .3),
+      dy: laneDy(-0.8 * osc(t, 2, .12)), pitch: lanePitch(1.4 * osc(t, 1, .3)),
       legs: gaitLegs(t, { nh: 0, nf: .16, fh: .5, ff: .66 }, 13),
       headA: 3 * osc(t, 1, .45), earA: 0,
       blink: pulse(t, .7, .73),
@@ -1253,7 +1257,7 @@ return {
     }
     // trundle
     return draw({
-      dy: -0.5 * Math.abs(osc(t, 2, .05)),
+      dy: laneDy(-0.5 * Math.abs(osc(t, 2, .05))),
       legA: 22 * osc(t, 2), legB: 22 * osc(t, 2, .5),
       noseA: 4 * osc(t, 2, .25),
       blink: pulse(t, .66, .7),
@@ -2246,7 +2250,7 @@ return {
     // walk
     return draw({
       grounded: true,
-      dy: -0.3 * osc(t, 4, .1), tilt: 1.2 * osc(t, 2, .3),
+      dy: laneDy(-0.3 * osc(t, 4, .1)), tilt: lanePitch(1.2 * osc(t, 2, .3)),
       legsA: 8 * osc(t, 2), legsB: 8 * osc(t, 2, .5),
       antA: 6 * osc(t, 1, .2),
       ticks: groundTicks(t, { y: GY, x1: -28, x2: 30, v: 7, n: 6, s: .8 })

@@ -412,8 +412,9 @@
   @keyframes turtle-legA{0%{transform:rotate(0deg)}20%{transform:rotate(9.6deg)}40%{transform:rotate(5.8deg)}60%{transform:rotate(-5.8deg)}80%{transform:rotate(-9.6deg)}100%{transform:rotate(0deg)}}
   @keyframes turtle-legB{0%{transform:rotate(0deg)}20%{transform:rotate(-9.6deg)}40%{transform:rotate(-5.8deg)}60%{transform:rotate(5.8deg)}80%{transform:rotate(9.6deg)}100%{transform:rotate(0deg)}}
   @keyframes turtle-head{0%{transform:translate(0px,0px) rotate(0deg)}20%{transform:translate(0.86px,0px) rotate(2.1deg)}40%{transform:translate(0.53px,0px) rotate(1.3deg)}60%{transform:translate(-0.53px,0px) rotate(-1.3deg)}80%{transform:translate(-0.86px,0px) rotate(-2.1deg)}100%{transform:translate(0px,0px) rotate(0deg)}}
-  /* travel: each rove gets its own injected @keyframes wander path (see mkWander in renderMeadow) */
-  .rove{transform-box:fill-box;transform-origin:50% 50%;will-change:transform}
+  /* travel: each rove gets its own injected @keyframes wander path (see mkWander in renderMeadow).
+     Origin at the feet (0 0 after groundY anchoring) so flips and tilts never lift the animal off the ground. */
+  .rove{transform-box:fill-box;transform-origin:0 0;will-change:transform}
   /* legacy pace routes — kept for reference; rove now uses per-instance wd-* keyframes */
   @keyframes pace-a{
     0%{transform:translate(calc(-1 * var(--amp,80px)),0) scale(1,1);animation-timing-function:ease-in-out}
@@ -2389,7 +2390,9 @@ let _wanderSeq=0,_floatSeq=0;
 function wanderR(seed,n){ const v=Math.sin((seed*127.1+n*31.7)*43758.5453); return v-Math.floor(v); }
 function mkWander(seed,amp,opts){
   opts=opts||{};
-  const yDrift=(opts.yDrift??14)*(opts.flat?0.35:1);
+  const grounded=!!opts.grounded;
+  const water=!!opts.flat && !grounded;
+  const yDrift=grounded?Math.min(2,(opts.yDrift??14)*0.1):water?(opts.yDrift??14)*0.28:(opts.yDrift??14)*(opts.flat?0.35:1);
   const id='wd'+(_wanderSeq++);
   const R=n=>wanderR(seed,n);
   const n=7+Math.floor(R(0)*4);
@@ -2398,7 +2401,7 @@ function mkWander(seed,amp,opts){
     const t=Math.min(96,Math.round((i/n)*90+R(i+3)*9));
     let x=pts[pts.length-1].x+(R(i+10)-0.48)*amp*(0.52+R(i+11)*0.45);
     x=Math.max(-amp*1.15,Math.min(amp*1.15,x));
-    pts.push({t,x,y:(R(i+20)-0.5)*yDrift*1.6});
+    pts.push({t,x,y:(R(i+20)-0.5)*yDrift*(grounded?0.35:1.6)});
   }
   if(R(40)>0.35){
     const h=pts[pts.length-1], ht=Math.min(92,Math.round(52+R(41)*32));
@@ -2414,8 +2417,9 @@ function mkWander(seed,amp,opts){
     const dx=p.x-prevX, dy=p.y-prevY;
     if(Math.abs(dx)>Math.max(2,amp*0.14)) face=p.x>prevX?1:-1;
     let y=p.y;
-    if(opts.bouncy && Math.abs(dx)>0.3) y-=Math.min(5,Math.abs(dx)*0.12);
-    const tilt=Math.max(-2,Math.min(2,dx*0.045+dy*0.03));
+    // Bounce belongs in the gait (hop/trot), not the travel lane — avoids double-bobbing.
+    if(opts.bouncy && !grounded && Math.abs(dx)>0.3) y-=Math.min(5,Math.abs(dx)*0.12);
+    const tilt=grounded?Math.max(-1.1,Math.min(1.1,dx*0.022)):Math.max(-2,Math.min(2,dx*0.045+dy*0.03));
     prevX=p.x; prevY=p.y;
     const ease=p.t===0?'':'animation-timing-function:cubic-bezier(0.42,0,0.28,1);';
     kf+=`${p.t}%{transform:translate(${p.x.toFixed(1)}px,${y.toFixed(1)}px) rotate(${tilt.toFixed(1)}deg) scale(${face},1);${ease}}`;
@@ -2451,12 +2455,26 @@ function roveTx(el){
   if(!rove) return null;
   const m=getComputedStyle(rove).transform;
   if(!m||m==='none') return 0;
+  if(m.startsWith('matrix3d(')){
+    const p=m.slice(9,-1).split(',').map(Number);
+    return p[12]||0;
+  }
   if(m.startsWith('matrix(')){
     const p=m.slice(7,-1).split(',').map(Number);
     return p[4]||0;
   }
   const tx=m.match(/translate\(([-\d.]+)px/);
   return tx?+tx[1]:0;
+}
+function roveFace(el){
+  const rove=el&&el.querySelector('.rove');
+  if(!rove) return 1;
+  const m=getComputedStyle(rove).transform;
+  if(!m||m==='none') return 1;
+  const p=m.startsWith('matrix3d(')?m.slice(9,-1).split(',').map(Number):m.startsWith('matrix(')?m.slice(7,-1).split(',').map(Number):null;
+  if(p) return (p[0]||1)>=0?1:-1;
+  const sc=m.match(/scale\((-?\d+)/);
+  return sc&&+sc[1]<0?-1:1;
 }
 
 
@@ -2465,10 +2483,12 @@ function roveTx(el){
    SVG parsing, so phones stay smooth. Off-screen animals rest on frame 0; calm/reduced-motion freeze. ── */
 let fableEls=null,fableTimer=0,fableStarted=false;
 function fableRender(A,mid,t,roam){
-  const prev=window.__FABLE_NO_TICKS;
+  const prevTicks=window.__FABLE_NO_TICKS;
+  const prevRoam=window.__FABLE_ROAM;
   window.__FABLE_NO_TICKS=!!roam;
+  window.__FABLE_ROAM=roam||null;
   try{ return A.render(mid,t); }
-  finally{ window.__FABLE_NO_TICKS=prev; }
+  finally{ window.__FABLE_NO_TICKS=prevTicks; window.__FABLE_ROAM=prevRoam; }
 }
 function fableCollect(){
   const REG=window.__FABLE_ANIMALS; if(!REG) return;
@@ -2476,17 +2496,23 @@ function fableCollect(){
     const A=REG[el.dataset.id]; if(!A) return null;
     const mo=(A.motions&&A.motions.find(m=>m.id===el.dataset.mid))||(A.motions&&A.motions[0])||{id:el.dataset.mid,dur:1};
     const roam=!!el.querySelector('.rove');
-    return {el, fin:el.querySelector('.fin'), A, mid:mo.id, dur:mo.dur||1, off:+el.dataset.off||0, x:+el.dataset.x||0, roam, frames:null, cur:0, n:0};
+    return {
+      el, fin:el.querySelector('.fin'), A, mid:mo.id, dur:mo.dur||1,
+      off:+el.dataset.off||0, x:+el.dataset.x||0,
+      roamAmp:+el.dataset.roamAmp||0, roamDur:+el.dataset.roamDur||0,
+      roam, frames:null, cur:0, n:0, lastTx:null, lastFace:1
+    };
   }).filter(Boolean);
-  fableEls.forEach(f=>{ try{ f.fin.innerHTML=fableRender(f.A,f.mid,0.32,f.roam); }catch(_){} });
+  fableEls.forEach(f=>{ try{ f.fin.innerHTML=fableRender(f.A,f.mid,0.32,f.roam?{face:1}:null); }catch(_){} });
   if(!fableStarted){ fableStarted=true; requestAnimationFrame(fableLoop); }
 }
 function fableBuild(f){
   if(f.frames) return;
   const air=['flit','flutter','sail','hover','patrol','flight','dart'].includes(f.mid);
   const n=Math.max(air?16:12,Math.min(air?36:28,Math.round(f.dur*(air?40:24))));
+  const roam=f.roam?{face:f.lastFace||1}:null;
   let html='';
-  for(let k=0;k<n;k++){ let fr=''; try{ fr=fableRender(f.A,f.mid,k/n,f.roam); }catch(_){}
+  for(let k=0;k<n;k++){ let fr=''; try{ fr=fableRender(f.A,f.mid,k/n,roam); }catch(_){}
     html+=`<g visibility="${k?'hidden':'visible'}">${fr}</g>`; }
   f.fin.innerHTML=html; f.frames=[...f.fin.children]; f.n=n; f.cur=0;
 }
@@ -2504,13 +2530,20 @@ function fableLoop(now){
     const tx=f.roam?roveTx(f.el):null;
     const worldX=f.x+(tx||0);
     if(!f.el.closest('.glide,.glide-rev')&&(worldX<x0||worldX>x1)) continue;
+    if(f.roam){
+      const face=roveFace(f.el);
+      if(face!==f.lastFace){ f.lastFace=face; f.frames=null; f.lastTx=tx; }
+    }
     if(!f.frames){ fableBuild(f); continue; }
     let advance=true, spd=1;
     if(tx!==null){
       const dx=tx-(f.lastTx??tx);
       f.lastTx=tx;
-      advance=Math.abs(dx)>0.05;
-      spd=Math.min(2,Math.max(0.55,Math.abs(dx)*2.5));
+      advance=Math.abs(dx)>0.04;
+      const pxPerFrame=Math.abs(dx);
+      const avg=f.roamAmp&&f.roamDur?(2*f.roamAmp)/(f.roamDur*30):0.35;
+      const rel=avg>0.01?pxPerFrame/avg:1;
+      spd=Math.min(2.6,Math.max(0.82,rel*1.02));
     }
     if(!advance) continue;
     const k=Math.floor((((t+f.off)/f.dur*spd)%1)*f.n);
@@ -2631,14 +2664,21 @@ function renderMeadow(force){
   // (fable-animals.js, verbatim). Each entry: which animal, which of ITS motions, where it lives,
   // and optionally a travel lane (rove) or a drift (float) — the atlas does everything else.
   const FB=(o)=>{
-    const inner=`<g class="fin" transform="scale(${o.sc})"></g>`;
+    const REG=window.__FABLE_ANIMALS;
+    const A=REG&&REG[o.id];
+    const gy=A&&A.groundY!=null?A.groundY:0;
+    const footY=o.y+gy*o.sc;
+    const anchor=(-gy*o.sc).toFixed(2);
+    const inner=`<g class="fin" transform="translate(0 ${anchor}) scale(${o.sc})"></g>`;
     const trav=o.travel?(()=>{ const w=regWander(o.travel.seed??(o.x*3+o.y+o.off*999),o.travel.amp,o.travel);
       const dur=(o.travel.dur*(0.9+wanderR(o.travel.seed??o.x,50)*0.22)).toFixed(2);
       return `<g class="rove" style="animation:${w.id} ${dur}s ease-in-out infinite ${w.alt};animation-delay:${(-(o.off||0)*o.travel.dur).toFixed(1)}s">${inner}</g>`; })()
       : o.flt?(()=>{ const fl=regFloat(o.fltSeed??(o.x*5+o.y+o.off*777),o.fltAmp||22,typeof o.flt==='number'?o.flt:o.flt.dur);
       return `<g class="float" style="animation:${fl.id} ${fl.dur}s ease-in-out infinite alternate;animation-delay:${(-(o.off||0)*fl.dur).toFixed(1)}s">${inner}</g>`; })()
       : inner;
-    return `<g class="fable" data-id="${o.id}" data-mid="${o.mid}" data-x="${o.x.toFixed(0)}" data-off="${((o.off||0)*7).toFixed(2)}" transform="translate(${o.x.toFixed(0)} ${o.y.toFixed(0)})"${o.extra||''}>${trav}</g>`;
+    const roamAmp=o.travel?o.travel.amp:0;
+    const roamDur=o.travel?o.travel.dur:0;
+    return `<g class="fable" data-id="${o.id}" data-mid="${o.mid}" data-x="${o.x.toFixed(0)}" data-roam-amp="${roamAmp}" data-roam-dur="${roamDur}" data-off="${((o.off||0)*7).toFixed(2)}" transform="translate(${o.x.toFixed(0)} ${footY.toFixed(0)})"${o.extra||''}>${trav}</g>`;
   };
   // blue nuthatches crossing the sky — SVG symbol #bird with CSS wing rigs (always flapping, even while gliding)
   if(!dusky){
@@ -2646,31 +2686,31 @@ function renderMeadow(force){
     s+=skyBird(-38,90,102,0.58,0.65);
   }
   const CAST=[
-    {id:'rabbit',   mid:'hop',    x:HABX.connection-88, y:HABY.connection+34, sc:.95, off:.10, travel:{amp:48,dur:24,yDrift:18,seed:101,bouncy:true}},
-    {id:'fox',      mid:'trot',   x:HABX.body-268, y:HABY.body+24,  sc:.90, off:.35, travel:{amp:55,dur:17,yDrift:16,seed:102}},
+    {id:'rabbit',   mid:'hop',    x:HABX.connection-88, y:HABY.connection+34, sc:.95, off:.10, travel:{amp:48,dur:24,yDrift:6,seed:101,grounded:true}},
+    {id:'fox',      mid:'trot',   x:HABX.body-268, y:HABY.body+24,  sc:.90, off:.35, travel:{amp:55,dur:17,yDrift:5,seed:102,grounded:true}},
     {id:'butterfly',mid:'flutter',x:HABX.body+130, y:HABY.body-150, sc:1.05,off:.50, flt:20,fltAmp:24,fltSeed:201},
-    {id:'ladybug',  mid:'walk',   x:HABX.body+55,  y:HABY.body+68,  sc:.45, off:.05, travel:{amp:35,dur:52,yDrift:10,seed:103}},
+    {id:'ladybug',  mid:'walk',   x:HABX.body+55,  y:HABY.body+68,  sc:.45, off:.05, travel:{amp:35,dur:52,yDrift:4,seed:103,grounded:true}},
     {id:'bee',      mid:'patrol', x:HABX.home+70,  y:HABY.home-118, sc:.90, off:.20, flt:16,fltAmp:18,fltSeed:202},
-    {id:'hedgehog', mid:'trundle',x:HABX.home-158, y:HABY.home+56,  sc:.80, off:.65, travel:{amp:32,dur:12,yDrift:13,seed:104}},
+    {id:'hedgehog', mid:'trundle',x:HABX.home-158, y:HABY.home+56,  sc:.80, off:.65, travel:{amp:32,dur:12,yDrift:4,seed:104,grounded:true}},
     {id:'butterfly',mid:'sail',   x:HABX.connection+70, y:HABY.connection-150, sc:.95, off:.75, flt:22,fltAmp:27,fltSeed:203},
-    {id:'deer',     mid:'walk',   x:1000, y:336, sc:.72, off:.60, travel:{amp:42,dur:18,yDrift:16,seed:105}, extra:` opacity="${dusky?.5:.72}"`},
+    {id:'deer',     mid:'walk',   x:1000, y:336, sc:.72, off:.60, travel:{amp:42,dur:18,yDrift:5,seed:105,grounded:true}, extra:` opacity="${dusky?.5:.72}"`},
     {id:'deer',     mid:'graze',  x:1380, y:320, sc:.80, off:.15, extra:` opacity="${dusky?.5:.7}"`},
-    {id:'bear',     mid:'amble',  x:590,  y:354, sc:.78, off:.40, travel:{amp:35,dur:22,yDrift:16,seed:106}, extra:` opacity="${dusky?.62:.9}"`},
+    {id:'bear',     mid:'amble',  x:590,  y:354, sc:.78, off:.40, travel:{amp:35,dur:22,yDrift:5,seed:106,grounded:true}, extra:` opacity="${dusky?.62:.9}"`},
     {id:'bee',      mid:'waggle', x:HABX.craft+168, y:HABY.craft-56, sc:.62, off:.90, flt:14,fltAmp:15,fltSeed:204},
     {id:'dragonfly',mid:'hover',  x:HABX.future-30, y:HABY.future-40, sc:.95, off:.80, flt:14,fltAmp:30,fltSeed:205},
     {id:'stork',    mid:'stand',  x:HABX.future+32, y:HABY.future+62, sc:1, off:.45, extra:` opacity="${dusky?.6:1}"`},
-    {id:'turtle',   mid:'walk',   x:HABX.future-124,y:HABY.future+64, sc:.60, off:.70, travel:{amp:22,dur:42,yDrift:6,seed:108,flat:true}},
-    {id:'mallard',  mid:'swim',   x:HABX.calm-4,    y:HABY.calm+66,  sc:.92, off:.30, travel:{amp:45,dur:38,yDrift:8,seed:109,flat:true}},
+    {id:'turtle',   mid:'walk',   x:HABX.future-124,y:HABY.future+64, sc:.60, off:.70, travel:{amp:22,dur:42,yDrift:4,seed:108,flat:true}},
+    {id:'mallard',  mid:'swim',   x:HABX.calm-4,    y:HABY.calm+66,  sc:.92, off:.30, travel:{amp:45,dur:38,yDrift:6,seed:109,flat:true}},
     {id:'frog',     mid:'sit',    x:HABX.calm-74,   y:HABY.calm+72,  sc:.70, off:.55},
-    {id:'fish',     mid:'swim',   x:HABX.calm-92,   y:HABY.calm+52,  sc:.45, off:.25, travel:{amp:22,dur:28,yDrift:5,seed:110,flat:true}, extra:' opacity=".8"'},
-    {id:'snail',    mid:'glide',  x:HABX.calm+118,  y:HABY.calm+106, sc:.55, off:.85, travel:{amp:16,dur:120,yDrift:4,seed:111,flat:true}},
+    {id:'fish',     mid:'swim',   x:HABX.calm-92,   y:HABY.calm+52,  sc:.45, off:.25, travel:{amp:22,dur:28,yDrift:3,seed:110,flat:true}, extra:' opacity=".8"'},
+    {id:'snail',    mid:'glide',  x:HABX.calm+118,  y:HABY.calm+106, sc:.55, off:.85, travel:{amp:16,dur:120,yDrift:2,seed:111,flat:true}},
   ];
   if(dusky) CAST.push({id:'owl',mid:'perch',x:1452,y:320,sc:.45,off:.5,extra:' opacity=".85"'});
   if(total>=12) CAST.push({id:'butterfly',mid:'bask',x:HABX.meaning-90,y:HABY.meaning-150,sc:.85,off:.33,flt:20});
   if(total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-30,y:HABY.calm-150,sc:.82,off:.66,flt:22});
   CAST.forEach(o=>{ s+=FB(o); });
   // hand-drawn squirrel — lively scurry at the Meaning knoll (atlas entry pending)
-  s+=cr(HABX.meaning-48, HABY.meaning+18, .95, 'squirrel', SQ, -1.8, '', {amp:58,dur:14,yDrift:26,seed:112,bouncy:true});
+  s+=cr(HABX.meaning-48, HABY.meaning+18, .95, 'squirrel', SQ, -1.8, '', {amp:58,dur:14,yDrift:6,seed:112,grounded:true});
   // golden-hour light wash
   s+=`<rect width="${W}" height="${H}" fill="url(#glow)" pointer-events="none"/>`;
 
