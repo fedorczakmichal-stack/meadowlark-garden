@@ -31,7 +31,14 @@ const lanePitch = (v, w) => {
   w = w == null ? 0.7 : w;
   return v * w;
 };
-// Sync scrolling ground/ripple ticks to stride phase during lane travel.
+// Stretch hop phase during lane travel — longer contact, less frantic airtime.
+const roamHopPh = t => {
+  const ctx = roamCtx();
+  if (!ctx || !ctx.moving) return t;
+  if (t < 0.2) return t * 0.7;
+  if (t < 0.72) return 0.14 + (t - 0.2) * 1.05;
+  return 0.686 + (t - 0.72) * 1.12;
+};
 const laneTicks = (fn, ph, opts, wander) => {
   const ctx = roamCtx();
   if (ctx && ctx.moving) {
@@ -680,10 +687,11 @@ return {
     if (mid === 'hop' || mid === 'sprint') {
       const ctx = roamCtx();
       const ph = roamPhase(t, ctx);
-      const K = bound(ph, mid === 'sprint');
+      const boundPh = (ctx && ctx.moving && mid === 'hop') ? roamHopPh(ph) : ph;
+      const K = bound(boundPh, mid === 'sprint');
       if (mid === 'sprint') { K.earA = -26; K.earSoft = -8 + 3 * osc(ph, 1, .3); }
-      if (ctx && ctx.moving) K.dy = laneDy(K.dy, mid === 'hop' ? 0.75 : 0.55);
-      K.ticks = laneTicks(groundTicks, ph, { y: GY, x1: -37, x2: 42, v: mid === 'sprint' ? 66 : 40, n: 7, s: 1.15 });
+      if (ctx && ctx.moving) K.dy = laneDy(K.dy, mid === 'hop' ? 0.62 : 0.55);
+      K.ticks = laneTicks(groundTicks, ph, { y: GY, x1: -37, x2: 42, v: mid === 'sprint' ? 66 : 32, n: 7, s: 1.15 });
       return draw(K);
     }
     if (mid === 'alert') {
@@ -820,13 +828,16 @@ return {
       K.blink = pulse(t, .44, .48);
       return draw(K);
     }
-    // amble — pacing: same-side pairs nearly together
+    // amble — pacing: left pair (fh+nh) then right pair (ff+nf), heavy barrel roll
+    const pace = osc(t, 1, 0);
     return draw({
-      dy: laneDy(-0.8 * osc(t, 2, .12)), pitch: lanePitch(1.4 * osc(t, 1, .3)),
-      legs: gaitLegs(t, { nh: 0, nf: .16, fh: .5, ff: .66 }, 13),
-      headA: 3 * osc(t, 1, .45), earA: 0,
+      dx: laneDy(1.6 * osc(t, 1, .14), 0.85),
+      dy: laneDy(-0.4 * Math.abs(pace), 0.5),
+      pitch: lanePitch(2.6 * pace, 0.95),
+      legs: gaitLegs(t, { fh: 0, nh: 0.04, ff: 0.5, nf: 0.54 }, 17),
+      headA: 2.8 * osc(t, 1, .58), earA: 0,
       blink: pulse(t, .7, .73),
-      ticks: laneTicks(groundTicks, t, { y: GY, x1: -39, x2: 42, v: 26, n: 7, s: 1.2 })
+      ticks: laneTicks(groundTicks, t, { y: GY, x1: -39, x2: 42, v: 14, n: 7, s: 1.2 }, 0.9)
     });
   }
 };
