@@ -1,10 +1,11 @@
-# Sync the preview branch into main/preview/ so GitHub Pages (served from main)
-# exposes a live dev channel without changing the Pages source.
+# Push na preview lub cursor/* → zastępuje zawartość /preview/ na main (jeden adres podglądu).
 name: Sync preview
 
 on:
   push:
-    branches: [preview]
+    branches:
+      - preview
+      - 'cursor/**'
 
 permissions:
   contents: write
@@ -13,10 +14,10 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout preview
+      - name: Checkout source branch
         uses: actions/checkout@v4
         with:
-          ref: preview
+          ref: ${{ github.ref }}
           path: src
 
       - name: Checkout main
@@ -26,15 +27,12 @@ jobs:
           path: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Sync into main/preview/
+      - name: Replace preview (garden → preview/)
         run: |
           mkdir -p main/preview
-          if [ -f main/preview/index.html ]; then cp main/preview/index.html /tmp/preview-hub.html; fi
-          find main/preview -mindepth 1 ! -name index.html -exec rm -rf {} + 2>/dev/null || true
-          rsync -a \
-            --exclude .git --exclude preview \
-            src/ main/preview/
-          if [ -f /tmp/preview-hub.html ]; then cp /tmp/preview-hub.html main/preview/index.html; fi
+          rsync -a --delete \
+            --exclude README.md \
+            src/garden/ main/preview/
 
       - name: Commit to main
         run: |
@@ -42,5 +40,5 @@ jobs:
           git add preview/
           git diff --staged --quiet && echo "No changes" && exit 0
           git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' \
-            commit -m "Sync preview branch into preview/ [skip ci]"
+            commit -m "Update preview from ${GITHUB_REF_NAME} [skip ci]"
           git push
