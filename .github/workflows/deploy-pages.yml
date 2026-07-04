@@ -1,0 +1,60 @@
+# Deploy meadowlark-garden to GitHub Pages (gh-pages branch).
+# main  → site root  (stable preview of merged work)
+# preview → /preview/ (live dev channel — push here to see changes)
+name: Deploy Pages
+
+on:
+  push:
+    branches: [main, preview]
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ github.ref_name }}
+        uses: actions/checkout@v4
+
+      - name: Fetch gh-pages
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git clone --depth 1 -b gh-pages "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" _gp 2>/dev/null || {
+            mkdir _gp
+            cd _gp
+            git init -b gh-pages
+            git remote add origin "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git"
+          }
+
+      - name: Build tree
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          if [ "$BRANCH" = "main" ]; then
+            find _gp -mindepth 1 -maxdepth 1 ! -name .git ! -name preview -exec rm -rf {} +
+            rsync -a \
+              --exclude _gp --exclude .git --exclude preview \
+              ./ _gp/
+            if [ -d preview ]; then
+              rm -rf _gp/preview
+              cp -a preview _gp/preview
+            fi
+          else
+            HUB=""
+            if [ -f _gp/preview/index.html ]; then HUB=$(cat _gp/preview/index.html); fi
+            rm -rf _gp/preview
+            mkdir -p _gp/preview
+            rsync -a --exclude _gp --exclude .git ./ _gp/preview/
+            if [ -n "$HUB" ]; then printf '%s' "$HUB" > _gp/preview/index.html; fi
+          fi
+
+      - name: Push gh-pages
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd _gp
+          git add -A
+          git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' \
+            commit -m "Deploy ${GITHUB_REF_NAME} @ ${GITHUB_SHA::7}" || exit 0
+          git push origin gh-pages --force
