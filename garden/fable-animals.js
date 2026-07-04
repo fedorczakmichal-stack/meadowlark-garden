@@ -13,8 +13,44 @@ const pulse = (t, a, b) => { const p = win(t, a, b); return p <= 0 || p >= 1 ? 0
 const osc = (ph, k = 1, off = 0) => Math.sin(TAU * (ph * k + off));
 // When the meadow director moves an animal along a rove lane, damp in-gait vertical bob —
 // the lane handles travel; the gait should sell the stride, not add a second bounce.
-const laneDy = v => window.__FABLE_ROAM ? v * 0.55 : v;
-const lanePitch = v => window.__FABLE_ROAM ? v * 0.7 : v;
+const roamCtx = () => window.__FABLE_ROAM;
+const roamPhase = (t, ctx) => {
+  ctx = ctx || roamCtx();
+  if (!ctx || !ctx.moving) return t;
+  return ctx.phase != null ? ctx.phase : t;
+};
+const laneDx = (v, w) => {
+  const ctx = roamCtx();
+  if (!ctx || !ctx.moving) return v;
+  w = w == null ? 1 : w;
+  return v * w * (ctx.face != null ? ctx.face : 1);
+};
+const laneDy = (v, w) => {
+  const ctx = roamCtx();
+  if (!ctx || !ctx.moving) return v;
+  w = w == null ? 0.55 : w;
+  return v * w;
+};
+const lanePitch = (v, w) => {
+  const ctx = roamCtx();
+  if (!ctx || !ctx.moving) return v;
+  w = w == null ? 0.7 : w;
+  return v * w;
+};
+const laneTicks = (fn, ph, opts, wander) => {
+  const ctx = roamCtx();
+  if (ctx && ctx.moving) {
+    wander = wander == null ? 0.82 : wander;
+    const stridePh = ctx.phase != null ? ctx.phase : ((ctx.distAcc || 0) / (ctx.stride || 26)) % 1;
+    const w = Math.max(0, Math.min(1, wander));
+    ph = ph * (1 - w) + stridePh * w;
+    if (opts && opts.v != null) {
+      const spd = ctx.v != null ? Math.max(0.28, Math.min(2.4, ctx.v / 0.35)) : 1;
+      opts = Object.assign({}, opts, { v: opts.v * spd });
+    }
+  }
+  return fn(ph, opts);
+};
 const N = v => Math.round(v * 100) / 100;
 const rot = (a, cx = 0, cy = 0) => `rotate(${N(a)} ${N(cx)} ${N(cy)})`;
 const trl = (x, y) => `translate(${N(x)} ${N(y)})`;
@@ -184,6 +220,19 @@ const POUNCE = [
   [1.00, { dx: -4, dy: 0, pitch: 0, sx: 1, sy: 1, lf: 0, lh: 0, headA: 0, earB: 0, tailA: 0, tailTip: 0 }]
 ];
 
+// One travelling trot stride — dx advances with the diagonal pairs so the body leads the feet.
+const TROT = [
+  [0.00, { dx: 0, dy: 0, pitch: 0, lf: 14, lh: -12, rf: -10, rh: 12, headA: 0, tailA: 7, tailTip: 4, earB: 0 }],
+  [0.10, { dx: 0.8, dy: -0.3, pitch: 0.6, lf: 6, lh: -4, rf: -6, rh: 6, headA: 0.6, tailA: 9, tailTip: 5, earB: 0 }],
+  [0.22, { dx: 2.6, dy: -0.9, pitch: 1.2, lf: -16, lh: 20, rf: 18, rh: -20, headA: 1.1, tailA: 12, tailTip: 7, earB: 0 }],
+  [0.34, { dx: 4.6, dy: -1.0, pitch: 1.0, lf: -20, lh: 14, rf: 12, rh: -14, headA: 0.8, tailA: 14, tailTip: 9, earB: 0 }],
+  [0.46, { dx: 6.2, dy: -0.5, pitch: 0.4, lf: -8, lh: 6, rf: -18, rh: 20, headA: 0.4, tailA: 13, tailTip: 8, earB: 0 }],
+  [0.58, { dx: 7.0, dy: 0, pitch: 0, lf: 10, lh: -8, rf: 16, rh: -18, headA: 0, tailA: 11, tailTip: 7, earB: 0 }],
+  [0.70, { dx: 5.8, dy: -0.4, pitch: 0.5, lf: 18, lh: -16, rf: -6, rh: 8, headA: 0.5, tailA: 9, tailTip: 6, earB: 0 }],
+  [0.82, { dx: 3.2, dy: -0.2, pitch: 0.3, lf: 12, lh: -10, rf: -14, rh: 16, headA: 0.3, tailA: 8, tailTip: 5, earB: 0 }],
+  [1.00, { dx: 0, dy: 0, pitch: 0, lf: 14, lh: -12, rf: -10, rh: 12, headA: 0, tailA: 7, tailTip: 4, earB: 0 }]
+];
+
 return {
   id: 'fox', view: [-46, -42, 94, 62], groundY: GY,
   thumb: { m: 'stand', t: 0.05 },
@@ -226,12 +275,20 @@ return {
       return draw(K);
     }
     if (mid === 'trot') {
-      return draw({
-        dy: laneDy(-1.1 * osc(t, 2, .3)), pitch: lanePitch(1.4 * osc(t, 2, .1)),
-        legs: walkLegs(t, { nf: 0, fh: 0, ff: .5, nh: .5 }, 19),
-        headA: 1.6 * osc(t, 2, .55), tailA: 10 + 5 * osc(t, 1, .3), tailTip: 8 * osc(t, 2, .1),
-        ticks: groundTicks(t, { y: GY, x1: -43, x2: 45, v: 52, n: 7, s: 1.15 })
-      });
+      const ctx = roamCtx();
+      const ph = roamPhase(t, ctx);
+      const K = keys(ph, TROT);
+      K.legs = { ff: K.lf, fh: K.lh, nf: K.rf, nh: K.rh };
+      if (ctx && ctx.moving) {
+        K.dx = laneDx(K.dx, 1);
+        K.dy = laneDy(K.dy, 0.45);
+        K.pitch = lanePitch(K.pitch, 0.9);
+      }
+      K.headA += 0.4 * osc(ph, 2, .55);
+      K.tailTip += 2 * osc(ph, 2, .1);
+      K.blink = pulse(ph, .7, .73);
+      K.ticks = laneTicks(groundTicks, ph, { y: GY, x1: -43, x2: 45, v: 48, n: 7, s: 1.15 });
+      return draw(K);
     }
     if (mid === 'gallop') {
       return draw({
