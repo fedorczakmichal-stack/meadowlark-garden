@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meadowlark — a gentle comeback app for any craft</title>
+<meta name="theme-color" content="#FBF7F2">
+<meta name="description" content="You didn't lose it — it's still in you. Meadowlark helps you rebuild a life and a craft one small return at a time: one gentle thread a week, the whole road mapped honestly, for developers, nurses, electricians, teachers, chefs and more. No streaks, no shame, no productivity theater. Free, in your browser.">
+<link rel="canonical" href="https://fedorczakmichal-stack.github.io/meadowlark-garden/">
+<meta property="og:title" content="Meadowlark — a gentle comeback app for any craft">
+<meta property="og:description" content="Rebuild a life and a craft one small return at a time. Pick a craft, see the whole road, take one small step. No streaks, no shame. Free.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://fedorczakmichal-stack.github.io/meadowlark-garden/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF7F2; --bg-2:#F6EEE2; --surface:#FFFFFF;
+    --dawn:#FBB36A; --sunrise:#EF9C7E; --gold:#E8943E; --gold-deep:#C9781F;
+    --ink:#3A3450; --muted:#6E6478; --faint:#736B80; --gold-text:#A85F12;
+    --line:rgba(58,52,80,.10); --line-2:rgba(58,52,80,.16);
+    --body:#EF9C7E; --home:#6FB89A; --connection:#B98AD0; --meaning:#E68AB0; --craft:#C1663B; --future:#5B9BD9; --calm:#7FB5C9;
+    --accent:#C1663B; /* live craft accent, set by the demo */
+    --ff-brand:'Bricolage Grotesque',-apple-system,system-ui,sans-serif;
+    --ff-disp:'Figtree',-apple-system,system-ui,sans-serif;
+    --ff:'Figtree',-apple-system,system-ui,sans-serif;
+    --mono:'Space Grotesk',var(--ff);
+    --ease:cubic-bezier(.2,.8,.25,1);
+    --maxw:1120px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:var(--ff);color:var(--ink);line-height:1.62;background:var(--cream);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:inherit}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+  .eyebrow{font-family:var(--mono);font-size:12.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-text)}
+
+  .btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--ff-disp);font-weight:700;font-size:15px;
+    min-height:44px;padding:0 22px;border-radius:999px;text-decoration:none;cursor:pointer;border:1px solid transparent;
+    transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+  .btn:active{transform:scale(.96)}
+  .btn-primary{color:#FFFDFB;background:linear-gradient(100deg,var(--sunrise),var(--gold));box-shadow:0 14px 30px -12px rgba(207,111,76,.6)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 20px 38px -14px rgba(207,111,76,.7)}
+  .btn-ghost{color:var(--ink);background:transparent;border-color:var(--gold)}
+  .btn-ghost:hover{transform:translateY(-2px);background:rgba(232,148,62,.08)}
+  .btn.sm{min-height:44px;font-size:14px;padding:0 16px}
+
+  header.bar{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);
+    background:linear-gradient(180deg,rgba(251,247,242,.86),rgba(251,247,242,.5));border-bottom:1px solid var(--line)}
+  .bar .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--ff-brand);font-weight:600;font-size:21px;letter-spacing:-.02em;text-decoration:none}
+  .brand svg{width:33px;height:27px;flex:none}
+  .pill{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--gold);background:rgba(232,148,62,.10);border:1px solid rgba(232,148,62,.28);padding:5px 11px;border-radius:999px}
+  .bar .right{display:flex;align-items:center;gap:12px}
+  .bar .pill{display:none}
+  @media(min-width:560px){.bar .pill{display:inline-block}}
+
+  /* HERO */
+  .hero{position:relative;overflow:hidden;padding-bottom:30px;
+    background:linear-gradient(180deg,#E8C8DA 0%,#F6C089 30%,#FCDDB4 56%,#FBEBD6 80%,#FBF7F2 100%)}
+  .sun-halo{position:absolute;right:-8%;top:6%;width:min(620px,86vw);height:min(620px,86vw);border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle,rgba(255,246,224,.95) 0%,rgba(253,227,174,.45) 42%,rgba(253,227,174,0) 72%)}
+  .sun-disc{position:absolute;right:9%;top:13%;width:clamp(72px,12vw,118px);height:clamp(72px,12vw,118px);border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle at 42%,#FFF7DF,#FFE6B4);box-shadow:0 0 70px 18px rgba(253,227,174,.55)}
+  .hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1fr;gap:18px;align-items:center;padding-top:46px}
+  @media(min-width:900px){.hero .wrap{grid-template-columns:1.05fr .95fr;gap:30px;padding-top:60px}}
+  .hero-copy{text-align:center}
+  @media(min-width:900px){.hero-copy{text-align:left}}
+  .hero h1{font-family:var(--ff-brand);font-weight:600;letter-spacing:-.03em;line-height:1.05;font-size:clamp(33px,6vw,56px);margin:16px 0 0}
+  .hero h1 em{font-style:normal;color:var(--gold);font-weight:700}
+  .hero .lead{font-size:clamp(16.5px,2.2vw,20px);color:#5E5468;max-width:47ch;margin:18px auto 0}
+  @media(min-width:900px){.hero .lead{margin:18px 0 0}}
+  .hero .actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+  @media(min-width:900px){.hero .actions{justify-content:flex-start}}
+  .trust{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+  @media(min-width:900px){.trust{justify-content:flex-start}}
+  .trust span{font-family:var(--mono);font-size:11.5px;color:var(--muted);background:rgba(255,253,251,.78);border:1px solid rgba(255,255,255,.9);
+    box-shadow:0 8px 20px -16px rgba(120,92,150,.6);padding:6px 12px;border-radius:999px}
+  .hero-stage{position:relative;display:grid;place-items:center;min-height:430px}
+  .hero-phone{position:relative;z-index:2;transform:rotate(2.2deg);animation:floatY 7s var(--ease) infinite}
+  .hero-phone.behind{position:absolute;z-index:1;transform:rotate(-6deg) translate(-46%,6%) scale(.9);opacity:.92;filter:saturate(.96)}
+  @media(max-width:899px){.hero-phone.behind{display:none}}
+  @keyframes floatY{0%,100%{transform:translateY(0) rotate(2.2deg)}50%{transform:translateY(-12px) rotate(2.2deg)}}
+
+  @keyframes mlFlapFly{0%{transform:rotate(22deg)}35%{transform:rotate(-28deg)}100%{transform:rotate(22deg)}}
+  @keyframes mlFlapFar{0%{transform:rotate(16deg)}35%{transform:rotate(-20deg)}100%{transform:rotate(16deg)}}
+  @keyframes mlFly{
+    0%{transform:translateX(-16vw) translateY(28px) rotate(2deg);opacity:0}7%{opacity:1}
+    30%{transform:translateX(22vw) translateY(-14px) rotate(-6deg)}55%{transform:translateX(50vw) translateY(2px) rotate(4deg)}
+    80%{transform:translateX(80vw) translateY(-16px) rotate(-6deg)}94%{opacity:1}
+    100%{transform:translateX(120vw) translateY(18px) rotate(7deg);opacity:0}}
+  .ml-fly{position:absolute;left:0;top:16%;z-index:3;pointer-events:none;animation:mlFly 24s ease-in-out infinite;will-change:transform}
+  @media(max-width:899px){.ml-fly{top:7%}}
+  .ml-wing{transform-box:fill-box;transform-origin:100% 100%;animation:mlFlapFly .5s cubic-bezier(.2,.85,.25,1) infinite}
+  .ml-wing-far{transform-box:fill-box;transform-origin:100% 100%;animation:mlFlapFar .5s cubic-bezier(.2,.85,.25,1) infinite}
+  @keyframes mlDrift{0%{transform:translate(0,0);opacity:0}12%{opacity:.85}100%{transform:translate(20px,-150px);opacity:0}}
+  .pollen{position:absolute;border-radius:50%;background:#FFF1C8;pointer-events:none;animation:mlDrift linear infinite;z-index:1}
+
+  .phone{position:relative;width:268px;max-width:78vw;aspect-ratio:390/844;background:#0b0b0d;border-radius:46px;padding:9px;
+    box-shadow:0 2px 5px rgba(0,0,0,.34),0 50px 90px -42px rgba(120,92,150,.6),0 0 0 1px rgba(255,255,255,.06),0 0 0 7px rgba(255,255,255,.42)}
+  .phone .island{position:absolute;top:21px;left:50%;transform:translateX(-50%);width:74px;height:21px;background:#0b0b0d;border-radius:13px;z-index:3}
+  .phone img{width:100%;height:100%;object-fit:cover;border-radius:38px;display:block;background:#FBF7F2}
+
+  section{padding:58px 0}
+  .sec-head{text-align:center;max-width:40ch;margin:0 auto 40px}
+  .sec-head h2{font-family:var(--ff-brand);font-weight:500;letter-spacing:-.02em;font-size:clamp(28px,4.6vw,44px);line-height:1.08;margin:12px 0 0}
+  .sec-head p{color:var(--muted);font-size:16.5px;margin:14px auto 0;max-width:54ch}
+
+  /* ── INTERACTIVE DEMO ── */
+  .demo{background:radial-gradient(120% 90% at 50% 0%,rgba(251,179,106,.10),transparent 62%)}
+  .picker{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:0 auto 22px;max-width:820px}
+  .craft-chip{display:inline-flex;align-items:center;gap:9px;font-family:var(--ff-disp);font-weight:600;font-size:15px;color:var(--ink);
+    background:var(--surface);border:1.5px solid var(--line-2);padding:9px 17px;border-radius:999px;cursor:pointer;
+    transition:transform .18s var(--ease),border-color .18s var(--ease),background .18s var(--ease),box-shadow .18s var(--ease)}
+  .craft-chip .cdot{width:12px;height:12px;border-radius:50%;flex:none;transition:transform .18s var(--ease)}
+  .craft-chip:hover{transform:translateY(-2px)}
+  .craft-chip[aria-selected="true"]{color:#fff;border-color:transparent;box-shadow:0 14px 26px -14px rgba(120,92,150,.7)}
+  .craft-chip[aria-selected="true"] .cdot{background:#fff !important;transform:scale(1.05)}
+  .trail-card{max-width:900px;margin:0 auto;background:var(--surface);border:1px solid var(--line-2);border-radius:22px;
+    padding:12px 12px 6px;box-shadow:0 44px 84px -56px rgba(120,92,150,.6)}
+  .trail-wrap{border-radius:15px;overflow:hidden;line-height:0}
+  .trail-wrap svg{animation:tfade .38s var(--ease)}
+  @keyframes tfade{from{opacity:.35}to{opacity:1}}
+  .trail-stage:focus{outline:none}
+  .trail-stage:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;border-radius:8px}
+  .trail-here{font-family:var(--ff-disp);font-size:14.5px;color:var(--muted);text-align:center;padding:12px 14px 8px;line-height:1.5}
+  .trail-here b{color:var(--accent)}
+  .demo-hint{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;color:var(--faint);text-align:center;margin-top:12px}
+  .facts{max-width:900px;margin:22px auto 0;display:grid;gap:14px}
+  .pay{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .pay .chip{background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center;
+    border-top:3px solid var(--accent);transition:border-color .18s var(--ease)}
+  .pay .chip .n{font-family:var(--ff-brand);font-weight:600;font-size:clamp(18px,3.6vw,23px);color:var(--ink)}
+  .pay .chip .k{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:3px}
+  .factline{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;align-items:center;font-size:14.5px;color:var(--muted)}
+  .factline .thread{display:inline-flex;align-items:center;gap:8px;background:rgba(193,102,59,.08);border:1px solid rgba(193,102,59,.2);
+    border-radius:999px;padding:7px 14px;color:var(--ink)}
+  .factline .thread b{color:var(--accent)}
+  .factline .time b{color:var(--ink)}
+  .demo-cta{text-align:center;margin-top:26px}
+
+  /* cards */
+  .grid{display:grid;gap:18px;grid-template-columns:1fr}
+  @media(min-width:680px){.grid.cols-3{grid-template-columns:repeat(3,1fr)}}
+  .card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:0 30px 60px -52px rgba(120,92,150,.55)}
+  .stepn{position:absolute;top:18px;right:18px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:13px}
+  .card .ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;margin-bottom:14px;font-size:22px}
+  .card h3{font-family:var(--ff-disp);font-weight:700;font-size:18px;margin:0 0 6px}
+  .card p{color:var(--muted);font-size:15px;margin:0}
+  .domains{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:26px}
+  .dchip{display:inline-flex;align-items:center;gap:8px;font-family:var(--ff-disp);font-weight:600;font-size:14px;padding:8px 15px;border-radius:999px;background:var(--surface);border:1px solid var(--line-2)}
+  .dot{width:11px;height:11px;border-radius:50%}
+
+  /* meadow band */
+  .band{padding:26px 0 10px}
+  .band-frame{border-radius:24px;overflow:hidden;border:1px solid var(--line-2);box-shadow:0 40px 80px -55px rgba(120,92,150,.55)}
+  .band-frame img{display:block;width:100%;height:auto}
+  .band-cap{font-family:var(--mono);font-size:12px;color:var(--faint);text-align:center;margin-top:14px;letter-spacing:.05em}
+
+  /* features */
+  .feature{display:grid;grid-template-columns:1fr;gap:26px;align-items:center;padding:34px 0}
+  @media(min-width:860px){.feature{grid-template-columns:1fr 1fr;gap:48px}.feature.reverse .f-media{order:2}.feature.reverse .f-copy{order:1}}
+  .f-media{display:grid;place-items:center}
+  .f-copy{text-align:center}
+  @media(min-width:860px){.f-copy{text-align:left}}
+  .f-copy .kicker{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+  .f-copy h3{font-family:var(--ff-brand);font-weight:500;font-size:clamp(24px,3.4vw,34px);letter-spacing:-.02em;line-height:1.12;margin:10px 0 0}
+  .f-copy p{color:var(--muted);font-size:16.5px;margin:14px auto 0;max-width:44ch}
+  @media(min-width:860px){.f-copy p{margin:14px 0 0}}
+
+  /* promise */
+  .promise{text-align:center;background:radial-gradient(80% 120% at 50% 0%,rgba(251,179,106,.16),transparent 60%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .promise h2{font-family:var(--ff-brand);font-weight:500;font-size:clamp(26px,4.6vw,40px);max-width:24ch;margin:14px auto 0;line-height:1.15;letter-spacing:-.02em}
+  .promise .strike{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+  .promise .strike span{font-family:var(--mono);font-size:13px;color:var(--faint);border:1px solid var(--line-2);padding:6px 13px;border-radius:999px;text-decoration:line-through;text-decoration-color:rgba(239,156,126,.7)}
+  .promise .keep{font-size:15.5px;color:var(--muted);max-width:54ch;margin:20px auto 0}
+
+  /* safety */
+  .safety{background:linear-gradient(180deg,rgba(127,181,201,.10),rgba(111,184,154,.07))}
+  .safety .box{max-width:640px;margin:0 auto;background:var(--surface);border:1px solid var(--line-2);border-radius:22px;padding:30px 26px;box-shadow:0 40px 80px -58px rgba(120,92,150,.55)}
+  .safety h2{font-family:var(--ff-brand);font-weight:500;font-size:clamp(23px,3.6vw,30px);margin:8px 0 0;letter-spacing:-.02em;text-align:center}
+  .safety .calm{color:var(--muted);font-size:16px;text-align:center;margin:14px auto 0;max-width:48ch}
+  .safety .lines{margin:22px 0 0;border-top:1px solid var(--line);padding-top:18px;display:grid;gap:10px}
+  .safety .lines .row{display:flex;gap:12px;align-items:baseline;font-size:14.5px}
+  .safety .lines .reg{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);min-width:104px;flex:none}
+  .safety .lines b{color:var(--ink)}
+  .safety .fine{font-family:var(--mono);font-size:11.5px;color:var(--faint);text-align:center;margin-top:18px;line-height:1.6}
+
+  .beta{text-align:center}
+  .beta .box{max-width:580px;margin:0 auto;background:var(--surface);border:1px solid var(--line-2);border-radius:24px;padding:36px 26px;box-shadow:0 40px 80px -55px rgba(120,92,150,.6)}
+  .beta h2{font-family:var(--ff-brand);font-weight:500;font-size:clamp(26px,4.2vw,38px);margin:6px 0 8px;letter-spacing:-.02em}
+  .beta p{color:var(--muted);margin:0 auto 22px;max-width:46ch}
+  .beta .plain{font-family:var(--mono);font-size:12px;color:var(--faint);margin-top:18px;line-height:1.7;letter-spacing:.03em}
+
+  footer{padding:42px 0 60px;text-align:center;color:var(--faint);font-size:13.5px}
+  footer a{color:var(--muted);text-decoration:none;margin:0 4px;display:inline-block;padding:9px 8px}
+  footer a:hover{color:var(--ink)}
+  footer .support{max-width:520px;margin:0 auto 22px;font-size:13px;color:var(--muted);line-height:1.7;background:rgba(127,181,201,.08);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+  footer .support b{color:var(--ink)}
+  footer .madeby{font-family:var(--mono);font-size:12.5px;color:var(--faint);margin-top:10px;letter-spacing:.03em}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important;scroll-behavior:auto!important}
+    .hero-phone{transform:rotate(2.2deg)}
+    .ml-fly{left:auto;right:8%;top:6%;transform:none;opacity:.92}
+    .trail-wrap svg{animation:none!important}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="larkMark" viewBox="-34 -28 68 56">
+    <ellipse cx="-4" cy="20" rx="20" ry="4.5" fill="rgba(60,40,20,0.16)"/>
+    <path d="M-18 4 L -33 9 L -18 12 Z" fill="#E8943E"/>
+    <ellipse cx="0" cy="4" rx="19" ry="13" fill="#EF9C7E"/>
+    <path d="M-22 6 C -6 -16 14 -10 14 4 C 6 8 -10 14 -22 6 Z" fill="#E8943E"/>
+    <path d="M-8 2 C 2 -6 12 -4 12 3 C 6 7 -4 7 -8 2 Z" fill="#FBB36A" opacity="0.85"/>
+    <circle cx="16" cy="-7" r="9.5" fill="#EF9C7E"/>
+    <path d="M24 -9 L 34 -6.5 L 24 -4 Z" fill="#C9781F"/>
+    <circle cx="19" cy="-9" r="1.7" fill="#3A3450"/>
+    <circle cx="19.5" cy="-9.6" r="0.6" fill="#fff"/>
+  </symbol>
+</defs></svg>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="brand" href="#top"><svg><use href="#larkMark"/></svg>Meadowlark</a>
+    <div class="right">
+      <span class="pill">For any craft · free</span>
+      <a class="btn btn-primary sm" href="garden/">Open the garden</a>
+    </div>
+  </div>
+</header>
+<a id="top"></a>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="sun-halo"></div>
+  <div class="sun-disc"></div>
+  <div class="ml-fly" style="animation-delay:-3s">
+    <svg width="60" height="44" viewBox="-34 -22 68 44" style="overflow:visible" aria-hidden="true">
+      <path d="M-15 3 L -33 -1 L -31 7 L -15 8 Z" fill="#E8943E"/>
+      <g class="ml-wing-far"><path d="M3 -4 C -2 -14 -10 -16 -16 -15 C -11 -9 -5 -6 0 -3 Z" fill="#C9781F" opacity=".8"/><path d="M3 -4 C -1 -12 -8 -13 -13 -12 C -8 -7 -4 -5 0 -3 Z" fill="#D98646" opacity=".8"/></g>
+      <ellipse cx="0" cy="3" rx="17" ry="10.5" fill="#EF9C7E"/>
+      <ellipse cx="3" cy="6" rx="11" ry="5.5" fill="#FBC58E" opacity=".55"/>
+      <circle cx="16" cy="-3" r="8.5" fill="#EF9C7E"/>
+      <path d="M23 -4 L 34 -2 L 23 0 Z" fill="#C9781F"/>
+      <circle cx="18" cy="-5" r="1.7" fill="#3A3450"/><circle cx="18.6" cy="-5.6" r=".55" fill="#fff"/>
+      <g class="ml-wing"><path d="M3 -4 C -3 -16 -11 -19 -18 -19 C -13 -12 -7 -7 0 -3 Z" fill="#D98646"/><path d="M3 -4 C -2 -14 -9 -16 -15 -16 C -10 -10 -5 -6 0 -3 Z" fill="#E8943E"/><path d="M3 -4 C -1 -12 -7 -13 -12 -13 C -8 -8 -4 -5 0 -3 Z" fill="#F2B07C"/></g>
+    </svg>
+  </div>
+  <div class="pollen" style="left:14%;top:62%;width:5px;height:5px;animation-duration:13s;animation-delay:-2s"></div>
+  <div class="pollen" style="left:32%;top:70%;width:4px;height:4px;animation-duration:15s;animation-delay:-5s"></div>
+  <div class="pollen" style="left:60%;top:66%;width:6px;height:6px;animation-duration:12s;animation-delay:-1s"></div>
+  <div class="pollen" style="left:78%;top:72%;width:4px;height:4px;animation-duration:16s;animation-delay:-7s"></div>
+
+  <div class="wrap">
+    <div class="hero-copy">
+      <div class="eyebrow">A gentle comeback app</div>
+      <h1>You didn't lose it — <em>it's still in you</em>.</h1>
+      <p class="lead">Maybe you burned out, took a break, changed lanes, or walked out of school and froze. However you got here, the craft you care about didn't disappear — it went quiet. Meadowlark helps you come back to it one small return at a time. No streaks to keep, no shame if you've been away, nothing to prove.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="garden/">Open the garden — free</a>
+        <a class="btn btn-ghost" href="#try">Pick a craft ↓</a>
+      </div>
+      <div class="trust">
+        <span>No streaks · no shame</span><span>Any craft, any stage</span><span>Free · in your browser</span><span>Works offline</span>
+      </div>
+    </div>
+    <div class="hero-stage">
+      <div class="phone hero-phone behind"><span class="island"></span><img src="shots/meadow-calm.jpg" alt="Meadowlark — the Calm corner of the meadow: a still pool with a duck and a lotus" width="780" height="1688"></div>
+      <div class="phone hero-phone"><span class="island"></span><img src="shots/craft-garden.jpg" alt="Meadowlark — your craft as a working garden: an apple tree, beds and a beehive" width="780" height="1688"></div>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE DEMO -->
+<section class="demo" id="try">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Try it — pick a craft</div>
+      <h2>The way back to any craft, mapped</h2>
+      <p>Not healthcare-only, not tech-only. Pick a craft, then tap a lantern to stand wherever you actually are. It's a map, not a race — every stage counts as a life, not a waiting room.</p>
+    </div>
+    <div class="picker" id="picker" role="tablist" aria-label="Choose a craft"></div>
+    <div class="trail-card">
+      <div class="trail-wrap" id="trailWrap"></div>
+      <div class="trail-here" id="trailHere" aria-live="polite"></div>
+    </div>
+    <div class="demo-hint">Tap a lantern to stand at any stage · your pace is yours</div>
+    <div class="facts" id="facts"></div>
+    <div class="demo-cta"><a class="btn btn-primary" href="garden/">Open the garden — free</a></div>
+  </div>
+</section>
+
+<!-- MEADOW BAND -->
+<section class="band" aria-label="A slice of the Meadowlark meadow — the actual app">
+  <div class="wrap">
+    <div class="band-frame"><img src="shots/meadow-band.jpg" alt="A wide slice of the Meadowlark meadow — a maple, an apple tree, garden beds, a beehive and a squirrel in the sun" width="1120" height="771"></div>
+    <div class="band-cap">The meadow itself — a real slice of the app. Every small return grows one more corner of it.</div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" style="padding-top:20px">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">How it works</div>
+      <h2>Three small steps — that's the whole app</h2>
+      <p>No setup marathon, no goal wizard, no long to-do list. A gentle loop you pick up on the days you have it in you.</p>
+    </div>
+    <div class="grid cols-3">
+      <div class="card"><div class="stepn" style="background:rgba(232,148,62,.14);color:var(--gold-text)">1</div><div class="ic" style="background:rgba(232,148,62,.12)">🧭</div><h3>Choose your craft</h3><p>Developer, nurse, electrician, teacher, chef — hundreds of crafts, each with real stages and honest US numbers. Then say where you honestly stand: curious, learning, near exams, first years, or seasoned.</p></div>
+      <div class="card"><div class="stepn" style="background:rgba(193,102,59,.14);color:#9C4F2B">2</div><div class="ic" style="background:rgba(193,102,59,.12)">🧵</div><h3>Follow one thread a week</h3><p>Each week your craft offers one small thread — a few concrete steps you could do on a tired day. Do one and the garden stirs. “Not now” is always there, and it costs you nothing.</p></div>
+      <div class="card"><div class="stepn" style="background:rgba(111,184,154,.16);color:#3F7F63">3</div><div class="ic" style="background:rgba(111,184,154,.14)">🌼</div><h3>Let the whole of life grow</h3><p>Coming back isn't only about work. Body, home, connection, meaning, future, calm — six more corners of the garden, and none of them are ever failing.</p></div>
+    </div>
+    <div class="domains">
+      <span class="dchip"><span class="dot" style="background:var(--body)"></span>Body</span>
+      <span class="dchip"><span class="dot" style="background:var(--home)"></span>Home</span>
+      <span class="dchip"><span class="dot" style="background:var(--connection)"></span>Connection</span>
+      <span class="dchip"><span class="dot" style="background:var(--meaning)"></span>Meaning</span>
+      <span class="dchip" style="border-color:rgba(193,102,59,.5)"><span class="dot" style="background:var(--craft)"></span><b>Craft</b></span>
+      <span class="dchip"><span class="dot" style="background:var(--future)"></span>Future</span>
+      <span class="dchip"><span class="dot" style="background:var(--calm)"></span>Calm</span>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section id="who">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Who this is for</div>
+      <h2>For anyone finding their way back</h2>
+      <p>Burnout, a break, a change of direction, or straight out of school — across whatever craft is yours. The way back is the same: small, and yours.</p>
+    </div>
+    <div class="grid cols-3">
+      <div class="card"><div class="ic" style="background:rgba(239,156,126,.14)">🍂</div><h3>After burnout</h3><p>When the thing you loved started to hurt, stepping away was wise. Coming back doesn't have to mean going full-speed again. One gentle thread a week, and the rest can wait.</p></div>
+      <div class="card"><div class="ic" style="background:rgba(111,184,154,.14)">🌿</div><h3>After a break</h3><p>Parenting, illness, caregiving, a year that took everything — time away didn't wipe your skill. It's still there under the dust. We help you brush it off, slowly.</p></div>
+      <div class="card"><div class="ic" style="background:rgba(127,181,201,.14)">🌅</div><h3>A change of lane, or fresh out of school</h3><p>A new craft, or the first real steps after class ends and the world goes quiet. No one's timing you. Start where you actually are and let the ground build under you.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- REAL SCREENS -->
+<section style="padding-top:8px">
+  <div class="wrap">
+    <div class="sec-head" style="margin-bottom:6px">
+      <div class="eyebrow">Real screens, real app</div>
+      <h2>This is Meadowlark.</h2>
+      <p>Every screen below is the actual app — open it right now, free, in your browser.</p>
+    </div>
+
+    <div class="feature">
+      <div class="f-media"><div class="phone"><span class="island"></span><img loading="lazy" src="shots/craft-garden.jpg" alt="The Craft corner of the meadow — an apple tree, garden beds and a beehive that grow with care" width="780" height="1688"></div></div>
+      <div class="f-copy">
+        <div class="kicker" style="color:var(--gold-text)">A working garden</div>
+        <h3>Your craft is a garden, not a scoreboard.</h3>
+        <p>Every small return waters the Craft corner of your meadow — an apple tree, garden beds, a beehive that slowly come alive. It can grow quiet while you rest, but it never dies because you were away.</p>
+      </div>
+    </div>
+
+    <div class="feature reverse">
+      <div class="f-media"><div class="phone"><span class="island"></span><img loading="lazy" src="shots/meadow-dusk.jpg" alt="The Connection corner at dusk — a blossom thicket, deer and an owl under an amber sky" width="780" height="1688"></div></div>
+      <div class="f-copy">
+        <div class="kicker" style="color:#3F7F63">The whole of you</div>
+        <h3>For the evenings after the heavy days.</h3>
+        <p>The meadow keeps your whole life, not just your work — and it lives through real days and seasons. Wander over to Connection at dusk, watch the deer come out, tend one small thing. Or just sit here. That counts too.</p>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="f-media"><div class="phone"><span class="island"></span><img loading="lazy" src="shots/look-back.jpg" alt="Look back, gently — the ground you've covered: small returns, days you came back, a memory resurfaced" width="780" height="1688"></div></div>
+      <div class="f-copy">
+        <div class="kicker" style="color:#A84E80">Look back, gently</div>
+        <h3>Nothing you did was lost.</h3>
+        <p>A quiet page keeps the ground you've covered — the days you came back, how the meadow has grown since, one old note resurfacing like a pressed flower. Not a report card. Proof, kept gently, that you kept returning.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PROMISE -->
+<section class="promise">
+  <div class="wrap">
+    <div class="eyebrow">The quiet contract</div>
+    <h2>Care here only grows — it never resets in shame.</h2>
+    <div class="strike">
+      <span>streaks</span><span>guilt</span><span>missed-day counters</span><span>red warnings</span><span>nagging notifications</span><span>productivity theater</span>
+    </div>
+    <p class="keep">Miss a week, a month, a season — the garden you've grown is still standing, still yours, waiting. No numbers ticking down, no “you're falling behind”, and never a word about the days you were away.</p>
+  </div>
+</section>
+
+<!-- SAFETY -->
+<section class="safety" id="support">
+  <div class="wrap">
+    <div class="box">
+      <div class="eyebrow" style="text-align:center;display:block">Need support?</div>
+      <h2>Some seasons are heavy. You don't have to carry it alone.</h2>
+      <p class="calm">Meadowlark is a calm companion — not therapy, not medical care, and not a substitute for real help. If it's more than heavy right now, please reach for a human first.</p>
+      <div class="lines">
+        <div class="row"><span class="reg">US &amp; Canada</span><span>Call or text <b>988</b> — Suicide &amp; Crisis Lifeline</span></div>
+        <div class="row"><span class="reg">UK &amp; ROI</span><span><b>Samaritans 116 123</b> — free, any time</span></div>
+        <div class="row"><span class="reg">Anywhere</span><span>Find a line near you: <b>findahelpline.com</b></span></div>
+      </div>
+      <div class="fine">If you're in immediate danger or thinking about harming yourself, please reach out right now.<br>Helpline numbers are examples — verify availability and hours in your region.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="beta" id="open">
+  <div class="wrap">
+    <div class="box">
+      <div class="eyebrow">Free · in your browser</div>
+      <h2>Come back at your own pace</h2>
+      <p>Open Meadowlark, pick your craft, and take one small return. No account, no sign-up, nothing to install.</p>
+      <a class="btn btn-primary" href="garden/">Open the garden →</a>
+      <div class="plain">Works on your phone · “Add to Home Screen” makes it an app · works offline<br>Everything you write stays on your device.</div>
+      <div style="margin-top:18px">
+        <a class="btn btn-ghost sm" href="mailto:michal.fedorczak@gmail.com?subject=Meadowlark%20%E2%80%94%20coming%20back&body=Hi!%20I%27m%20finding%20my%20way%20back%20to%20a%20craft.%20Here%27s%20what%20that%20looks%20like%20for%20me%3A%20">Tell us what you're coming back to</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="support">
+      <b>Meadowlark is a calm companion — not therapy or medical care.</b><br>
+      In crisis? US &amp; Canada <b>988</b> · UK &amp; ROI <b>Samaritans 116 123</b> · anywhere <b>findahelpline.com</b>.<br>
+      <span style="opacity:.85">Helpline numbers are examples — verify availability and hours in your region.</span>
+    </div>
+    <a class="brand" href="#top" style="justify-content:center;font-size:18px"><svg style="width:30px;height:25px"><use href="#larkMark"/></svg>Meadowlark</a>
+    <div style="margin-top:14px">
+      <a href="garden/">Open the app</a>
+      <a href="#try">Pick a craft</a>
+      <a href="#support">Need support?</a>
+    </div>
+    <div class="madeby">Designed &amp; built with AI · growing in the open · © 2026 Meadowlark</div>
+  </div>
+</footer>
+
+<script>
+/* renderTrail — a calm storybook "craft road": a tapering ribbon path winds from the
+   foreground back to a low sun on the horizon; milestone lanterns (current one lit in the
+   craft's accent) mark the stages; full-name labels sit in tidy per-side stacks with leaders.
+   Universal for any craft (3–6 stages). Self-contained, deterministic. viewBox 680x340.
+   Each stage group carries data-i + a transparent hit-target so a host page can make it tappable. */
+var __trailSeq = 0;
+function renderTrail(stages, currentIndex, accent, interactive, lblScale){
+  var esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  lblScale = lblScale || 1;
+  accent = (typeof accent==='string' && /^#[0-9a-fA-F]{3,8}$/.test(accent)) ? accent : '#C1663B';
+  var n = Math.max(3, Math.min(6, (stages||[]).length));
+  stages = (stages||[]).slice(0, n);
+  currentIndex = Math.max(0, Math.min(n-1, currentIndex|0));
+  var P = 'qm' + (++__trailSeq);
+  var W = 680, H = 340, HZ = 140;               // horizon ~41% down
+  var vpX = 344, vpY = HZ + 2;                   // vanishing point at the sun
+
+  function cubic(t,a,b,c,d){ var u=1-t; return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d; }
+  function pathPoint(f){                          // f:0 foreground(bottom) -> 1 horizon(sun); y strictly decreases
+    if(f<=0.5){ var t=f/0.5; return { x:cubic(t,206,150,476,486), y:cubic(t,332,268,244,206) }; }
+    var t2=(f-0.5)/0.5;    return { x:cubic(t2,486,498,vpX+34,vpX), y:cubic(t2,206,172,vpY+22,vpY) };
+  }
+  function widthAt(f){ return 46*(1-f)*(1-f) + 4; }
+
+  // ribbon outline (tapering) + dashed centreline
+  var Ns=64, left=[], right=[], cen=[];
+  for(var i=0;i<=Ns;i++){
+    var f=i/Ns, p=pathPoint(f), w=widthAt(f)/2;
+    var q=pathPoint(Math.min(1,f+0.01)), dx=q.x-p.x, dy=q.y-p.y, L=Math.hypot(dx,dy)||1;
+    var nx=-dy/L, ny=dx/L;
+    left.push([p.x+nx*w,p.y+ny*w]); right.push([p.x-nx*w,p.y-ny*w]); cen.push(p);
+  }
+  var ribbon='M'+left.map(function(a){return a[0].toFixed(1)+' '+a[1].toFixed(1);}).join(' L ')
+    +' L '+right.slice().reverse().map(function(a){return a[0].toFixed(1)+' '+a[1].toFixed(1);}).join(' L ')+' Z';
+  var centerLine='M '+cen.map(function(p){return p.x.toFixed(1)+' '+p.y.toFixed(1);}).join(' L ');
+
+  var markers=[];
+  for(var k=0;k<n;k++){ var fr=0.10+(n===1?0:(k/(n-1)))*0.80; var pp=pathPoint(fr);
+    markers.push({x:pp.x,y:pp.y,s:1-fr*0.62,frac:fr,i:k}); }
+
+  function hill(topY,curve,fill){
+    return '<path d="M0 '+topY+' Q170 '+(topY-curve)+' 340 '+topY+' T680 '+topY+' V'+H+' H0 Z" fill="'+fill+'"/>';
+  }
+  // a small wildflower tuft (deterministic) to warm the meadow
+  function tuft(x,y,sc,c1){
+    var g='<g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+sc.toFixed(2)+')" opacity="0.9">';
+    g+='<path d="M-3 0 Q-3 -7 -1 -9" stroke="#8FB07A" stroke-width="1.4" fill="none"/>';
+    g+='<path d="M0 0 Q0 -8 0 -11" stroke="#8FB07A" stroke-width="1.4" fill="none"/>';
+    g+='<path d="M3 0 Q3 -6 1.4 -8.5" stroke="#8FB07A" stroke-width="1.4" fill="none"/>';
+    g+='<circle cx="-1" cy="-9.4" r="2.1" fill="'+c1+'"/><circle cx="0" cy="-11.4" r="2.3" fill="#FBE7C0"/><circle cx="1.4" cy="-8.9" r="1.9" fill="'+c1+'"/>';
+    g+='<circle cx="0" cy="-10.6" r="0.9" fill="#C9781F"/></g>';
+    return g;
+  }
+
+  var o=[];
+  o.push('<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" width="100%" style="height:auto;display:block" role="img" font-family="\'Figtree\',ui-sans-serif,system-ui,sans-serif">');
+  o.push('<defs>');
+  o.push('<linearGradient id="'+P+'sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F9E4D5"/><stop offset="0.55" stop-color="#F3E9E0"/><stop offset="1" stop-color="#EAF2F0"/></linearGradient>');
+  o.push('<radialGradient id="'+P+'sun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFF6DE"/><stop offset="0.3" stop-color="#FCEBC8"/><stop offset="0.62" stop-color="#FBD9A0" stop-opacity="0.5"/><stop offset="1" stop-color="#FBB36A" stop-opacity="0"/></radialGradient>');
+  o.push('<linearGradient id="'+P+'rib" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EFDDB8"/><stop offset="1" stop-color="#E7CDA0"/></linearGradient>');
+  o.push('<radialGradient id="'+P+'glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="'+accent+'" stop-opacity="0.5"/><stop offset="1" stop-color="'+accent+'" stop-opacity="0"/></radialGradient>');
+  o.push('</defs>');
+
+  o.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="url(#'+P+'sky)"/>');
+  o.push('<circle cx="'+vpX+'" cy="'+(HZ-2)+'" r="165" fill="url(#'+P+'sun)"/>');
+  o.push('<circle cx="'+vpX+'" cy="'+(HZ-4)+'" r="30" fill="#FFF6DE" opacity="0.9"/>');
+  o.push('<path d="M0 '+(HZ-2)+' Q150 '+(HZ-20)+' 320 '+(HZ-8)+' T680 '+(HZ-13)+' V'+(HZ+40)+' H0 Z" fill="#CDBBD6" opacity="0.45"/>');
+  o.push(hill(HZ+6,10,'#E6EEDB'));
+  o.push(hill(HZ+42,22,'#DCE8CD'));
+  o.push(hill(HZ+92,32,'#CFE0BC'));
+  o.push(hill(HZ+152,42,'#BFD8A8'));
+
+  // wildflowers beside the path (deterministic placements, size ~ recession)
+  [[0.16,-1,42],[0.30,1,54],[0.13,1,30],[0.44,-1,66],[0.58,1,58],[0.72,-1,40]].forEach(function(t){
+    var p=pathPoint(t[0]); var s=(1-t[0]*0.6)*0.9; var off=(widthAt(t[0])/2 + t[2]*s)*t[1];
+    o.push(tuft(p.x+off, p.y+6*s, s, accent));
+  });
+
+  o.push('<path d="'+ribbon+'" fill="#000000" opacity="0.06" transform="translate(0,4)"/>');
+  o.push('<path d="'+ribbon+'" fill="url(#'+P+'rib)" stroke="#C8B183" stroke-width="1"/>');
+  o.push('<path d="'+centerLine+'" fill="none" stroke="#F5E5C6" stroke-width="6.5" stroke-linecap="round" opacity="0.5"/>');
+  o.push('<path d="'+centerLine+'" fill="none" stroke="#F5E5C6" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="7 9" opacity="0.9"/>');
+
+  // ---- lanterns (draw far->near). Each wrapped in a tappable group with data-i + hit target.
+  function lantern(m){
+    var s=m.s, x=m.x, y=m.y, isCur=m.i===currentIndex, isPast=m.i<currentIndex;
+    var ph=34*s, lw=9*s, lh=12*s, topY=y-ph;
+    var lightFill=isCur?accent:(isPast?'#FBD9A0':'#F1EAE0');
+    var lightStroke=isCur?accent:'#C9A96A';
+    var op=isCur?1:(isPast?0.98:0.8);
+    var hit=Math.max(15, 22*s);
+    var iattr = interactive ? ' style="cursor:pointer" tabindex="0" role="button" aria-label="Stand at: '+esc(stages[m.i])+'"' : '';
+    var g=['<g class="trail-stage" data-i="'+m.i+'" opacity="'+op.toFixed(2)+'"'+iattr+'>'];
+    if(interactive) g.push('<circle cx="'+x.toFixed(1)+'" cy="'+(y-ph*0.5).toFixed(1)+'" r="'+hit.toFixed(1)+'" fill="#000" opacity="0" pointer-events="all"/>');
+    if(isCur) g.push('<circle cx="'+x.toFixed(1)+'" cy="'+(topY-lh*0.4).toFixed(1)+'" r="'+(28*s).toFixed(1)+'" fill="url(#'+P+'glow)"/>');
+    g.push('<ellipse cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" rx="'+(5*s).toFixed(1)+'" ry="'+(2*s).toFixed(1)+'" fill="#7A6A57" opacity="0.35"/>');
+    g.push('<line x1="'+x.toFixed(1)+'" y1="'+y.toFixed(1)+'" x2="'+x.toFixed(1)+'" y2="'+topY.toFixed(1)+'" stroke="#8A6A4A" stroke-width="'+(2.6*s).toFixed(1)+'" stroke-linecap="round"/>');
+    g.push('<line x1="'+(x-6*s).toFixed(1)+'" y1="'+topY.toFixed(1)+'" x2="'+(x+6*s).toFixed(1)+'" y2="'+topY.toFixed(1)+'" stroke="#8A6A4A" stroke-width="'+(2*s).toFixed(1)+'" stroke-linecap="round"/>');
+    g.push('<rect x="'+(x-lw/2).toFixed(1)+'" y="'+(topY-lh).toFixed(1)+'" width="'+lw.toFixed(1)+'" height="'+lh.toFixed(1)+'" rx="'+(3*s).toFixed(1)+'" fill="'+lightFill+'" stroke="'+lightStroke+'" stroke-width="'+(1.1*s).toFixed(1)+'"/>');
+    g.push('<circle cx="'+x.toFixed(1)+'" cy="'+(topY-lh*0.5).toFixed(1)+'" r="'+(2.4*s).toFixed(1)+'" fill="#FFF6DE" opacity="'+(isCur?0.95:0.6)+'"/>');
+    g.push('<rect x="'+(x-lw*0.62).toFixed(1)+'" y="'+(topY-lh-2.6*s).toFixed(1)+'" width="'+(lw*1.24).toFixed(1)+'" height="'+(2.6*s).toFixed(1)+'" rx="'+(1.2*s).toFixed(1)+'" fill="#8A6A4A"/>');
+    if(isCur){
+      g.push('<circle cx="'+(x+8.5*s).toFixed(1)+'" cy="'+(y-3*s).toFixed(1)+'" r="'+(3.4*s).toFixed(1)+'" fill="'+accent+'" stroke="#FBF7F2" stroke-width="1.2"/>');
+    }
+    g.push('</g>');
+    return g.join('');
+  }
+  markers.slice().sort(function(a,b){return a.frac-b.frac;}).forEach(function(m){ o.push(lantern(m)); });
+
+  // ---- labels: full names. Foreground (near) -> centred below the lantern.
+  //      Far -> pushed to the marker's side and de-collided vertically over open sky.
+  var lampTopOf=function(m){ return m.y - 34*m.s - 12; };
+  var near=[], farL=[], farR=[];
+  markers.forEach(function(m){
+    if(m.frac<=0.40){ near.push(m); }
+    else if(m.x<=vpX){ farL.push(m); } else { farR.push(m); }
+  });
+  function emitLabel(m, lx, ly, anchor, tieToTop){
+    var isCur=m.i===currentIndex;
+    var fs=(m.frac<=0.40?15.5:13.5)*lblScale;
+    var col=isCur?accent:'#8A8194';
+    var tieY = tieToTop ? lampTopOf(m) : (m.y+3);
+    o.push('<line x1="'+m.x.toFixed(1)+'" y1="'+tieY.toFixed(1)+'" x2="'+lx.toFixed(1)+'" y2="'+(ly-4).toFixed(1)+'" stroke="'+col+'" stroke-width="'+(isCur?1.4:0.9)+'" opacity="0.45"/>');
+    o.push('<circle cx="'+m.x.toFixed(1)+'" cy="'+tieY.toFixed(1)+'" r="2" fill="'+col+'"/>');
+    o.push('<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" font-size="'+fs.toFixed(1)+'" text-anchor="'+anchor+'" fill="'+(isCur?accent:'#3A3450')+'" font-weight="'+(isCur?'700':'600')+'">'+esc(stages[m.i])+'</text>');
+  }
+  // near: below lantern, centred, nudged inboard from the edges
+  near.forEach(function(m){
+    var lx=Math.max(60, Math.min(W-60, m.x));
+    emitLabel(m, lx, m.y+20, 'middle', false);
+  });
+  // far sides: stack upward from each marker; each column is positioned so its widest label
+  // fits inside the viewBox (no clipping), whatever the label scale.
+  function labelW(str){ return 13.5*lblScale*0.54*String(str).length; }
+  function stackSide(arr, side){                    // side 'R' grows right (anchor start), 'L' grows left (anchor end)
+    if(!arr.length) return;
+    var maxW=0; arr.forEach(function(m){ maxW=Math.max(maxW, labelW(stages[m.i])); });
+    var anchor = side==='R' ? 'start' : 'end';
+    var edgeX  = side==='R' ? Math.max(vpX+12, W-6-maxW) : Math.min(vpX-12, 6+maxW);
+    var gap = 21*lblScale;
+    arr.sort(function(a,b){ return b.y-a.y; });      // lowest (nearest) first, stack upward
+    var prevY=1e9;
+    arr.forEach(function(m){
+      var ly=Math.min(lampTopOf(m)-2, prevY-gap);
+      ly=Math.max(16, ly);
+      prevY=ly;
+      emitLabel(m, edgeX, ly, anchor, true);
+    });
+  }
+  stackSide(farL, 'L');
+  stackSide(farR, 'R');
+
+  o.push('</svg>');
+  return o.join('');
+}
+
+</script>
+<script>
+/* Universal craft dataset for the comeback landing's interactive picker.
+   Stage names + pay + time from the app's CAREER_PATHS; thread titles from CRAFT_STAGES.
+   Accents borrow the meadow's care-area palette so switching feels alive. */
+const CRAFTS = [
+  { id:'developer', label:'Software developer', accent:'#5B9BD9',
+    stages:['First lines of code','Learning the craft','Proof you can build','First dev job','Finding your depth','Senior and beyond'],
+    here:1, thread:'Git without fear',
+    pay:{entry:'$80,000',median:'$133,000',top:'$211,000'}, time:'~4–5 years', short:'a bootcamp or portfolio can be 1–2' },
+  { id:'nurse', label:'Nurse (RN)', accent:'#E68AB0',
+    stages:['Foundation','Nursing school','NCLEX-RN exam','State license','First years','Growing further'],
+    here:4, thread:'Brain-sheet week',
+    pay:{entry:'$66,030',median:'$93,600',top:'$135,320'}, time:'~2–4 years', short:'an accelerated BSN, 12–18 months' },
+  { id:'electrician', label:'Electrician', accent:'#E8943E',
+    stages:['Foundation','Apprenticeship','Journeyman exam','First licensed years','Master electrician'],
+    here:1, thread:'Code-book fluency',
+    pay:{entry:'$39,000',median:'$62,000',top:'$106,000'}, time:'~4–5 years', short:'paid from day one' },
+  { id:'teacher', label:'Teacher', accent:'#6FB89A',
+    stages:['Foundation',"Bachelor's + prep",'Student teaching','State certification','First classroom','Growing further'],
+    here:4, thread:'Routines that hold',
+    pay:{entry:'$46,440',median:'$62,340',top:'$102,010'}, time:'~4–5 years', short:'alt-certification, 1–2 years' },
+  { id:'chef', label:'Chef', accent:'#C1663B',
+    stages:['First kitchen job','Training, your way','Line cook years','Sous chef','Chef / head cook','Growing further'],
+    here:2, thread:'Station-speed week',
+    pay:{entry:'$36,000',median:'$61,000',top:'$96,000+'}, time:'~6–10 years', short:'learned on the line, not in a classroom' },
+  { id:'accountant', label:'Accountant', accent:'#B98AD0',
+    stages:['Foundation',"Bachelor's degree",'First job','CPA (optional)','Growing further'],
+    here:2, thread:'Close-week calm',
+    pay:{entry:'$53,000',median:'$82,000',top:'$141,000'}, time:'~4–6 years', short:'the CPA is optional' },
+];
+
+(function(){
+  var picker=document.getElementById('picker'),
+      trailWrap=document.getElementById('trailWrap'),
+      trailHere=document.getElementById('trailHere'),
+      facts=document.getElementById('facts'),
+      root=document.documentElement;
+  var cur=0, here=CRAFTS[0].here;
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+  function buildPicker(){
+    picker.innerHTML = CRAFTS.map(function(c,i){
+      return '<button class="craft-chip" role="tab" data-i="'+i+'" aria-selected="'+(i===cur)+'" '+
+        'style="'+(i===cur?'background:'+c.accent+';':'')+'">'+
+        '<span class="cdot" style="background:'+c.accent+'"></span>'+esc(c.label)+'</button>';
+    }).join('');
+    Array.prototype.forEach.call(picker.querySelectorAll('.craft-chip'),function(b){
+      b.addEventListener('click',function(){ select(+b.dataset.i); });
+    });
+  }
+  function lblScale(){ var w=window.innerWidth; return w<560?1.4:(w<820?1.2:1); }
+  function drawTrail(){
+    var c=CRAFTS[cur];
+    root.style.setProperty('--accent', c.accent);
+    trailWrap.innerHTML = renderTrail(c.stages, here, c.accent, true, lblScale());
+    trailHere.innerHTML = 'You’re standing at <b>'+esc(c.stages[here])+'</b> — every stage counts as a life, not a waiting room.';
+    Array.prototype.forEach.call(trailWrap.querySelectorAll('.trail-stage'),function(g){
+      var set=function(){ here=+g.getAttribute('data-i'); drawTrail(); };
+      g.addEventListener('click',set);
+      g.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); set(); } });
+    });
+  }
+  function drawFacts(){
+    var c=CRAFTS[cur];
+    facts.innerHTML =
+      '<div class="pay">'+
+        '<div class="chip"><div class="n">'+esc(c.pay.entry)+'</div><div class="k">Starting out</div></div>'+
+        '<div class="chip"><div class="n">'+esc(c.pay.median)+'</div><div class="k">Typical</div></div>'+
+        '<div class="chip"><div class="n">'+esc(c.pay.top)+'</div><div class="k">Seasoned</div></div>'+
+      '</div>'+
+      '<div class="factline">'+
+        '<span class="time">From the very start: <b>'+esc(c.time)+'</b> · '+esc(c.short)+'</span>'+
+        '<span class="thread">This week’s thread — <b>“'+esc(c.thread)+'”</b></span>'+
+      '</div>';
+  }
+  function select(i){ cur=i; here=CRAFTS[i].here;
+    Array.prototype.forEach.call(picker.querySelectorAll('.craft-chip'),function(b){
+      var on=(+b.dataset.i===i); b.setAttribute('aria-selected',on);
+      b.style.background = on ? CRAFTS[i].accent : '';
+    });
+    drawTrail(); drawFacts();
+  }
+  buildPicker(); drawTrail(); drawFacts();
+  // keep labels legible across breakpoints
+  var _ls=lblScale(), _t;
+  window.addEventListener('resize', function(){
+    clearTimeout(_t);
+    _t=setTimeout(function(){ if(lblScale()!==_ls){ _ls=lblScale(); drawTrail(); } }, 180);
+  });
+})();
+</script>
+</body>
+</html>
