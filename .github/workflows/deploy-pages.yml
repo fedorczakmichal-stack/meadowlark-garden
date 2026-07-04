@@ -1,60 +1,46 @@
-# Deploy meadowlark-garden to GitHub Pages (gh-pages branch).
-# main  → site root  (stable preview of merged work)
-# preview → /preview/ (live dev channel — push here to see changes)
-name: Deploy Pages
+# Sync the preview branch into main/preview/ so GitHub Pages (served from main)
+# exposes a live dev channel without changing the Pages source.
+name: Sync preview
 
 on:
   push:
-    branches: [main, preview]
+    branches: [preview]
 
 permissions:
   contents: write
 
 jobs:
-  deploy:
+  sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout ${{ github.ref_name }}
+      - name: Checkout preview
         uses: actions/checkout@v4
+        with:
+          ref: preview
+          path: src
 
-      - name: Fetch gh-pages
-        env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git clone --depth 1 -b gh-pages "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" _gp 2>/dev/null || {
-            mkdir _gp
-            cd _gp
-            git init -b gh-pages
-            git remote add origin "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git"
-          }
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build tree
+      - name: Sync into main/preview/
         run: |
-          BRANCH="${{ github.ref_name }}"
-          if [ "$BRANCH" = "main" ]; then
-            find _gp -mindepth 1 -maxdepth 1 ! -name .git ! -name preview -exec rm -rf {} +
-            rsync -a \
-              --exclude _gp --exclude .git --exclude preview \
-              ./ _gp/
-            if [ -d preview ]; then
-              rm -rf _gp/preview
-              cp -a preview _gp/preview
-            fi
-          else
-            HUB=""
-            if [ -f _gp/preview/index.html ]; then HUB=$(cat _gp/preview/index.html); fi
-            rm -rf _gp/preview
-            mkdir -p _gp/preview
-            rsync -a --exclude _gp --exclude .git ./ _gp/preview/
-            if [ -n "$HUB" ]; then printf '%s' "$HUB" > _gp/preview/index.html; fi
-          fi
+          mkdir -p main/preview
+          if [ -f main/preview/index.html ]; then cp main/preview/index.html /tmp/preview-hub.html; fi
+          find main/preview -mindepth 1 ! -name index.html -exec rm -rf {} + 2>/dev/null || true
+          rsync -a \
+            --exclude .git --exclude preview \
+            src/ main/preview/
+          if [ -f /tmp/preview-hub.html ]; then cp /tmp/preview-hub.html main/preview/index.html; fi
 
-      - name: Push gh-pages
-        env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit to main
         run: |
-          cd _gp
-          git add -A
+          cd main
+          git add preview/
+          git diff --staged --quiet && echo "No changes" && exit 0
           git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' \
-            commit -m "Deploy ${GITHUB_REF_NAME} @ ${GITHUB_SHA::7}" || exit 0
-          git push origin gh-pages --force
+            commit -m "Sync preview branch into preview/ [skip ci]"
+          git push

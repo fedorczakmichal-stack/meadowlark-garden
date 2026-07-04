@@ -1,0 +1,24 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Meadowlark">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F6C089"/><stop offset=".5" stop-color="#FCDDB4"/><stop offset="1" stop-color="#FBEBD6"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FFF7DF"/><stop offset=".7" stop-color="#FFE6B4"/><stop offset="1" stop-color="#FFE6B4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#sky)"/>
+  <circle cx="352" cy="180" r="92" fill="url(#sun)"/>
+  <circle cx="352" cy="180" r="36" fill="#FFF1C8"/>
+  <path d="M0 420 C 170 396 340 418 512 408 L512 512 L0 512 Z" fill="#5C9A45" opacity=".9"/>
+  <g transform="translate(248 262) scale(3.3)">
+    <ellipse cx="-4" cy="20" rx="20" ry="4.5" fill="rgba(60,40,20,0.16)"/>
+    <path d="M-18 4 L -33 9 L -18 12 Z" fill="#E8943E"/>
+    <ellipse cx="0" cy="4" rx="19" ry="13" fill="#EF9C7E"/>
+    <path d="M-22 6 C -6 -16 14 -10 14 4 C 6 8 -10 14 -22 6 Z" fill="#E8943E"/>
+    <path d="M-8 2 C 2 -6 12 -4 12 3 C 6 7 -4 7 -8 2 Z" fill="#FBB36A" opacity="0.85"/>
+    <circle cx="16" cy="-7" r="9.5" fill="#EF9C7E"/>
+    <path d="M24 -9 L 34 -6.5 L 24 -4 Z" fill="#C9781F"/>
+    <circle cx="19" cy="-9" r="1.7" fill="#3A3450"/><circle cx="19.5" cy="-9.6" r="0.6" fill="#fff"/>
+  </g>
+</svg>

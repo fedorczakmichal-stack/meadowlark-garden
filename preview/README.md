@@ -25,4 +25,4 @@ Both are static and self-contained; GitHub Pages serves them as-is.
 | Stabilny podgląd po merge | `main` | https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/ |
 | Landing | `main` | https://fedorczakmichal-stack.github.io/meadowlark-garden/ |
 
-**Jak to działa:** push na branch `preview` → workflow kopiuje kod do `preview/` na `main` → GitHub Pages odświeża podgląd w ~1 min. Merge do `main` (root) → trafia pod `/garden/` bez prefiksu preview.
+**Jak to działa:** push na `preview` → odświeża `/preview/…` w ~1 min. Merge do `main` → trafia pod `/garden/` (bez prefiksu preview).

@@ -1,0 +1,16 @@
+{
+  "name": "Meadowlark — a calm garden for hard seasons",
+  "short_name": "Meadowlark",
+  "description": "Tend one small part of your life and it grows back at its own pace. No streaks, no guilt, no catching up.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBF7F2",
+  "theme_color": "#FBF7F2",
+  "categories": ["lifestyle", "health", "wellness"],
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
