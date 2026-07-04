@@ -2400,14 +2400,16 @@ function mkWander(seed,amp,opts){
   const grounded=!!opts.grounded;
   const water=!!opts.flat && !grounded;
   const yDrift=grounded?Math.min(2,(opts.yDrift??14)*0.1):water?(opts.yDrift??14)*0.28:(opts.yDrift??14)*(opts.flat?0.35:1);
+  const xCap=opts.laneMax!=null?opts.laneMax:amp*1.15;
+  const xFloor=opts.laneMin!=null?opts.laneMin:-amp*1.15;
   const id='wd'+(_wanderSeq++);
   const R=n=>wanderR(seed,n);
   const n=7+Math.floor(R(0)*4);
-  const pts=[{t:0,x:amp*(R(1)-0.5)*1.1,y:(R(2)-0.5)*yDrift}];
+  const pts=[{t:0,x:Math.max(xFloor,Math.min(xCap,amp*(R(1)-0.5)*1.0)),y:(R(2)-0.5)*yDrift}];
   for(let i=1;i<n;i++){
     const t=Math.min(96,Math.round((i/n)*90+R(i+3)*9));
     let x=pts[pts.length-1].x+(R(i+10)-0.48)*amp*(0.52+R(i+11)*0.45);
-    x=Math.max(-amp*1.15,Math.min(amp*1.15,x));
+    x=Math.max(xFloor,Math.min(xCap,x));
     pts.push({t,x,y:(R(i+20)-0.5)*yDrift*(grounded?0.35:1.6)});
   }
   if(R(40)>0.35){
@@ -2489,7 +2491,7 @@ function roveFace(el){
    ONCE into N exact frames (verbatim atlas renders); the loop then only flips visibility — no per-frame
    SVG parsing, so phones stay smooth. Off-screen animals rest on frame 0; calm/reduced-motion freeze. ── */
 let fableEls=null,fableTimer=0,fableStarted=false;
-const FABLE_STRIDE={fox:{trot:24,walk:20,gallop:18},rabbit:{hop:54,sprint:22},deer:{walk:30,trot:26,gallop:20},bear:{amble:40},hedgehog:{trundle:16},ladybug:{walk:12},mallard:{swim:20,waddle:18},fish:{swim:18,dart:14},turtle:{walk:14,swim:16},snail:{glide:10}};
+const FABLE_STRIDE={fox:{trot:26,walk:20,gallop:18},rabbit:{hop:54,sprint:22},deer:{walk:30,trot:26,gallop:20},bear:{amble:40},hedgehog:{trundle:16},ladybug:{walk:12},mallard:{swim:20,waddle:18},fish:{swim:18,dart:14},turtle:{walk:14,swim:16},snail:{glide:10}};
 function fableStride(id,mid){const m=FABLE_STRIDE[id];return(m&&m[mid])||26;}
 function fableRender(A,mid,t,roam){
   const prevRoam=window.__FABLE_ROAM;
@@ -2708,8 +2710,8 @@ function renderMeadow(force){
     s+=skyBird(-38,90,102,0.58,0.65);
   }
   const CAST=[
-    {id:'rabbit',   mid:'hop',    x:HABX.connection-88, y:HABY.connection+34, sc:.95, off:.10, travel:{amp:48,dur:28,yDrift:6,seed:101,grounded:true}},
-    {id:'fox',      mid:'trot',   x:HABX.body-268, y:HABY.body+24,  sc:.90, off:.35, travel:{amp:55,dur:17,yDrift:5,seed:102,grounded:true}},
+    {id:'rabbit',   mid:'hop',    x:HABX.connection-88, y:HABY.connection+34, sc:.95, off:.10, travel:{amp:48,dur:24,yDrift:6,seed:101,grounded:true}},
+    {id:'fox',      mid:'trot',   x:HABX.body-55, y:HABY.body+24,  sc:.90, off:.35, travel:{amp:40,dur:22,yDrift:4,seed:102,grounded:true,laneMin:-70,laneMax:48}},
     {id:'butterfly',mid:'flutter',x:HABX.body+130, y:HABY.body-150, sc:1.05,off:.50, flt:20,fltAmp:24,fltSeed:201},
     {id:'ladybug',  mid:'walk',   x:HABX.body+55,  y:HABY.body+68,  sc:.45, off:.05, travel:{amp:35,dur:52,yDrift:4,seed:103,grounded:true}},
     {id:'bee',      mid:'patrol', x:HABX.home+70,  y:HABY.home-118, sc:.90, off:.20, flt:16,fltAmp:18,fltSeed:202},
@@ -2717,7 +2719,7 @@ function renderMeadow(force){
     {id:'butterfly',mid:'sail',   x:HABX.connection+70, y:HABY.connection-150, sc:.95, off:.75, flt:22,fltAmp:27,fltSeed:203},
     {id:'deer',     mid:'walk',   x:1000, y:336, sc:.72, off:.60, travel:{amp:42,dur:18,yDrift:5,seed:105,grounded:true}, extra:` opacity="${dusky?.5:.72}"`},
     {id:'deer',     mid:'graze',  x:1380, y:320, sc:.80, off:.15, extra:` opacity="${dusky?.5:.7}"`},
-    {id:'bear',     mid:'amble',  x:590,  y:354, sc:.78, off:.40, travel:{amp:35,dur:28,yDrift:5,seed:106,grounded:true}, extra:` opacity="${dusky?.62:.9}"`},
+    {id:'bear',     mid:'amble',  x:590,  y:354, sc:.78, off:.40, travel:{amp:35,dur:22,yDrift:5,seed:106,grounded:true}, extra:` opacity="${dusky?.62:.9}"`},
     {id:'bee',      mid:'waggle', x:HABX.craft+168, y:HABY.craft-56, sc:.62, off:.90, flt:14,fltAmp:15,fltSeed:204},
     {id:'dragonfly',mid:'hover',  x:HABX.future-30, y:HABY.future-40, sc:.95, off:.80, flt:14,fltAmp:30,fltSeed:205},
     {id:'stork',    mid:'stand',  x:HABX.future+32, y:HABY.future+62, sc:1, off:.45, extra:` opacity="${dusky?.6:1}"`},

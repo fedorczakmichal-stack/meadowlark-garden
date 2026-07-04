@@ -19,6 +19,12 @@ const roamPhase = (t, ctx) => {
   if (!ctx || !ctx.moving) return t;
   return ctx.phase != null ? ctx.phase : t;
 };
+const laneDx = (v, w) => {
+  const ctx = roamCtx();
+  if (!ctx || !ctx.moving) return v;
+  w = w == null ? 1 : w;
+  return v * w * (ctx.face != null ? ctx.face : 1);
+};
 const laneDy = (v, w) => {
   const ctx = roamCtx();
   if (!ctx || !ctx.moving) return v;
@@ -30,14 +36,6 @@ const lanePitch = (v, w) => {
   if (!ctx || !ctx.moving) return v;
   w = w == null ? 0.7 : w;
   return v * w;
-};
-// Stretch hop phase during lane travel — longer contact, less frantic airtime.
-const roamHopPh = t => {
-  const ctx = roamCtx();
-  if (!ctx || !ctx.moving) return t;
-  if (t < 0.2) return t * 0.7;
-  if (t < 0.72) return 0.14 + (t - 0.2) * 1.05;
-  return 0.686 + (t - 0.72) * 1.12;
 };
 const laneTicks = (fn, ph, opts, wander) => {
   const ctx = roamCtx();
@@ -222,6 +220,19 @@ const POUNCE = [
   [1.00, { dx: -4, dy: 0, pitch: 0, sx: 1, sy: 1, lf: 0, lh: 0, headA: 0, earB: 0, tailA: 0, tailTip: 0 }]
 ];
 
+// One travelling trot stride — dx advances with the diagonal pairs so the body leads the feet.
+const TROT = [
+  [0.00, { dx: 0, dy: 0, pitch: 0, lf: 14, lh: -12, rf: -10, rh: 12, headA: 0, tailA: 7, tailTip: 4, earB: 0 }],
+  [0.10, { dx: 0.8, dy: -0.3, pitch: 0.6, lf: 6, lh: -4, rf: -6, rh: 6, headA: 0.6, tailA: 9, tailTip: 5, earB: 0 }],
+  [0.22, { dx: 2.6, dy: -0.9, pitch: 1.2, lf: -16, lh: 20, rf: 18, rh: -20, headA: 1.1, tailA: 12, tailTip: 7, earB: 0 }],
+  [0.34, { dx: 4.6, dy: -1.0, pitch: 1.0, lf: -20, lh: 14, rf: 12, rh: -14, headA: 0.8, tailA: 14, tailTip: 9, earB: 0 }],
+  [0.46, { dx: 6.2, dy: -0.5, pitch: 0.4, lf: -8, lh: 6, rf: -18, rh: 20, headA: 0.4, tailA: 13, tailTip: 8, earB: 0 }],
+  [0.58, { dx: 7.0, dy: 0, pitch: 0, lf: 10, lh: -8, rf: 16, rh: -18, headA: 0, tailA: 11, tailTip: 7, earB: 0 }],
+  [0.70, { dx: 5.8, dy: -0.4, pitch: 0.5, lf: 18, lh: -16, rf: -6, rh: 8, headA: 0.5, tailA: 9, tailTip: 6, earB: 0 }],
+  [0.82, { dx: 3.2, dy: -0.2, pitch: 0.3, lf: 12, lh: -10, rf: -14, rh: 16, headA: 0.3, tailA: 8, tailTip: 5, earB: 0 }],
+  [1.00, { dx: 0, dy: 0, pitch: 0, lf: 14, lh: -12, rf: -10, rh: 12, headA: 0, tailA: 7, tailTip: 4, earB: 0 }]
+];
+
 return {
   id: 'fox', view: [-46, -42, 94, 62], groundY: GY,
   thumb: { m: 'stand', t: 0.05 },
@@ -264,12 +275,20 @@ return {
       return draw(K);
     }
     if (mid === 'trot') {
-      return draw({
-        dy: laneDy(-1.1 * osc(t, 2, .3)), pitch: lanePitch(1.4 * osc(t, 2, .1)),
-        legs: walkLegs(t, { nf: 0, fh: 0, ff: .5, nh: .5 }, 19),
-        headA: 1.6 * osc(t, 2, .55), tailA: 10 + 5 * osc(t, 1, .3), tailTip: 8 * osc(t, 2, .1),
-        ticks: laneTicks(groundTicks, t, { y: GY, x1: -43, x2: 45, v: 52, n: 7, s: 1.15 })
-      });
+      const ctx = roamCtx();
+      const ph = roamPhase(t, ctx);
+      const K = keys(ph, TROT);
+      K.legs = { ff: K.lf, fh: K.lh, nf: K.rf, nh: K.rh };
+      if (ctx && ctx.moving) {
+        K.dx = laneDx(K.dx, 1);
+        K.dy = laneDy(K.dy, 0.45);
+        K.pitch = lanePitch(K.pitch, 0.9);
+      }
+      K.headA += 0.4 * osc(ph, 2, .55);
+      K.tailTip += 2 * osc(ph, 2, .1);
+      K.blink = pulse(ph, .7, .73);
+      K.ticks = laneTicks(groundTicks, ph, { y: GY, x1: -43, x2: 45, v: 48, n: 7, s: 1.15 });
+      return draw(K);
     }
     if (mid === 'gallop') {
       return draw({
@@ -278,7 +297,7 @@ return {
         legs: walkLegs(t, { nf: 0, ff: .12, nh: .5, fh: .62 }, 28),
         headA: -4 + 3 * osc(t, 1, .5), earB: 1,
         tailA: -14 + 6 * osc(t, 1, .5), tailTip: -8 + 6 * osc(t, 1, .6),
-        ticks: laneTicks(groundTicks, t, { y: GY, x1: -43, x2: 45, v: 76, n: 7, s: 1.15 })
+        ticks: groundTicks(t, { y: GY, x1: -43, x2: 45, v: 76, n: 7, s: 1.15 })
       });
     }
     // walk
@@ -287,7 +306,7 @@ return {
       legs: walkLegs(t, { nh: 0, nf: .25, fh: .5, ff: .75 }, 13),
       headA: 2 * osc(t, 2, .55), tailA: 4 * osc(t, 2, .3), tailTip: 6 * osc(t, 2, .05),
       blink: pulse(t, .7, .73),
-      ticks: laneTicks(groundTicks, t, { y: GY, x1: -43, x2: 45, v: 34, n: 7, s: 1.15 })
+      ticks: groundTicks(t, { y: GY, x1: -43, x2: 45, v: 34, n: 7, s: 1.15 })
     });
   }
 };
@@ -441,7 +460,7 @@ return {
         dy: laneDy(-1.5 * osc(t, 2, .28)), pitch: lanePitch(1.6 * osc(t, 2, .1)),
         legs: gaitLegs(t, { nf: 0, fh: 0, ff: .5, nh: .5 }, 20),
         headA: -3 + 2 * osc(t, 2, .5), tailA: 8 * osc(t, 2, .2), earA: .2 * osc(t, 2, .3),
-        ticks: laneTicks(groundTicks, t, { y: GY, x1: -37, x2: 41, v: 56, n: 7, s: 1.2 })
+        ticks: groundTicks(t, { y: GY, x1: -37, x2: 41, v: 56, n: 7, s: 1.2 })
       });
     }
     if (mid === 'gallop') {
@@ -459,7 +478,7 @@ return {
       legs: gaitLegs(t, { nh: 0, nf: .25, fh: .5, ff: .75 }, 13),
       headA: 2.4 * osc(t, 2, .5), tailA: 5 * osc(t, 1, .3),
       blink: pulse(t, .66, .69),
-      ticks: laneTicks(groundTicks, t, { y: GY, x1: -37, x2: 41, v: 30, n: 7, s: 1.2 })
+      ticks: groundTicks(t, { y: GY, x1: -37, x2: 41, v: 30, n: 7, s: 1.2 })
     });
   }
 };
@@ -685,13 +704,9 @@ return {
   render(mid, t) {
     t = wrap(t);
     if (mid === 'hop' || mid === 'sprint') {
-      const ctx = roamCtx();
-      const ph = roamPhase(t, ctx);
-      const boundPh = (ctx && ctx.moving && mid === 'hop') ? roamHopPh(ph) : ph;
-      const K = bound(boundPh, mid === 'sprint');
-      if (mid === 'sprint') { K.earA = -26; K.earSoft = -8 + 3 * osc(ph, 1, .3); }
-      if (ctx && ctx.moving) K.dy = laneDy(K.dy, mid === 'hop' ? 0.62 : 0.55);
-      K.ticks = laneTicks(groundTicks, ph, { y: GY, x1: -37, x2: 42, v: mid === 'sprint' ? 66 : 32, n: 7, s: 1.15 });
+      const K = bound(t, mid === 'sprint');
+      if (mid === 'sprint') { K.earA = -26; K.earSoft = -8 + 3 * osc(t, 1, .3); }
+      K.ticks = groundTicks(t, { y: GY, x1: -37, x2: 42, v: mid === 'sprint' ? 66 : 40, n: 7, s: 1.15 });
       return draw(K);
     }
     if (mid === 'alert') {
@@ -828,16 +843,13 @@ return {
       K.blink = pulse(t, .44, .48);
       return draw(K);
     }
-    // amble — pacing: left pair (fh+nh) then right pair (ff+nf), heavy barrel roll
-    const pace = osc(t, 1, 0);
+    // amble — pacing: same-side pairs nearly together
     return draw({
-      dx: laneDy(1.6 * osc(t, 1, .14), 0.85),
-      dy: laneDy(-0.4 * Math.abs(pace), 0.5),
-      pitch: lanePitch(2.6 * pace, 0.95),
-      legs: gaitLegs(t, { fh: 0, nh: 0.04, ff: 0.5, nf: 0.54 }, 17),
-      headA: 2.8 * osc(t, 1, .58), earA: 0,
+      dy: laneDy(-0.8 * osc(t, 2, .12)), pitch: lanePitch(1.4 * osc(t, 1, .3)),
+      legs: gaitLegs(t, { nh: 0, nf: .16, fh: .5, ff: .66 }, 13),
+      headA: 3 * osc(t, 1, .45), earA: 0,
       blink: pulse(t, .7, .73),
-      ticks: laneTicks(groundTicks, t, { y: GY, x1: -39, x2: 42, v: 14, n: 7, s: 1.2 }, 0.9)
+      ticks: groundTicks(t, { y: GY, x1: -39, x2: 42, v: 26, n: 7, s: 1.2 })
     });
   }
 };
@@ -1306,7 +1318,7 @@ return {
       legA: 22 * osc(t, 2), legB: 22 * osc(t, 2, .5),
       noseA: 4 * osc(t, 2, .25),
       blink: pulse(t, .66, .7),
-      ticks: laneTicks(groundTicks, t, { y: GY, x1: -30, x2: 33, v: 22, n: 7, s: .9 })
+      ticks: groundTicks(t, { y: GY, x1: -30, x2: 33, v: 22, n: 7, s: .9 })
     });
   }
 };
@@ -1592,9 +1604,9 @@ return {
     t = wrap(t);
     if (mid === 'swim') {
       return draw({
-        dy: laneDy(-0.8 * osc(t, 1, .1), 0.45), rock: lanePitch(1.5 * osc(t, 1, .35)),
+        dy: -0.8 * osc(t, 1, .1), rock: 1.5 * osc(t, 1, .35),
         headA: 4 * pulse(t, .3, .5) - 3 * pulse(t, .62, .8), tailA: 4 * osc(t, 2, .2),
-        ticks: laneTicks(rippleTicks, t, { y: 6, x1: -33, x2: 36, v: 20, n: 5, s: 1.3, tone: '#85988B' }),
+        ticks: rippleTicks(t, { y: 6, x1: -33, x2: 36, v: 20, n: 5, s: 1.3, tone: '#85988B' }),
         over: `<path d="M14 5.6 q3 1.4 6 .4" stroke="#85988B" stroke-width=".7" fill="none" opacity=".5"/>`
       });
     }
@@ -1632,9 +1644,9 @@ return {
     // waddle
     return draw({
       grounded: true, feet: t * 2,
-      dy: laneDy(-0.6 * Math.abs(osc(t, 2))), rock: lanePitch(8 * osc(t, 2, 0)),
+      dy: -0.6 * Math.abs(osc(t, 2)), rock: 8 * osc(t, 2, 0),
       headA: -5 * osc(t, 2, .12), tailA: -9 * osc(t, 2, .05),
-      ticks: laneTicks(groundTicks, t, { y: GY + 1.4, x1: -33, x2: 36, v: 22, n: 7, s: 1 })
+      ticks: groundTicks(t, { y: GY + 1.4, x1: -33, x2: 36, v: 22, n: 7, s: 1 })
     });
   }
 };
@@ -2298,7 +2310,7 @@ return {
       dy: laneDy(-0.3 * osc(t, 4, .1)), tilt: lanePitch(1.2 * osc(t, 2, .3)),
       legsA: 8 * osc(t, 2), legsB: 8 * osc(t, 2, .5),
       antA: 6 * osc(t, 1, .2),
-      ticks: laneTicks(groundTicks, t, { y: GY, x1: -28, x2: 30, v: 7, n: 6, s: .8 })
+      ticks: groundTicks(t, { y: GY, x1: -28, x2: 30, v: 7, n: 6, s: .8 })
     });
   }
 };
@@ -2510,11 +2522,11 @@ return {
     t = wrap(t);
     if (mid === 'swim') {
       return draw({
-        pitch: lanePitch(-7 + 1.5 * osc(t, 1, .3)), dy: laneDy(-1.6 * osc(t, 1, .25), 0.35),
+        pitch: -7 + 1.5 * osc(t, 1, .3), dy: -1.6 * osc(t, 1, .25),
         legFar: 30 * osc(t, 1, 0), legNear: 30 * osc(t, 1, .45),
         headA: -5 + 2 * osc(t, 1, .5), headX: 1,
         tailA: 6 * osc(t, 1, .2),
-        ticks: laneTicks(rippleTicks, t, { y: 2, x1: -31, x2: 34, v: 18, n: 5, s: 1.1, tone: '#85988B' })
+        ticks: rippleTicks(t, { y: 2, x1: -31, x2: 34, v: 18, n: 5, s: 1.1, tone: '#85988B' })
       });
     }
     if (mid === 'hide') {
@@ -2545,12 +2557,12 @@ return {
     // walk
     return draw({
       grounded: true,
-      dy: laneDy(-0.4 * osc(t, 2, .2)),
+      dy: -0.4 * osc(t, 2, .2),
       legFar: 24 * osc(t, 1, 0), legNear: 24 * osc(t, 1, .5),
       headA: 3 * osc(t, 1, .12), headX: 1.4 + 1.2 * osc(t, 1, .05),
       tailA: 5 * osc(t, 1, .3),
       blink: pulse(t, .58, .63),
-      ticks: laneTicks(groundTicks, t, { y: GY, x1: -31, x2: 34, v: 12, n: 7, s: 1 })
+      ticks: groundTicks(t, { y: GY, x1: -31, x2: 34, v: 12, n: 7, s: 1 })
     });
   }
 };
@@ -2654,11 +2666,11 @@ return {
     }
     // cruise
     return draw({
-      tailA: 13 * osc(t, 1, 0), pitch: lanePitch(1.6 * osc(t, 1, .3)),
-      dy: laneDy(-1.5 * osc(t, 1, .2), 0.4), dx: 1.2 * osc(t, 1, .45),
+      tailA: 13 * osc(t, 1, 0), pitch: 1.6 * osc(t, 1, .3),
+      dy: -1.5 * osc(t, 1, .2), dx: 1.2 * osc(t, 1, .45),
       finA: 10 * osc(t, 2, .15),
       bub: t,
-      ticks: laneTicks(rippleTicks, t, { y: WATER, x1: -30, x2: 33, v: 16, n: 5, s: 1, tone: '#8FA9B4' })
+      ticks: rippleTicks(t, { y: WATER, x1: -30, x2: 33, v: 16, n: 5, s: 1, tone: '#8FA9B4' })
     });
   }
 };
@@ -2756,7 +2768,7 @@ return {
       stalkA: 1 + 0.05 * osc(t, 1, .2), stalkB: 1 + 0.05 * osc(t, 1, .5),
       shellA: 1.5 * osc(t, 1, .55),
       slime: true,
-      ticks: laneTicks(groundTicks, t, { y: GY, x1: -30, x2: 33, v: 3, n: 6, s: .85 })
+      ticks: groundTicks(t, { y: GY, x1: -30, x2: 33, v: 3, n: 6, s: .85 })
     });
   }
 };
