@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meadowlark — podgląd deweloperski</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#FBF7F2">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--cream:#FBF7F2;--ink:#3A3450;--muted:#675E72;--gold:#E8943E;--gold-text:#A85F12;--line:rgba(58,52,80,.12);--ff:'Figtree',system-ui,sans-serif;--mono:'Space Grotesk',var(--ff)}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;min-height:100dvh;font-family:var(--ff);color:var(--ink);background:linear-gradient(180deg,#F6C089 0%,#FBEBD6 38%,var(--cream) 100%);display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{max-width:440px;width:100%;background:#fff;border:1px solid var(--line);border-radius:22px;padding:28px 26px;box-shadow:0 30px 60px -42px rgba(120,92,150,.55)}
+  .tag{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-text);background:rgba(232,148,62,.1);border:1px solid rgba(232,148,62,.26);display:inline-block;padding:5px 11px;border-radius:999px}
+  h1{font-size:clamp(24px,5vw,30px);line-height:1.12;margin:14px 0 0;letter-spacing:-.02em}
+  p{color:var(--muted);font-size:15px;line-height:1.6;margin:12px 0 0}
+  .links{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+  a.btn{display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:999px;font-weight:700;font-size:15px;text-decoration:none;transition:transform .2s}
+  a.btn:active{transform:scale(.97)}
+  a.primary{color:#FFFDFB;background:linear-gradient(100deg,#EF9C7E,var(--gold));box-shadow:0 14px 28px -14px rgba(207,111,76,.55)}
+  a.ghost{color:var(--ink);border:1px solid rgba(232,148,62,.45);background:rgba(232,148,62,.06)}
+  .note{margin-top:18px;font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--muted);line-height:1.5}
+  code{font-family:var(--mono);font-size:10.5px;background:var(--cream);padding:2px 6px;border-radius:6px}
+</style>
+</head>
+<body>
+  <div class="card">
+    <span class="tag">Podgląd · meadowlark-garden</span>
+    <h1>To, nad czym teraz pracujemy</h1>
+    <p>Ten adres pokazuje najnowszy kod z brancha <code>preview</code>. To nie jest jeszcze stabilna wersja na <code>meadowlark</code> — tylko ciche pole testowe.</p>
+    <div class="links">
+      <a class="btn primary" href="garden/">Otwórz ogród (podgląd)</a>
+      <a class="btn ghost" href="../garden/">Stabilny podgląd z main</a>
+      <a class="btn ghost" href="../">Landing (main)</a>
+    </div>
+    <p class="note">Push na branch <code>preview</code> → ten podgląd odświeża się w ~1 min.<br>Merge do <code>main</code> → trafia pod <code>/garden/</code> bez prefiksu preview.</p>
+  </div>
+</body>
+</html>
