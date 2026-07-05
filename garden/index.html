@@ -2476,8 +2476,8 @@ function floatTx(el){
      (The old system interpolated scale(-1,1) inside keyframes: a slow squash-mirror that read as
      a senseless turn; and `alternate` playback reversed the path but not the facing → moonwalk.)
    • gait frames advance only while actually moving, scaled to real speed — stop = feet stop.
-   • art that natively faces LEFT is flagged fl:1 (bear, bee — verified against RAW renders,
-     not eyeballed in-scene), so "moving right" mirrors it correctly.
+   • every atlas animal is drawn facing RIGHT (centre-line RAW-render audit), so no fl needed —
+     facing is just scale(dir,1). fl:1 (mirror) is kept in code only for any future left-facing art.
    Insects keep their organic CSS drift (position only, no facing baked in); the walker just flips
    their .face to match the measured drift direction, with hysteresis — and their wings never
    freeze (the old loop stopped wingbeats at drift turnarounds). Flipbook rendering stays: frames
@@ -2486,7 +2486,7 @@ const FABLE_BEHAV={
   fox:      {go:'trot',   spd:34, idles:[['stand',3]],                 rare:[['pounce',1.2]]},
   deer:     {go:'walk',   spd:26, idles:[['graze',4],['alert',1]]},
   rabbit:   {go:'hop',    spd:60, idles:[['sit',3],['groom',2],['alert',1]], chain:{sit:'groom'}},
-  bear:     {go:'amble',  spd:24, fl:1, idles:[['sniff',3]],           rare:[['rear',1]]},
+  bear:     {go:'amble',  spd:24, idles:[['sniff',3]],                 rare:[['rear',1]]},
   hedgehog: {go:'trundle',spd:20, idles:[['sniff',3]],                 rare:[['curl',0.8]]},
   stork:    {go:'stride', spd:34, idles:[['stand',3],['clatter',1]]},
   turtle:   {go:'walk',   spd:16, idles:[['bask',2]],                  rare:[['hide',0.7]]},
@@ -2497,8 +2497,12 @@ const FABLE_BEHAV={
   frog:     {go:'hop',    spd:22, idles:[['sit',5],['croak',1]]},
   mouse:    {go:'scurry', spd:46, idles:[['nibble',3],['alert',1]]},
   owl:      {idles:[['perch',3],['headturn',1]]},
-  bee:      {fl:1}, dragonfly:{}, butterfly:{}
+  bee:      {}, dragonfly:{}, butterfly:{}
 };
+// EVERY atlas animal is drawn facing RIGHT — verified 2026-07-06 with a centre-line RAW-render
+// grid (all 13 walker gaits + bee/dragonfly). So fl (mirror-when-moving-right) stays 0 for all.
+// The earlier fl:1 on bear+bee came from eyeballing the busy in-scene render and reading them
+// backwards — which is exactly why they moon-walked. Only re-add fl:1 with a centre-line check.
 let fableEls=null,fableTimer=0,fableStarted=false;
 function fableRender(A,mid,t,roam){
   const prev=window.__FABLE_NO_TICKS;
