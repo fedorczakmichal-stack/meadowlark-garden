@@ -2496,10 +2496,8 @@ const FABLE_BEHAV={
   ladybug:  {go:'walk',   spd:8,  idles:[['check',2]]},
   frog:     {go:'hop',    spd:22, idles:[['sit',5],['croak',1]]},
   mouse:    {go:'scurry', spd:46, idles:[['nibble',3],['alert',1]]},
-  cat:      {go:'walk',   spd:20, idles:[['idle',2],['stretch',2]]},
   owl:      {idles:[['perch',3],['headturn',1]]},
-  bee:      {fl:1}, dragonfly:{}, butterfly:{},
-  squirrel: {art:1, go:'art', spd:30, turn:0.15, idles:[]}
+  bee:      {fl:1}, dragonfly:{}, butterfly:{}
 };
 let fableEls=null,fableTimer=0,fableStarted=false;
 function fableRender(A,mid,t,roam){
@@ -2828,7 +2826,6 @@ function renderMeadow(force){
     {id:'bee',      mid:'patrol', x:HABX.home+70,  y:HABY.home-118, sc:.90, off:.20, flt:16,fltAmp:18,fltSeed:202},
     {id:'hedgehog', x:HABX.home-158, y:HABY.home+56,  sc:.80, off:.65, amp:46, yd:12},
     {id:'mouse',    x:HABX.home+128, y:HABY.home+66,  sc:.50, off:.48, amp:40, yd:9},
-    {id:'cat',      x:HABX.home-52,  y:HABY.home+38,  sc:.72, off:.22, amp:36, yd:8},
     {id:'butterfly',mid:'sail',   x:HABX.connection+70, y:HABY.connection-150, sc:.95, off:.75, flt:22,fltAmp:27,fltSeed:203},
     {id:'deer',     x:1000, y:336, sc:.72, off:.60, amp:80, yd:14, extra:` opacity="${dusky?.5:.72}"`},
     {id:'deer',     x:1380, y:320, sc:.80, off:.15, amp:34, yd:8, extra:` opacity="${dusky?.5:.7}"`},
@@ -2846,9 +2843,6 @@ function renderMeadow(force){
   if(total>=12) CAST.push({id:'butterfly',mid:'bask',x:HABX.meaning-90,y:HABY.meaning-150,sc:.85,off:.33,flt:20});
   if(total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-30,y:HABY.calm-150,sc:.82,off:.66,flt:22});
   CAST.forEach(o=>{ s+=FB(o); });
-  // hand-drawn squirrel — walker-driven now too (its own CSS rig keeps the tail/paws alive)
-  s+=FB({id:'squirrel', x:HABX.meaning-48, y:HABY.meaning+18, off:.5, amp:58, yd:7,
-    art:`<g transform="scale(.95)"><use href="#squirrel" x="${SQ[0]}" y="${SQ[1]}" width="${SQ[2]}" height="${SQ[3]}" style="--d:-1.8s"/></g>`});
   // golden-hour light wash
   s+=`<rect width="${W}" height="${H}" fill="url(#glow)" pointer-events="none"/>`;
 
