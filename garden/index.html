@@ -2499,7 +2499,7 @@ const FABLE_BEHAV={
   cat:      {go:'walk',   spd:20, idles:[['idle',2],['stretch',2]]},
   owl:      {idles:[['perch',3],['headturn',1]]},
   bee:      {fl:1}, dragonfly:{}, butterfly:{},
-  squirrel: {art:1, go:'art', spd:34, idles:[]}
+  squirrel: {art:1, go:'art', spd:30, turn:0.15, idles:[]}
 };
 let fableEls=null,fableTimer=0,fableStarted=false;
 function fableRender(A,mid,t,roam){
@@ -2531,8 +2531,11 @@ function fableCollect(){
       try{ f.fin.innerHTML=fableRender(A,f.midCur,0.32,false); }catch(_){}
       return f;
     }
+    // home range clamped to the panorama (a wide range near an edge must not walk off-world)
+    f.lo=Math.max(36,f.x-f.amp)-f.x; f.hi=Math.min(PANO_W-36,f.x+f.amp)-f.x;
+    if(f.hi<f.lo){ f.lo=0; f.hi=0; }
     // walkers: deterministic scattered starting pose, staggered first decision
-    f.ox=(R(1)-0.5)*2*f.amp*0.8; f.oy=(R(2)-0.5)*2*f.yd;
+    f.ox=f.lo+(R(1))*(f.hi-f.lo)*0.9+(f.hi-f.lo)*0.05; f.oy=(R(2)-0.5)*2*f.yd;
     f.dir=R(3)>0.5?1:-1;
     f.until=R(4)*2.5;
     const firstMid=(B.go&&B.go!=='art')?B.go:((B.idles&&B.idles[0]&&B.idles[0][0])||null);
@@ -2547,11 +2550,23 @@ function fableBuildSet(f,mid){
   const air=['flit','flutter','sail','hover','patrol','flight','dart'].includes(mid);
   const dur=fableDur(f.A,mid);
   const n=Math.max(air?16:12,Math.min(air?36:28,Math.round(dur*(air?40:24))));
+  // the mallard's upend paints its own demo water-band; clip those frames at the atlas
+  // waterline (y=6.4) instead — hides both the band and the underwater head, cleanly
+  let clipRef='';
+  if(mid==='upend'){
+    const cid='updc'+Math.abs(f.seed|0);
+    if(!f.fin.querySelector('#'+cid)){
+      const d=document.createElementNS('http://www.w3.org/2000/svg','defs');
+      d.innerHTML=`<clipPath id="${cid}"><rect x="-70" y="-90" width="140" height="96.4"/></clipPath>`;
+      f.fin.appendChild(d);
+    }
+    clipRef=` clip-path="url(#${cid})"`;
+  }
   let html='';
   for(let k=0;k<n;k++){ let fr=''; try{ fr=fableRender(f.A,mid,k/n,!f.isFloat&&f.amp>0); }catch(_){}
-    html+=`<g visibility="hidden">${fr}</g>`; }
+    html+=`<g style="display:none"${clipRef}>${fr}</g>`; }   // display (not visibility): WebKit repaints it reliably
   const g=document.createElementNS('http://www.w3.org/2000/svg','g');
-  g.setAttribute('visibility','hidden'); g.innerHTML=html;
+  g.style.display='none'; g.innerHTML=html;
   f.fin.appendChild(g);
   const set={g,frames:[...g.children],n,mid,lastK:-1};
   f.sets[mid]=set; f.setsOrder.push(mid);
@@ -2565,13 +2580,13 @@ function fableDraw(f){
   if(f.art||!f.A||!f.midCur) return;
   let set=f.sets[f.midCur]; if(!set) set=fableBuildSet(f,f.midCur);
   if(f.curSet!==set){
-    if(f.curSet) f.curSet.g.setAttribute('visibility','hidden');
-    set.g.setAttribute('visibility','visible'); f.curSet=set;
+    if(f.curSet) f.curSet.g.style.display='none';
+    set.g.style.display=''; f.curSet=set;
   }
   const k=Math.floor((((f.ph%1)+1)%1)*set.n)%set.n;
   if(k!==set.lastK){                     // frame memory lives on the SET — re-entering a cached
-    if(set.lastK>=0&&set.frames[set.lastK]) set.frames[set.lastK].setAttribute('visibility','hidden');
-    if(set.frames[k]) set.frames[k].setAttribute('visibility','visible');
+    if(set.lastK>=0&&set.frames[set.lastK]) set.frames[set.lastK].style.display='none';
+    if(set.frames[k]) set.frames[k].style.display='';
     set.lastK=k;                         // motion never leaves its old frame lit under the new one
   }
 }
@@ -2582,7 +2597,7 @@ function fablePickIdle(f,tnow){
   const B=f.B, R=()=>wanderR(f.seed,f.rnd++);
   let pool=(B.idles||[]).slice();
   if(B.rare&&R()<0.16) pool=pool.concat(B.rare);
-  if(!pool.length){ f.midCur=f.art?f.midCur:null; f.until=tnow+0.8+R()*1.8; return; }
+  if(!pool.length){ f.midCur=f.art?f.midCur:null; f.until=tnow+(f.art?0.5+R()*0.8:0.8+R()*1.8); return; }
   let tot=0; pool.forEach(p=>tot+=p[1]);
   let pick=R()*tot, mid=pool[0][0];
   for(const p of pool){ pick-=p[1]; if(pick<=0){ mid=p[0]; break; } }
@@ -2594,14 +2609,15 @@ function fablePickIdle(f,tnow){
 function fablePickTarget(f,tnow){
   const B=f.B, R=()=>wanderR(f.seed,f.rnd++);
   if(!B.go){ fablePickIdle(f,tnow); return; }
+  const span=Math.max(1,f.hi-f.lo);
   let dir=f.dir;
-  const room=dir>0?(f.amp-f.ox):(f.ox+f.amp);
-  if(room<f.amp*0.45||R()<0.35) dir=-dir;
-  const room2=dir>0?(f.amp-f.ox):(f.ox+f.amp);
+  const room=dir>0?(f.hi-f.ox):(f.ox-f.lo);
+  if(room<span*0.22||R()<(B.turn??0.32)) dir=-dir;
+  const room2=dir>0?(f.hi-f.ox):(f.ox-f.lo);
   const d=Math.max(12,(0.35+R()*0.65)*room2);
-  f.tgt=Math.max(-f.amp,Math.min(f.amp,f.ox+dir*d));
+  f.tgt=Math.max(f.lo,Math.min(f.hi,f.ox+dir*d));
   f.tgtY=(R()-0.5)*2*f.yd;
-  f.dir=dir;                             // the flip happens HERE — while standing still
+  f.dir=f.tgt>=f.ox?1:-1;                // the flip happens HERE — while standing still
   fableSetMotion(f,B.go);
   f.mode='go'; f.spdCur=B.spd*0.15;
 }
@@ -2611,8 +2627,8 @@ function fableStep(f,dt,tnow){
     const ramp=B.spd*dt/0.35;
     const dist=Math.abs(f.tgt-f.ox);
     const brake=(f.spdCur*f.spdCur)/(2*(B.spd/0.35));
-    if(dist<=Math.max(2,brake)) f.spdCur=Math.max(B.spd*0.22,f.spdCur-ramp);
-    else f.spdCur=Math.min(B.spd,f.spdCur+ramp);
+    if(dist<=Math.max(2,brake)) f.spdCur=Math.max(B.spd*0.5,f.spdCur-ramp);   // floor 0.5: a slow-crawl
+    else f.spdCur=Math.min(B.spd,f.spdCur+ramp);                              // gait reads broken (stork legs)
     const step=Math.min(dist,f.spdCur*dt);
     f.ox+=f.dir*step;
     f.oy+=(f.tgtY-f.oy)*Math.min(1,dt*1.6);
@@ -2674,7 +2690,7 @@ function fableLoop(now){
 }
 window.__fableTest={
   tick(ms){ __fableTestNow+=ms; fableTickNow(__fableTestNow); },
-  state(){ return (fableEls||[]).filter(f=>!f.isFloat).map(f=>({id:f.id,ox:+f.ox.toFixed(1),oy:+f.oy.toFixed(1),dir:f.dir,mode:f.mode,mid:f.midCur,spd:+(f.spdCur||0).toFixed(1),amp:f.amp})); }
+  state(){ return (fableEls||[]).filter(f=>!f.isFloat).map(f=>({id:f.id,ox:+f.ox.toFixed(1),oy:+f.oy.toFixed(1),dir:f.dir,mode:f.mode,mid:f.midCur,spd:+(f.spdCur||0).toFixed(1),amp:f.amp,lo:+(f.lo??-f.amp).toFixed(1),hi:+(f.hi??f.amp).toFixed(1)})); }
 };
 
 function renderMeadow(force){
@@ -2806,7 +2822,7 @@ function renderMeadow(force){
   }
   const CAST=[
     {id:'rabbit',   x:HABX.connection-88, y:HABY.connection+34, sc:.95, off:.10, amp:70, yd:16},
-    {id:'fox',      x:HABX.body-268, y:HABY.body+24,  sc:.90, off:.35, amp:95, yd:14},
+    {id:'fox',      x:HABX.body-268, y:HABY.body+24,  sc:.90, off:.35, amp:130, yd:14},
     {id:'butterfly',mid:'flutter',x:HABX.body+130, y:HABY.body-150, sc:1.05,off:.50, flt:20,fltAmp:24,fltSeed:201},
     {id:'ladybug',  x:HABX.body+55,  y:HABY.body+68,  sc:.45, off:.05, amp:30, yd:8},
     {id:'bee',      mid:'patrol', x:HABX.home+70,  y:HABY.home-118, sc:.90, off:.20, flt:16,fltAmp:18,fltSeed:202},
@@ -2831,7 +2847,7 @@ function renderMeadow(force){
   if(total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-30,y:HABY.calm-150,sc:.82,off:.66,flt:22});
   CAST.forEach(o=>{ s+=FB(o); });
   // hand-drawn squirrel — walker-driven now too (its own CSS rig keeps the tail/paws alive)
-  s+=FB({id:'squirrel', x:HABX.meaning-48, y:HABY.meaning+18, off:.5, amp:58, yd:20,
+  s+=FB({id:'squirrel', x:HABX.meaning-48, y:HABY.meaning+18, off:.5, amp:58, yd:7,
     art:`<g transform="scale(.95)"><use href="#squirrel" x="${SQ[0]}" y="${SQ[1]}" width="${SQ[2]}" height="${SQ[3]}" style="--d:-1.8s"/></g>`});
   // golden-hour light wash
   s+=`<rect width="${W}" height="${H}" fill="url(#glow)" pointer-events="none"/>`;
