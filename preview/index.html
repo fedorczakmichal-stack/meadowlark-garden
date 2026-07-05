@@ -412,9 +412,8 @@
   @keyframes turtle-legA{0%{transform:rotate(0deg)}20%{transform:rotate(9.6deg)}40%{transform:rotate(5.8deg)}60%{transform:rotate(-5.8deg)}80%{transform:rotate(-9.6deg)}100%{transform:rotate(0deg)}}
   @keyframes turtle-legB{0%{transform:rotate(0deg)}20%{transform:rotate(-9.6deg)}40%{transform:rotate(-5.8deg)}60%{transform:rotate(5.8deg)}80%{transform:rotate(9.6deg)}100%{transform:rotate(0deg)}}
   @keyframes turtle-head{0%{transform:translate(0px,0px) rotate(0deg)}20%{transform:translate(0.86px,0px) rotate(2.1deg)}40%{transform:translate(0.53px,0px) rotate(1.3deg)}60%{transform:translate(-0.53px,0px) rotate(-1.3deg)}80%{transform:translate(-0.86px,0px) rotate(-2.1deg)}100%{transform:translate(0px,0px) rotate(0deg)}}
-  /* travel: each rove gets its own injected @keyframes wander path (see mkWander in renderMeadow).
-     Origin at the feet (0 0 after groundY anchoring) so flips and tilts never lift the animal off the ground. */
-  .rove{transform-box:fill-box;transform-origin:0 0;will-change:transform}
+  /* travel: each rove gets its own injected @keyframes wander path (see mkWander in renderMeadow) */
+  .rove{transform-box:fill-box;transform-origin:50% 50%;will-change:transform}
   /* legacy pace routes — kept for reference; rove now uses per-instance wd-* keyframes */
   @keyframes pace-a{
     0%{transform:translate(calc(-1 * var(--amp,80px)),0) scale(1,1);animation-timing-function:ease-in-out}
@@ -2397,20 +2396,16 @@ let _wanderSeq=0,_floatSeq=0;
 function wanderR(seed,n){ const v=Math.sin((seed*127.1+n*31.7)*43758.5453); return v-Math.floor(v); }
 function mkWander(seed,amp,opts){
   opts=opts||{};
-  const grounded=!!opts.grounded;
-  const water=!!opts.flat && !grounded;
-  const yDrift=grounded?Math.min(2,(opts.yDrift??14)*0.1):water?(opts.yDrift??14)*0.28:(opts.yDrift??14)*(opts.flat?0.35:1);
-  const xCap=opts.laneMax!=null?opts.laneMax:amp*1.15;
-  const xFloor=opts.laneMin!=null?opts.laneMin:-amp*1.15;
+  const yDrift=(opts.yDrift??14)*(opts.flat?0.35:1);
   const id='wd'+(_wanderSeq++);
   const R=n=>wanderR(seed,n);
   const n=7+Math.floor(R(0)*4);
-  const pts=[{t:0,x:Math.max(xFloor,Math.min(xCap,amp*(R(1)-0.5)*1.0)),y:(R(2)-0.5)*yDrift}];
+  const pts=[{t:0,x:amp*(R(1)-0.5)*1.1,y:(R(2)-0.5)*yDrift}];
   for(let i=1;i<n;i++){
     const t=Math.min(96,Math.round((i/n)*90+R(i+3)*9));
     let x=pts[pts.length-1].x+(R(i+10)-0.48)*amp*(0.52+R(i+11)*0.45);
-    x=Math.max(xFloor,Math.min(xCap,x));
-    pts.push({t,x,y:(R(i+20)-0.5)*yDrift*(grounded?0.35:1.6)});
+    x=Math.max(-amp*1.15,Math.min(amp*1.15,x));
+    pts.push({t,x,y:(R(i+20)-0.5)*yDrift*1.6});
   }
   if(R(40)>0.35){
     const h=pts[pts.length-1], ht=Math.min(92,Math.round(52+R(41)*32));
@@ -2426,9 +2421,8 @@ function mkWander(seed,amp,opts){
     const dx=p.x-prevX, dy=p.y-prevY;
     if(Math.abs(dx)>Math.max(2,amp*0.14)) face=p.x>prevX?1:-1;
     let y=p.y;
-    // Bounce belongs in the gait (hop/trot), not the travel lane — avoids double-bobbing.
-    if(opts.bouncy && !grounded && Math.abs(dx)>0.3) y-=Math.min(5,Math.abs(dx)*0.12);
-    const tilt=grounded?Math.max(-1.1,Math.min(1.1,dx*0.022)):Math.max(-2,Math.min(2,dx*0.045+dy*0.03));
+    if(opts.bouncy && Math.abs(dx)>0.3) y-=Math.min(5,Math.abs(dx)*0.12);
+    const tilt=Math.max(-2,Math.min(2,dx*0.045+dy*0.03));
     prevX=p.x; prevY=p.y;
     const ease=p.t===0?'':'animation-timing-function:cubic-bezier(0.42,0,0.28,1);';
     kf+=`${p.t}%{transform:translate(${p.x.toFixed(1)}px,${y.toFixed(1)}px) rotate(${tilt.toFixed(1)}deg) scale(${face},1);${ease}}`;
@@ -2459,15 +2453,11 @@ function skyBird(delay,tx,ty,sc,opacity,rev){
   const inner=rev?`<g transform="scale(-1 1)">${use}</g>`:use;
   return `<g class="${cls}" style="animation-delay:${delay}s${opacity?`;opacity:${opacity}`:''}">${inner}</g>`;
 }
-function roveTx(el){
-  const rove=el&&el.querySelector('.rove');
-  if(!rove) return null;
-  const m=getComputedStyle(rove).transform;
+function floatTx(el){
+  const fl=el&&el.querySelector('.float');
+  if(!fl) return null;
+  const m=getComputedStyle(fl).transform;
   if(!m||m==='none') return 0;
-  if(m.startsWith('matrix3d(')){
-    const p=m.slice(9,-1).split(',').map(Number);
-    return p[12]||0;
-  }
   if(m.startsWith('matrix(')){
     const p=m.slice(7,-1).split(',').map(Number);
     return p[4]||0;
@@ -2475,105 +2465,217 @@ function roveTx(el){
   const tx=m.match(/translate\(([-\d.]+)px/);
   return tx?+tx[1]:0;
 }
-function roveFace(el){
-  const rove=el&&el.querySelector('.rove');
-  if(!rove) return 1;
-  const m=getComputedStyle(rove).transform;
-  if(!m||m==='none') return 1;
-  const p=m.startsWith('matrix3d(')?m.slice(9,-1).split(',').map(Number):m.startsWith('matrix(')?m.slice(7,-1).split(',').map(Number):null;
-  if(p) return (p[0]||1)>=0?1:-1;
-  const sc=m.match(/scale\((-?\d+)/);
-  return sc&&+sc[1]<0?-1:1;
-}
 
 
-/* ── the Motion Atlas director, flipbook edition: each visible animal gets its gait pre-rendered
-   ONCE into N exact frames (verbatim atlas renders); the loop then only flips visibility — no per-frame
-   SVG parsing, so phones stay smooth. Off-screen animals rest on frame 0; calm/reduced-motion freeze. ── */
+/* ── the Motion Atlas director v2 — a tiny WALKER brain per animal ─────────────────────────────
+   Travel lives in JS now (the old CSS wander keyframes are gone for animals). Each roamer is a
+   small state machine: walk a stretch of its home range → stop → play one of ITS OWN atlas
+   behaviours (graze / sniff / groom / upend→shake / clatter / stretch…) → wander on. The rules
+   that keep motion honest, learned the hard way:
+   • facing ALWAYS equals the sign of velocity — and the sprite only flips while standing still.
+     (The old system interpolated scale(-1,1) inside keyframes: a slow squash-mirror that read as
+     a senseless turn; and `alternate` playback reversed the path but not the facing → moonwalk.)
+   • gait frames advance only while actually moving, scaled to real speed — stop = feet stop.
+   • art that natively faces LEFT is flagged fl:1 (bear, bee — verified against RAW renders,
+     not eyeballed in-scene), so "moving right" mirrors it correctly.
+   Insects keep their organic CSS drift (position only, no facing baked in); the walker just flips
+   their .face to match the measured drift direction, with hysteresis — and their wings never
+   freeze (the old loop stopped wingbeats at drift turnarounds). Flipbook rendering stays: frames
+   are pre-rendered once per motion, ≤2 motion sets cached per animal, loop toggles visibility. ── */
+const FABLE_BEHAV={
+  fox:      {go:'trot',   spd:34, idles:[['stand',3]],                 rare:[['pounce',1.2]]},
+  deer:     {go:'walk',   spd:26, idles:[['graze',4],['alert',1]]},
+  rabbit:   {go:'hop',    spd:60, idles:[['sit',3],['groom',2],['alert',1]], chain:{sit:'groom'}},
+  bear:     {go:'amble',  spd:24, fl:1, idles:[['sniff',3]],           rare:[['rear',1]]},
+  hedgehog: {go:'trundle',spd:20, idles:[['sniff',3]],                 rare:[['curl',0.8]]},
+  stork:    {go:'stride', spd:34, idles:[['stand',3],['clatter',1]]},
+  turtle:   {go:'walk',   spd:16, idles:[['bask',2]],                  rare:[['hide',0.7]]},
+  mallard:  {go:'swim',   spd:34, idles:[['upend',2],['shake',1]],     chain:{upend:'shake'}},
+  fish:     {go:'swim',   spd:18, idles:[['gulp',1]]},
+  snail:    {go:'glide',  spd:14, idles:[['peek',2]],                  rare:[['hide',0.5]]},
+  ladybug:  {go:'walk',   spd:8,  idles:[['check',2]]},
+  frog:     {go:'hop',    spd:22, idles:[['sit',5],['croak',1]]},
+  mouse:    {go:'scurry', spd:46, idles:[['nibble',3],['alert',1]]},
+  cat:      {go:'walk',   spd:20, idles:[['idle',2],['stretch',2]]},
+  owl:      {idles:[['perch',3],['headturn',1]]},
+  bee:      {fl:1}, dragonfly:{}, butterfly:{},
+  squirrel: {art:1, go:'art', spd:34, idles:[]}
+};
 let fableEls=null,fableTimer=0,fableStarted=false;
-const FABLE_STRIDE={fox:{trot:26,walk:20,gallop:18},rabbit:{hop:54,sprint:22},deer:{walk:30,trot:26,gallop:20},bear:{amble:40},hedgehog:{trundle:16},ladybug:{walk:12},mallard:{swim:20,waddle:18},fish:{swim:18,dart:14},turtle:{walk:14,swim:16},snail:{glide:10}};
-function fableStride(id,mid){const m=FABLE_STRIDE[id];return(m&&m[mid])||26;}
 function fableRender(A,mid,t,roam){
-  const prevRoam=window.__FABLE_ROAM;
-  window.__FABLE_ROAM=roam||null;
+  const prev=window.__FABLE_NO_TICKS;
+  window.__FABLE_NO_TICKS=!!roam;
   try{ return A.render(mid,t); }
-  finally{ window.__FABLE_ROAM=prevRoam; }
+  finally{ window.__FABLE_NO_TICKS=prev; }
 }
+function fableDur(A,mid){ const mo=A&&A.motions&&A.motions.find(m=>m.id===mid); return (mo&&mo.dur)||1; }
 function fableCollect(){
-  const REG=window.__FABLE_ANIMALS; if(!REG) return;
+  const REG=window.__FABLE_ANIMALS||{};
   fableEls=[...document.querySelectorAll('#sceneWrap g.fable')].map(el=>{
-    const A=REG[el.dataset.id]; if(!A) return null;
-    const mid=el.dataset.mid;
-    const mo=(A.motions&&A.motions.find(m=>m.id===mid))||(A.motions&&A.motions[0])||{id:mid,dur:1};
-    const roam=!!el.querySelector('.rove');
-    const stride=fableStride(el.dataset.id,mid);
-    return {
-      el, fin:el.querySelector('.fin'), A, mid, dur:mo.dur||1, stride,
-      off:+el.dataset.off||0, x:+el.dataset.x||0,
-      roamAmp:+el.dataset.roamAmp||0, roamDur:+el.dataset.roamDur||0,
-      roam, frames:null, cur:-1, n:0, lastTx:null, lastFace:1, distAcc:0
-    };
+    const id=el.dataset.id, A=REG[id]||null, B=FABLE_BEHAV[id]||{};
+    const isFloat=el.dataset.flt==='1', art=!!B.art;
+    if(!A&&!art) return null;
+    const f={el, fin:el.querySelector('.fin'), face:el.querySelector('.face'), mover:el.querySelector('.mover'),
+      A, B, id, art, isFloat,
+      x:+el.dataset.x||0, off:+el.dataset.off||0,
+      amp:+el.dataset.amp||0, yd:+el.dataset.yd||0,
+      fl:B.fl?1:0, seed:(+el.dataset.x||1)*7+(+el.dataset.off||0)*97, rnd:0,
+      sets:{}, setsOrder:[], curSet:null, curK:-1, firstBuild:true,
+      mode:'idle', ox:0, oy:0, dir:1, tgt:0, tgtY:0, spdCur:0, until:0, ph:((+el.dataset.off||0)*3.7)%1,
+      midCur:null, durCur:1, durGo:(B.go&&A)?fableDur(A,B.go):1,
+      lastTx:null, acc:0};
+    const R=n=>wanderR(f.seed,n);
+    if(isFloat){
+      const mo=(A.motions.find(m=>m.id===el.dataset.mid))||A.motions[0];
+      f.midCur=mo.id; f.durCur=mo.dur||1;
+      try{ f.fin.innerHTML=fableRender(A,f.midCur,0.32,false); }catch(_){}
+      return f;
+    }
+    // walkers: deterministic scattered starting pose, staggered first decision
+    f.ox=(R(1)-0.5)*2*f.amp*0.8; f.oy=(R(2)-0.5)*2*f.yd;
+    f.dir=R(3)>0.5?1:-1;
+    f.until=R(4)*2.5;
+    const firstMid=(B.go&&B.go!=='art')?B.go:((B.idles&&B.idles[0]&&B.idles[0][0])||null);
+    if(A&&firstMid){ try{ f.fin.innerHTML=fableRender(A,firstMid,0.32,f.amp>0); }catch(_){} }
+    if(f.mover) f.mover.setAttribute('transform',`translate(${f.ox.toFixed(1)} ${f.oy.toFixed(1)}) scale(${f.dir*(f.fl?-1:1)},1)`);
+    return f;
   }).filter(Boolean);
-  fableEls.forEach(f=>{ try{
-    const roam=f.roam?{face:1,moving:false,stride:f.stride,distAcc:0,phase:0.32,v:0,vx:0}:null;
-    f.fin.innerHTML=fableRender(f.A,f.mid,0.32,roam);
-  }catch(_){} });
   if(!fableStarted){ fableStarted=true; requestAnimationFrame(fableLoop); }
 }
-function fableBuild(f){
-  if(f.frames) return;
-  const air=['flit','flutter','sail','hover','patrol','flight','dart'].includes(f.mid);
-  const n=Math.max(air?16:12,Math.min(air?36:28,Math.round(f.dur*(air?40:24))));
+function fableBuildSet(f,mid){
+  if(f.firstBuild){ f.fin.innerHTML=''; f.firstBuild=false; f.curSet=null; }
+  const air=['flit','flutter','sail','hover','patrol','flight','dart'].includes(mid);
+  const dur=fableDur(f.A,mid);
+  const n=Math.max(air?16:12,Math.min(air?36:28,Math.round(dur*(air?40:24))));
   let html='';
-  for(let k=0;k<n;k++){
-    const ph=k/n;
-    const roam=f.roam?{face:f.lastFace||1,moving:true,stride:f.stride,distAcc:ph*f.stride,phase:ph,v:0.35,vx:0}:null;
-    let fr=''; try{ fr=fableRender(f.A,f.mid,ph,roam); }catch(_){}
-    html+=`<g visibility="${k?'hidden':'visible'}">${fr}</g>`;
+  for(let k=0;k<n;k++){ let fr=''; try{ fr=fableRender(f.A,mid,k/n,!f.isFloat&&f.amp>0); }catch(_){}
+    html+=`<g visibility="hidden">${fr}</g>`; }
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('visibility','hidden'); g.innerHTML=html;
+  f.fin.appendChild(g);
+  const set={g,frames:[...g.children],n,mid,lastK:-1};
+  f.sets[mid]=set; f.setsOrder.push(mid);
+  if(f.setsOrder.length>2){
+    const ev=f.setsOrder.shift();
+    if(ev!==mid&&f.sets[ev]){ if(f.curSet===f.sets[ev]) f.curSet=null; f.sets[ev].g.remove(); delete f.sets[ev]; }
   }
-  f.fin.innerHTML=html; f.frames=[...f.fin.children]; f.n=n; f.cur=0;
+  return set;
 }
-function fableLoop(now){
-  requestAnimationFrame(fableLoop);
+function fableDraw(f){
+  if(f.art||!f.A||!f.midCur) return;
+  let set=f.sets[f.midCur]; if(!set) set=fableBuildSet(f,f.midCur);
+  if(f.curSet!==set){
+    if(f.curSet) f.curSet.g.setAttribute('visibility','hidden');
+    set.g.setAttribute('visibility','visible'); f.curSet=set;
+  }
+  const k=Math.floor((((f.ph%1)+1)%1)*set.n)%set.n;
+  if(k!==set.lastK){                     // frame memory lives on the SET — re-entering a cached
+    if(set.lastK>=0&&set.frames[set.lastK]) set.frames[set.lastK].setAttribute('visibility','hidden');
+    if(set.frames[k]) set.frames[k].setAttribute('visibility','visible');
+    set.lastK=k;                         // motion never leaves its old frame lit under the new one
+  }
+}
+function fableSetMotion(f,mid){
+  f.midCur=mid; f.durCur=f.art?1:fableDur(f.A,mid); f.ph=0;
+}
+function fablePickIdle(f,tnow){
+  const B=f.B, R=()=>wanderR(f.seed,f.rnd++);
+  let pool=(B.idles||[]).slice();
+  if(B.rare&&R()<0.16) pool=pool.concat(B.rare);
+  if(!pool.length){ f.midCur=f.art?f.midCur:null; f.until=tnow+0.8+R()*1.8; return; }
+  let tot=0; pool.forEach(p=>tot+=p[1]);
+  let pick=R()*tot, mid=pool[0][0];
+  for(const p of pool){ pick-=p[1]; if(pick<=0){ mid=p[0]; break; } }
+  fableSetMotion(f,mid);
+  const cycles=f.durCur>3?1:(R()>0.6?3:2);
+  f.until=tnow+f.durCur*cycles;
+  f.chainTo=(B.chain&&B.chain[mid]&&R()>0.5)?B.chain[mid]:null;
+}
+function fablePickTarget(f,tnow){
+  const B=f.B, R=()=>wanderR(f.seed,f.rnd++);
+  if(!B.go){ fablePickIdle(f,tnow); return; }
+  let dir=f.dir;
+  const room=dir>0?(f.amp-f.ox):(f.ox+f.amp);
+  if(room<f.amp*0.45||R()<0.35) dir=-dir;
+  const room2=dir>0?(f.amp-f.ox):(f.ox+f.amp);
+  const d=Math.max(12,(0.35+R()*0.65)*room2);
+  f.tgt=Math.max(-f.amp,Math.min(f.amp,f.ox+dir*d));
+  f.tgtY=(R()-0.5)*2*f.yd;
+  f.dir=dir;                             // the flip happens HERE — while standing still
+  fableSetMotion(f,B.go);
+  f.mode='go'; f.spdCur=B.spd*0.15;
+}
+function fableStep(f,dt,tnow){
+  const B=f.B;
+  if(f.mode==='go'){
+    const ramp=B.spd*dt/0.35;
+    const dist=Math.abs(f.tgt-f.ox);
+    const brake=(f.spdCur*f.spdCur)/(2*(B.spd/0.35));
+    if(dist<=Math.max(2,brake)) f.spdCur=Math.max(B.spd*0.22,f.spdCur-ramp);
+    else f.spdCur=Math.min(B.spd,f.spdCur+ramp);
+    const step=Math.min(dist,f.spdCur*dt);
+    f.ox+=f.dir*step;
+    f.oy+=(f.tgtY-f.oy)*Math.min(1,dt*1.6);
+    f.ph+=(f.spdCur/B.spd)*dt/f.durGo;   // gait tempo follows real speed — no treadmill
+    if(dist-step<=0.6){ f.mode='idle'; f.spdCur=0; fablePickIdle(f,tnow); }
+  } else {
+    if(f.midCur&&!f.art) f.ph+=dt/f.durCur;
+    if(tnow>=f.until){
+      if(f.chainTo){ fableSetMotion(f,f.chainTo); f.chainTo=null;
+        f.until=tnow+f.durCur*(f.durCur>3?1:2); }
+      else fablePickTarget(f,tnow);
+    }
+  }
+}
+function fableFloatStep(f,dt,x0,x1){
+  const tx=floatTx(f.el);
+  if(tx!==null){
+    const dx=tx-(f.lastTx??tx); f.lastTx=tx;
+    f.acc=f.acc*0.82+dx;
+    if(Math.abs(f.acc)>1.1){
+      const nf=f.acc>0?1:-1;
+      if(nf!==f.dir&&f.face){ f.dir=nf; f.face.setAttribute('transform',`scale(${f.dir*(f.fl?-1:1)},1)`); }
+    }
+  }
+  const worldX=f.x+(tx||0);
+  if(worldX<x0||worldX>x1) return;
+  f.ph=(f.ph||0)+dt/f.durCur;            // wings always beat, even at drift turnarounds
+  if(f.firstBuild) fableBuildSet(f,f.midCur);
+  fableDraw(f);
+}
+let __fableTestNow=0;
+function fableTickNow(now){
   if(!fableEls||!fableEls.length) return;
   if(store.settings.motion!=='full') return;
   if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if(now-fableTimer<33) return; fableTimer=now;
+  if(now-fableTimer<33) return;
+  const dt=Math.min(0.1,Math.max(0.016,(now-fableTimer)/1000));
+  fableTimer=now;
   const w=document.getElementById('sceneWrap'); const svg=w&&w.querySelector('svg'); if(!svg||!svg.isConnected) return;
   const sc=(svg.getBoundingClientRect().height/PANO_H)||1;
   const x0=w.scrollLeft/sc-170, x1=(w.scrollLeft+w.clientWidth)/sc+170;
   const t=now/1000;
   for(const f of fableEls){
-    const tx=f.roam?roveTx(f.el):null;
-    const worldX=f.x+(tx||0);
-    if(!f.el.closest('.glide,.glide-rev')&&(worldX<x0||worldX>x1)) continue;
-    let moving=false;
-    if(f.roam){
-      const face=roveFace(f.el);
-      if(face!==f.lastFace){ f.lastFace=face; f.frames=null; f.cur=-1; f.lastTx=tx; }
-      if(f.lastTx==null) f.lastTx=tx;
-      else{
-        const dx=tx-f.lastTx;
-        if(Math.abs(dx)>0.04){ moving=true; f.distAcc+=Math.abs(dx); }
-        f.lastTx=tx;
-      }
+    if(f.isFloat){ fableFloatStep(f,dt,x0,x1); continue; }
+    fableStep(f,dt,t);
+    if(f.mover){
+      const tr=`translate(${f.ox.toFixed(1)} ${f.oy.toFixed(1)}) scale(${f.dir*(f.fl?-1:1)},1)`;
+      if(tr!==f.lastTr){ f.mover.setAttribute('transform',tr); f.lastTr=tr; }
     }
-    if(!f.frames){ fableBuild(f); continue; }
-    let k;
-    if(f.roam){
-      if(!moving) continue;
-      const ph=((f.distAcc/f.stride)%1+1)%1;
-      k=Math.min(f.n-1,Math.floor(ph*f.n));
-    }else{
-      k=Math.floor((((t+f.off)/f.dur)%1)*f.n);
-    }
-    if(k!==f.cur&&f.frames[k]){
-      if(f.cur>=0) f.frames[f.cur].setAttribute('visibility','hidden');
-      f.frames[k].setAttribute('visibility','visible');
-      f.cur=k;
-    }
+    const worldX=f.x+f.ox;
+    if(worldX<x0||worldX>x1) continue;   // state advances offscreen; frame work only in view
+    fableDraw(f);
   }
 }
+function fableLoop(now){
+  requestAnimationFrame(fableLoop);
+  if(window.__FABLE_TEST) return;        // tests drive fableTickNow via __fableTest.tick
+  fableTickNow(now);
+}
+window.__fableTest={
+  tick(ms){ __fableTestNow+=ms; fableTickNow(__fableTestNow); },
+  state(){ return (fableEls||[]).filter(f=>!f.isFloat).map(f=>({id:f.id,ox:+f.ox.toFixed(1),oy:+f.oy.toFixed(1),dir:f.dir,mode:f.mode,mid:f.midCur,spd:+(f.spdCur||0).toFixed(1),amp:f.amp})); }
+};
 
 function renderMeadow(force){
   const phase=dayPhase(), seasonName=season();
@@ -2688,21 +2790,14 @@ function renderMeadow(force){
   // (fable-animals.js, verbatim). Each entry: which animal, which of ITS motions, where it lives,
   // and optionally a travel lane (rove) or a drift (float) — the atlas does everything else.
   const FB=(o)=>{
-    const REG=window.__FABLE_ANIMALS;
-    const A=REG&&REG[o.id];
-    const gy=A&&A.groundY!=null?A.groundY:0;
-    const footY=o.y+gy*o.sc;
-    const anchor=(-gy*o.sc).toFixed(2);
-    const inner=`<g class="fin" transform="translate(0 ${anchor}) scale(${o.sc})"></g>`;
-    const trav=o.travel?(()=>{ const w=regWander(o.travel.seed??(o.x*3+o.y+o.off*999),o.travel.amp,o.travel);
-      const dur=(o.travel.dur*(0.9+wanderR(o.travel.seed??o.x,50)*0.22)).toFixed(2);
-      return `<g class="rove" style="animation:${w.id} ${dur}s ease-in-out infinite ${w.alt};animation-delay:${(-(o.off||0)*o.travel.dur).toFixed(1)}s">${inner}</g>`; })()
-      : o.flt?(()=>{ const fl=regFloat(o.fltSeed??(o.x*5+o.y+o.off*777),o.fltAmp||22,typeof o.flt==='number'?o.flt:o.flt.dur);
-      return `<g class="float" style="animation:${fl.id} ${fl.dur}s ease-in-out infinite alternate;animation-delay:${(-(o.off||0)*fl.dur).toFixed(1)}s">${inner}</g>`; })()
-      : inner;
-    const roamAmp=o.travel?o.travel.amp:0;
-    const roamDur=o.travel?o.travel.dur:0;
-    return `<g class="fable" data-id="${o.id}" data-mid="${o.mid}" data-x="${o.x.toFixed(0)}" data-roam-amp="${roamAmp}" data-roam-dur="${roamDur}" data-off="${((o.off||0)*7).toFixed(2)}" transform="translate(${o.x.toFixed(0)} ${footY.toFixed(0)})"${o.extra||''}>${trav}</g>`;
+    const fin=`<g class="fin" transform="scale(${o.sc||1})"></g>`;
+    const data=`data-id="${o.id}" data-mid="${o.mid||''}" data-x="${o.x.toFixed(0)}" data-off="${((o.off||0)*7).toFixed(2)}"`;
+    if(o.flt){ // insects: organic CSS drift for position; .face is flipped by the walker to match drift
+      const fl=regFloat(o.fltSeed??(o.x*5+o.y+o.off*777),o.fltAmp||22,typeof o.flt==='number'?o.flt:o.flt.dur);
+      return `<g class="fable" ${data} data-flt="1" transform="translate(${o.x.toFixed(0)} ${o.y.toFixed(0)})"${o.extra||''}><g class="float" style="animation:${fl.id} ${fl.dur}s ease-in-out infinite alternate;animation-delay:${(-(o.off||0)*fl.dur).toFixed(1)}s"><g class="face">${fin}</g></g></g>`;
+    }
+    // walkers (incl. art mode): the JS director owns .mover's translate + facing flip
+    return `<g class="fable" ${data} data-amp="${(o.amp||0).toFixed(0)}" data-yd="${(o.yd||0).toFixed(0)}" transform="translate(${o.x.toFixed(0)} ${o.y.toFixed(0)})"${o.extra||''}><g class="mover">${o.art||fin}</g></g>`;
   };
   // blue nuthatches crossing the sky — SVG symbol #bird with CSS wing rigs (always flapping, even while gliding)
   if(!dusky){
@@ -2710,31 +2805,34 @@ function renderMeadow(force){
     s+=skyBird(-38,90,102,0.58,0.65);
   }
   const CAST=[
-    {id:'rabbit',   mid:'hop',    x:HABX.connection-88, y:HABY.connection+34, sc:.95, off:.10, travel:{amp:48,dur:24,yDrift:6,seed:101,grounded:true}},
-    {id:'fox',      mid:'trot',   x:HABX.body-55, y:HABY.body+24,  sc:.90, off:.35, travel:{amp:40,dur:22,yDrift:4,seed:102,grounded:true,laneMin:-70,laneMax:48}},
+    {id:'rabbit',   x:HABX.connection-88, y:HABY.connection+34, sc:.95, off:.10, amp:70, yd:16},
+    {id:'fox',      x:HABX.body-268, y:HABY.body+24,  sc:.90, off:.35, amp:95, yd:14},
     {id:'butterfly',mid:'flutter',x:HABX.body+130, y:HABY.body-150, sc:1.05,off:.50, flt:20,fltAmp:24,fltSeed:201},
-    {id:'ladybug',  mid:'walk',   x:HABX.body+55,  y:HABY.body+68,  sc:.45, off:.05, travel:{amp:35,dur:52,yDrift:4,seed:103,grounded:true}},
+    {id:'ladybug',  x:HABX.body+55,  y:HABY.body+68,  sc:.45, off:.05, amp:30, yd:8},
     {id:'bee',      mid:'patrol', x:HABX.home+70,  y:HABY.home-118, sc:.90, off:.20, flt:16,fltAmp:18,fltSeed:202},
-    {id:'hedgehog', mid:'trundle',x:HABX.home-158, y:HABY.home+56,  sc:.80, off:.65, travel:{amp:32,dur:12,yDrift:4,seed:104,grounded:true}},
+    {id:'hedgehog', x:HABX.home-158, y:HABY.home+56,  sc:.80, off:.65, amp:46, yd:12},
+    {id:'mouse',    x:HABX.home+128, y:HABY.home+66,  sc:.50, off:.48, amp:40, yd:9},
+    {id:'cat',      x:HABX.home-52,  y:HABY.home+38,  sc:.72, off:.22, amp:36, yd:8},
     {id:'butterfly',mid:'sail',   x:HABX.connection+70, y:HABY.connection-150, sc:.95, off:.75, flt:22,fltAmp:27,fltSeed:203},
-    {id:'deer',     mid:'walk',   x:1000, y:336, sc:.72, off:.60, travel:{amp:42,dur:18,yDrift:5,seed:105,grounded:true}, extra:` opacity="${dusky?.5:.72}"`},
-    {id:'deer',     mid:'graze',  x:1380, y:320, sc:.80, off:.15, extra:` opacity="${dusky?.5:.7}"`},
-    {id:'bear',     mid:'amble',  x:590,  y:354, sc:.78, off:.40, travel:{amp:35,dur:22,yDrift:5,seed:106,grounded:true}, extra:` opacity="${dusky?.62:.9}"`},
+    {id:'deer',     x:1000, y:336, sc:.72, off:.60, amp:80, yd:14, extra:` opacity="${dusky?.5:.72}"`},
+    {id:'deer',     x:1380, y:320, sc:.80, off:.15, amp:34, yd:8, extra:` opacity="${dusky?.5:.7}"`},
+    {id:'bear',     x:590,  y:354, sc:.78, off:.40, amp:60, yd:14, extra:` opacity="${dusky?.62:.9}"`},
     {id:'bee',      mid:'waggle', x:HABX.craft+168, y:HABY.craft-56, sc:.62, off:.90, flt:14,fltAmp:15,fltSeed:204},
     {id:'dragonfly',mid:'hover',  x:HABX.future-30, y:HABY.future-40, sc:.95, off:.80, flt:14,fltAmp:30,fltSeed:205},
-    {id:'stork',    mid:'stand',  x:HABX.future+32, y:HABY.future+62, sc:1, off:.45, extra:` opacity="${dusky?.6:1}"`},
-    {id:'turtle',   mid:'walk',   x:HABX.future-124,y:HABY.future+64, sc:.60, off:.70, travel:{amp:22,dur:42,yDrift:4,seed:108,flat:true}},
-    {id:'mallard',  mid:'swim',   x:HABX.calm-4,    y:HABY.calm+66,  sc:.92, off:.30, travel:{amp:45,dur:38,yDrift:6,seed:109,flat:true}},
-    {id:'frog',     mid:'sit',    x:HABX.calm-74,   y:HABY.calm+72,  sc:.70, off:.55},
-    {id:'fish',     mid:'swim',   x:HABX.calm-92,   y:HABY.calm+52,  sc:.45, off:.25, travel:{amp:22,dur:28,yDrift:3,seed:110,flat:true}, extra:' opacity=".8"'},
-    {id:'snail',    mid:'glide',  x:HABX.calm+118,  y:HABY.calm+106, sc:.55, off:.85, travel:{amp:16,dur:120,yDrift:2,seed:111,flat:true}},
+    {id:'stork',    x:HABX.future+32, y:HABY.future+62, sc:1, off:.45, amp:46, yd:5, extra:` opacity="${dusky?.6:1}"`},
+    {id:'turtle',   x:HABX.future-124,y:HABY.future+64, sc:.60, off:.70, amp:26, yd:3},
+    {id:'mallard',  x:HABX.calm-4,    y:HABY.calm+66,  sc:.92, off:.30, amp:45, yd:3},
+    {id:'frog',     x:HABX.calm-74,   y:HABY.calm+72,  sc:.70, off:.55, amp:22, yd:4},
+    {id:'fish',     x:HABX.calm-92,   y:HABY.calm+52,  sc:.45, off:.25, amp:22, yd:4, extra:' opacity=".8"'},
+    {id:'snail',    x:HABX.calm+118,  y:HABY.calm+106, sc:.55, off:.85, amp:16, yd:3},
   ];
-  if(dusky) CAST.push({id:'owl',mid:'perch',x:1452,y:320,sc:.45,off:.5,extra:' opacity=".85"'});
+  if(dusky) CAST.push({id:'owl',mid:'perch',x:1452,y:320,sc:.45,off:.5,amp:0,yd:0,extra:' opacity=".85"'});
   if(total>=12) CAST.push({id:'butterfly',mid:'bask',x:HABX.meaning-90,y:HABY.meaning-150,sc:.85,off:.33,flt:20});
   if(total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-30,y:HABY.calm-150,sc:.82,off:.66,flt:22});
   CAST.forEach(o=>{ s+=FB(o); });
-  // hand-drawn squirrel — lively scurry at the Meaning knoll (atlas entry pending)
-  s+=cr(HABX.meaning-48, HABY.meaning+18, .95, 'squirrel', SQ, -1.8, '', {amp:58,dur:14,yDrift:6,seed:112,grounded:true});
+  // hand-drawn squirrel — walker-driven now too (its own CSS rig keeps the tail/paws alive)
+  s+=FB({id:'squirrel', x:HABX.meaning-48, y:HABY.meaning+18, off:.5, amp:58, yd:20,
+    art:`<g transform="scale(.95)"><use href="#squirrel" x="${SQ[0]}" y="${SQ[1]}" width="${SQ[2]}" height="${SQ[3]}" style="--d:-1.8s"/></g>`});
   // golden-hour light wash
   s+=`<rect width="${W}" height="${H}" fill="url(#glow)" pointer-events="none"/>`;
 
