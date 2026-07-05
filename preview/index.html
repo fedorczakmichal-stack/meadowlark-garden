@@ -374,6 +374,11 @@
   @keyframes rabbit-hop{0%{transform:translate(0px,0.6px)}20%{transform:translate(0px,-3.5px)}40%{transform:translate(0px,-8.5px)}60%{transform:translate(0px,-3.2px)}80%{transform:translate(0px,0.8px)}100%{transform:translate(0px,0.6px)}}
   @keyframes rabbit-bodyscale{0%{transform:translate(0px,13px) scale(1.1,0.88) translate(0px,-13px)}20%{transform:translate(0px,13px) scale(0.93,1.12) translate(0px,-13px)}40%{transform:translate(0px,13px) scale(0.96,1.06) translate(0px,-13px)}60%{transform:translate(0px,13px) scale(1,1) translate(0px,-13px)}80%{transform:translate(0px,13px) scale(1.14,0.83) translate(0px,-13px)}100%{transform:translate(0px,13px) scale(1.1,0.88) translate(0px,-13px)}}
   @keyframes rabbit-ears{0%{transform:rotate(3deg)}20%{transform:rotate(-10deg)}40%{transform:rotate(-24deg)}60%{transform:rotate(-12deg)}80%{transform:rotate(7deg)}100%{transform:rotate(3deg)}}
+  @keyframes sq-body{0%{transform:translate(0px,1.2px) rotate(3deg)}15%{transform:translate(0px,-1.8px) rotate(-2deg)}30%{transform:translate(0px,-3.2px) rotate(-3deg)}45%{transform:translate(0px,-1.4px) rotate(1deg)}60%{transform:translate(0px,0.6px) rotate(3deg)}75%{transform:translate(0px,-2.4px) rotate(-2deg)}90%{transform:translate(0px,-0.8px) rotate(0.5deg)}100%{transform:translate(0px,1.2px) rotate(3deg)}}
+  @keyframes sq-tail{0%{transform:rotate(5deg)}25%{transform:rotate(-8deg)}50%{transform:rotate(-12deg)}75%{transform:rotate(4deg)}100%{transform:rotate(5deg)}}
+  @keyframes sq-head{0%{transform:rotate(-4deg)}25%{transform:rotate(2deg)}50%{transform:rotate(4deg)}75%{transform:rotate(-1deg)}100%{transform:rotate(-4deg)}}
+  @keyframes sq-legA{0%{transform:rotate(0deg)}25%{transform:rotate(18deg)}50%{transform:rotate(-12deg)}75%{transform:rotate(14deg)}100%{transform:rotate(0deg)}}
+  @keyframes sq-legB{0%{transform:rotate(0deg)}25%{transform:rotate(-14deg)}50%{transform:rotate(16deg)}75%{transform:rotate(-10deg)}100%{transform:rotate(0deg)}}
   @keyframes bear-bob{0%{transform:translate(0px,0px) rotate(0deg)}20%{transform:translate(0px,0.4px) rotate(0.8deg)}40%{transform:translate(0px,-0.5px) rotate(0deg)}60%{transform:translate(0px,0.5px) rotate(0deg)}80%{transform:translate(0px,-0.4px) rotate(-0.8deg)}100%{transform:translate(0px,0px) rotate(0deg)}}
   @keyframes bear-legB{0%{transform:rotate(0deg)}20%{transform:rotate(-14deg)}40%{transform:rotate(-8deg)}60%{transform:rotate(8deg)}80%{transform:rotate(14deg)}100%{transform:rotate(0deg)}}
   @keyframes bear-legA{0%{transform:rotate(0deg)}20%{transform:rotate(14deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-8deg)}80%{transform:rotate(-14deg)}100%{transform:rotate(0deg)}}
@@ -407,9 +412,8 @@
   @keyframes turtle-legA{0%{transform:rotate(0deg)}20%{transform:rotate(9.6deg)}40%{transform:rotate(5.8deg)}60%{transform:rotate(-5.8deg)}80%{transform:rotate(-9.6deg)}100%{transform:rotate(0deg)}}
   @keyframes turtle-legB{0%{transform:rotate(0deg)}20%{transform:rotate(-9.6deg)}40%{transform:rotate(-5.8deg)}60%{transform:rotate(5.8deg)}80%{transform:rotate(9.6deg)}100%{transform:rotate(0deg)}}
   @keyframes turtle-head{0%{transform:translate(0px,0px) rotate(0deg)}20%{transform:translate(0.86px,0px) rotate(2.1deg)}40%{transform:translate(0.53px,0px) rotate(1.3deg)}60%{transform:translate(-0.53px,0px) rotate(-1.3deg)}80%{transform:translate(-0.86px,0px) rotate(-2.1deg)}100%{transform:translate(0px,0px) rotate(0deg)}}
-  /* travel: each rove gets its own injected @keyframes wander path (see mkWander in renderMeadow).
-     Origin at the feet (0 0 after groundY anchoring) so flips and tilts never lift the animal off the ground. */
-  .rove{transform-box:fill-box;transform-origin:0 0;will-change:transform}
+  /* travel: each rove gets its own injected @keyframes wander path (see mkWander in renderMeadow) */
+  .rove{transform-box:fill-box;transform-origin:50% 50%;will-change:transform}
   /* legacy pace routes — kept for reference; rove now uses per-instance wd-* keyframes */
   @keyframes pace-a{
     0%{transform:translate(calc(-1 * var(--amp,80px)),0) scale(1,1);animation-timing-function:ease-in-out}
@@ -553,6 +557,7 @@
   <symbol id="frog" viewBox="-26.5 -30 53 51" overflow="visible"><g class="rig" style="transform-origin:0px 9px;animation:frog-shadow 1.3s ease-in-out infinite,frog-shadowop 1.3s ease-in-out infinite;animation-delay:var(--d,0s);"><ellipse cx="0" cy="9" rx="13" ry="2.6" fill="rgba(60,40,20,.12)"></ellipse></g><g class="rig" style="transform-origin:0px 0px;animation:frog-hop 1.3s ease-in-out infinite;animation-delay:var(--d,0s);"><g class="rig" style="transform-origin:-6px 3px;animation:frog-legL 1.3s ease-in-out infinite;animation-delay:var(--d,0s);"><ellipse cx="-8.5" cy="6.2" rx="4.6" ry="2.7" fill="#5A9447"></ellipse><ellipse cx="-9.8" cy="6.4" rx="2" ry="1.3" fill="#4E8240"></ellipse><path d="M-11 2 q-1.4 4 1.5 5.6 2.4 1.3 3.2-1.4 q.4-2.6-1.6-4.2z" fill="#5A9447"></path></g><g class="rig" style="transform-origin:6px 3px;animation:frog-legR 1.3s ease-in-out infinite;animation-delay:var(--d,0s);"><ellipse cx="8.5" cy="6.2" rx="4.6" ry="2.7" fill="#5A9447"></ellipse><ellipse cx="9.8" cy="6.4" rx="2" ry="1.3" fill="#4E8240"></ellipse><path d="M11 2 q1.4 4 -1.5 5.6 -2.4 1.3 -3.2-1.4 q-.4-2.6 1.6-4.2z" fill="#5A9447"></path></g><g class="rig" style="transform-origin:0px 9px;animation:frog-bodyscale 1.3s ease-in-out infinite;animation-delay:var(--d,0s);"><ellipse cx="0" cy="3" rx="11" ry="8" fill="#5A9447"></ellipse><ellipse cx="0" cy="1.6" rx="10.6" ry="7.6" fill="#6FB05A"></ellipse><path d="M-9.6 -1.4 q3.8-5 9.6-5 5.8 0 9.6 5 -4 3-9.6 3 -5.6 0-9.6-3z" fill="#7FBF68"></path><ellipse cx="0" cy="6.4" rx="5.8" ry="3" fill="#7FBF68" opacity=".5"></ellipse><circle cx="-5.2" cy="-7" r="4" fill="#7FBF68"></circle><circle cx="5.2" cy="-7" r="4" fill="#7FBF68"></circle><circle cx="-5.2" cy="-7" r="4" fill="#6FB05A" opacity=".35"></circle><circle cx="5.2" cy="-7" r="4" fill="#6FB05A" opacity=".35"></circle><path d="M-8.8 -8.6 q1-3.4 3.6-3.4 2.6 0 3.6 3.4 -1.8 1.2-3.6 1.2-1.8 0-3.6-1.2z" fill="#fff" opacity=".3"></path><path d="M1.6 -8.6 q1-3.4 3.6-3.4 2.6 0 3.6 3.4 -1.8 1.2-3.6 1.2-1.8 0-3.6-1.2z" fill="#fff" opacity=".3"></path><circle cx="-5" cy="-6.6" r="2" fill="#2A2326"></circle><circle cx="5" cy="-6.6" r="2" fill="#2A2326"></circle><circle cx="-4.3" cy="-7.4" r=".7" fill="#fff"></circle><circle cx="5.7" cy="-7.4" r=".7" fill="#fff"></circle><ellipse cx="-7.4" cy="1.4" rx="2.2" ry="1.5" fill="#fff" opacity=".18"></ellipse><ellipse cx="7.4" cy="1.4" rx="2.2" ry="1.5" fill="#fff" opacity=".18"></ellipse><path d="M-5.4 2.4 q5.4 4 10.8 0" stroke="#3F6E34" stroke-width="1.5" fill="none" stroke-linecap="round"></path><path d="M-5.4 2.4 q.6 1 1.4 1.2M5.4 2.4 q-.6 1 -1.4 1.2" stroke="#3F6E34" stroke-width="1.2" fill="none" stroke-linecap="round"></path><ellipse cx="-7" cy="3.6" rx="1.5" ry="1" fill="#E8943E" opacity=".22"></ellipse><ellipse cx="7" cy="3.6" rx="1.5" ry="1" fill="#E8943E" opacity=".22"></ellipse></g></g></symbol>
   <symbol id="duck" viewBox="-24.8 -23.6 53.6 41.2" overflow="visible"><ellipse cx="0" cy="9" rx="15" ry="2.2" fill="#7FB6C9" opacity=".22"></ellipse><g class="rig" style="transform-origin:0px 7px;animation:duck-waddle 0.9s ease-in-out infinite;animation-delay:var(--d,0s);"><path d="M-15 9 C -13 11 -3 11 4 10" stroke="#9CCBD9" stroke-width="1" fill="none" opacity=".4"></path><path d="M-15 3.5 C -14.5 -4 -5 -6.5 4 -5 C 13 -3.5 16.5 1 13.5 6 C 7 9.5 -10 9.5 -15 3.5 Z" fill="#F4F1EA"></path><path d="M-15 3.5 C -12 8 6 9 13.5 6 C 11 8.5 -10 9.5 -15 3.5 Z" fill="#DED7C7"></path><path d="M-13 1 C -9 -3 0 -4 6 -3 C 1 -1 -8 0 -13 1 Z" fill="#FFFFFF" opacity=".3"></path><path d="M-2 -2 C 3 -6 9 -6 13 -2 C 11 1 4 1 0 -1 Z" fill="#E7E0D0" opacity=".7"></path><path d="M-2 -2 C 3 -5.5 8.5 -5.5 12 -2.5" stroke="#DED7C7" stroke-width="1" fill="none" opacity=".6"></path><g class="rig" style="transform-origin:-13px 1.5px;animation:duck-tail 0.9s ease-in-out infinite;animation-delay:var(--d,0s);"><path d="M-13 2.2 C -16 0.2 -19 0.2 -20.6 2.2 C -18.6 3.8 -15.4 3.8 -12.8 3 Z" fill="#F4F1EA"></path><path d="M-12.8 3 C -15.4 3.8 -18.6 3.8 -20.6 2.2 C -18.2 4.4 -14.8 4.5 -12.6 3.6 Z" fill="#DED7C7"></path></g><g class="rig" style="transform-origin:11px -6px;animation:duck-head 0.9s ease-in-out infinite;animation-delay:var(--d,0s);"><circle cx="11" cy="-8.5" r="6.2" fill="#F4F1EA"></circle><path d="M11 -2.6 C 14.5 -3 16.8 -5 17 -8 C 17 -5 15.5 -3.2 11 -2.6 Z" fill="#DED7C7"></path><circle cx="9.4" cy="-9.6" r="2.8" fill="#FFFFFF" opacity=".3"></circle><path d="M16.3 -9.4 C 20 -9.6 23.2 -8.4 23.6 -7 C 23.2 -5.6 20 -5 16.3 -5.6 C 15 -7 15 -8.2 16.3 -9.4 Z" fill="#E8A33E"></path><path d="M16.3 -6 C 19.5 -5.4 22.4 -5.6 23.4 -6.6 C 22.6 -5.2 19.6 -4.6 16.3 -5.2 Z" fill="#D08F2E"></path><circle cx="12.2" cy="-9.4" r="1.5" fill="#2A2E26"></circle><circle cx="12.7" cy="-9.9" r=".5" fill="#FFFFFF"></circle><path d="M9.5 -6.4 C 11 -5.6 12.8 -5.6 14 -6.2" stroke="#EBC9A6" stroke-width=".9" fill="none" opacity=".45"></path></g></g></symbol>
   <symbol id="bird" viewBox="-19.6 -19.5 41.2 36" overflow="visible"><g class="rig" style="transform-origin:0px 2px;animation:bird-body .55s linear infinite;animation-delay:var(--d,0s);"><ellipse cx="-1" cy="9" rx="7" ry="1.6" fill="#2A2326" opacity=".12"></ellipse><g class="rig" style="transform-origin:-5px 5px;animation:bird-tail .55s linear infinite;animation-delay:var(--d,0s);"><path d="M-3 3 C -5 5 -7 6.5 -9 7.5 C -7.5 6 -6 4.5 -5 3 Z" fill="#5E84AD"></path></g><g class="rig" style="transform-origin:2px -1px;animation:bwF .55s linear infinite;animation-delay:var(--d,0s);"><g transform="translate(3 -0.5) scale(0.92)"><path d="M3.2 0.2 C 0.5 -4.2 -5.5 -7.9 -12.5 -7.9 C -14.9 -7.8 -15.9 -6.2 -14.4 -4.7 C -9.6 -0.4 -3.2 0.9 3.2 0.2 Z" fill="#4E749E"></path><path d="M-14.4 -4.7 C -9.6 -0.4 -3.2 0.9 3.2 0.2 C -2.6 -0.1 -8.4 -1.5 -12.9 -5.4 Z" fill="#456690"></path><path d="M-12.7 -6.6 C -9.5 -6 -6.7 -4.7 -4.5 -2.9 M-13.8 -5.3 C -11 -4.1 -8.4 -2.7 -6.5 -1.3" stroke="#456690" stroke-width=".7" fill="none" stroke-linecap="round" opacity=".8"></path></g></g><path d="M-8 1 C -2 -3 6 -3 9 0 C 9.5 3 6 6 1 6.5 C -4 7 -8 5 -8.5 2.5 C -8.6 1.9 -8.4 1.4 -8 1 Z" fill="#7BA0C9"></path><path d="M-7 3 C -2 1.5 5 1.5 8 3.2 C 7.5 5.5 3 6.8 -1 6.6 C -4 6.5 -6.5 5.2 -7 3.6 Z" fill="#EF9C7E" opacity=".92"></path><path d="M-8 1 C -4 -2 3 -2.4 7 -0.8 C 4 -1 -3 -0.6 -7 1.4 C -7.6 1.6 -7.9 1.4 -8 1 Z" fill="#FFFFFF" opacity=".28"></path><circle cx="9" cy="-2.6" r="4.4" fill="#7BA0C9"></circle><path d="M9.4 -6.6 C 11.6 -6.4 13.2 -4.8 13.4 -2.8 C 12 -4.6 10.4 -5.6 8.4 -6 C 8.7 -6.3 9 -6.5 9.4 -6.6 Z" fill="#FFFFFF" opacity=".3"></path><path d="M12.6 -3.4 C 15 -3.6 17.6 -2.9 18.6 -2.2 C 17.4 -1.6 15 -1.3 12.8 -1.5 C 12.2 -2 12.2 -2.9 12.6 -3.4 Z" fill="#E8943E"></path><path d="M13 -2.6 C 14.8 -2.7 16.8 -2.3 17.8 -2 C 16.6 -1.8 14.6 -1.7 13 -1.9 Z" fill="#C9742A" opacity=".55"></path><circle cx="10.3" cy="-3.2" r="1.25" fill="#2A2326"></circle><circle cx="10.7" cy="-3.6" r=".42" fill="#FFFFFF"></circle><ellipse cx="8" cy="-1.2" rx="1.5" ry="1.1" fill="#EF9C7E" opacity=".4"></ellipse><g class="rig" style="transform-origin:1px -1px;animation:bwN .55s linear infinite;animation-delay:var(--d,0s);"><path d="M3.2 0.2 C 0.5 -4.2 -5.5 -7.9 -12.5 -7.9 C -14.9 -7.8 -15.9 -6.2 -14.4 -4.7 C -9.6 -0.4 -3.2 0.9 3.2 0.2 Z" fill="#6E93BD"></path><path d="M-14.4 -4.7 C -9.6 -0.4 -3.2 0.9 3.2 0.2 C -2.6 -0.1 -8.4 -1.5 -12.9 -5.4 Z" fill="#5E84AD"></path><path d="M-12.7 -6.6 C -9.5 -6 -6.7 -4.7 -4.5 -2.9 M-13.8 -5.3 C -11 -4.1 -8.4 -2.7 -6.5 -1.3" stroke="#5E84AD" stroke-width=".7" fill="none" stroke-linecap="round" opacity=".8"></path><path d="M0.5 -2 C -2.5 -5 -7 -7 -12 -7.2" stroke="#FFFFFF" stroke-width=".5" fill="none" opacity=".3"></path></g></g></symbol>
+  <symbol id="squirrel" viewBox="-27.8 -33.8 55.6 55.6" overflow="visible"><g class="rig" style="transform-origin:0px 8px;animation:sq-body 0.55s ease-in-out infinite;animation-delay:var(--d,0s);"><g class="rig" style="transform-origin:4px 7px;animation:sq-tail 0.45s ease-in-out infinite;animation-delay:var(--d,0s);"><path d="M2 8 C 14 7 19 -4 15 -13 C 12.5 -19 6.5 -21.5 1 -20 C 6 -18 9 -13 8.5 -7 C 8.5 -4 7 -1 6 2 C 5 5 3.5 6.5 2 8 Z" fill="#A8632F"></path><path d="M3 7.5 C 12.8 6.5 16.8 -4 13.6 -12 C 11.4 -17 7 -19.5 2.5 -18.5 C 6.5 -16.5 8 -12 7.6 -7 C 7.6 -4 6.4 -1 5.4 1.8 C 4.5 4.4 3.8 5.8 3 7.5 Z" fill="#C77B43"></path><path d="M5 5.5 C 12.5 4 15.5 -5 12.5 -11 C 10.5 -15 7 -16.5 4 -15.5 C 6.5 -13.5 7.4 -10 7 -6 C 6.8 -3 5.8 -0.5 5 2 C 4.4 3.6 4 4.6 5 5.5 Z" fill="#E0A36A" opacity=".55"></path></g><path d="M-9 2 C -10 8 -7 11 -2 11 C -1 8 -2 4 -4 2 Z" fill="#A8632F"></path><ellipse cx="-1.5" cy="2.5" rx="8" ry="9.5" fill="#C77B43"></ellipse><path d="M-7 1 C -5 9 3 9 5 1 C 5 6 1 10 -1 10 C -3 10 -7 6 -7 1 Z" fill="#A8632F" opacity=".4"></path><ellipse cx="-2" cy="4.5" rx="5" ry="6" fill="#E0A36A"></ellipse><ellipse cx="-3" cy="2" rx="2.4" ry="3" fill="#FFFFFF" opacity=".3"></ellipse><g class="rig" style="transform-origin:-4.2px 11.4px;animation:sq-legA 0.55s ease-in-out infinite;animation-delay:var(--d,0s);"><ellipse cx="-4.2" cy="11.4" rx="3" ry="1.5" fill="#A8632F"></ellipse></g><g class="rig" style="transform-origin:1.8px 11.7px;animation:sq-legB 0.55s ease-in-out infinite;animation-delay:var(--d,0s);"><ellipse cx="1.8" cy="11.7" rx="2.5" ry="1.3" fill="#A8632F"></ellipse></g><path d="M-10.5 -7.5 C -11.5 -7.2 -11.5 -6.3 -10.5 -6.3" stroke="#A8632F" stroke-width="1" fill="none" stroke-linecap="round"></path><path d="M-2 4 C 1 1 4 1.5 5 4.5 C 4 3 1.5 3 -1 5 Z" fill="#A8632F"></path><path d="M-2 4 C 1 1.5 3.5 2 4.5 4.5" stroke="#A8632F" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".5"></path><g class="rig" style="transform-origin:-3px -4px;animation:sq-head 0.55s ease-in-out infinite;animation-delay:var(--d,0s);"><circle cx="-5" cy="-8.5" r="6" fill="#C77B43"></circle><path d="M-9 -12.5 C -11.5 -16.5 -10.5 -19.5 -8 -19 C -6 -18 -5.5 -14.5 -7.5 -12 Z" fill="#A8632F"></path><path d="M-9 -13 C -10.5 -16 -9.8 -18 -8.2 -17.8 C -7 -17 -6.8 -14.8 -8 -13 Z" fill="#E0A36A" opacity=".6"></path><circle cx="-7.5" cy="-10.5" r="2.2" fill="#E0A36A" opacity=".55"></circle><circle cx="-6.3" cy="-9.2" r="1.5" fill="#2A2326"></circle><circle cx="-6.8" cy="-9.7" r=".5" fill="#FFFFFF"></circle></g></g></symbol>
   <symbol id="fox" viewBox="-31.5 -29.3 61 49.6" overflow="visible"><ellipse cx="0" cy="14.2" rx="16" ry="3" fill="rgba(60,40,20,.12)"></ellipse><g class="rig" style="transform-origin:0px 8px;animation:fox-body 1.6s ease-in-out infinite;animation-delay:var(--d,0s);"><path d="M-9 7 C -22 8 -27 -3 -19 -11 C -23 -7 -23 -1 -19 2 C -16 -4 -12 -7 -8 -8 C -13 -3 -12 3 -8 5 Z" fill="#DB7E40"></path><path d="M-19 -10 C -23 -6 -23 -1 -19 2 C -18 -2 -18 -6 -17 -10 C -18 -11 -18.5 -11 -19 -10 Z" fill="#F4ECE2"></path><ellipse cx="-15.5" cy="-2" rx="2.6" ry="6.5" fill="#C56F36" opacity=".5"></ellipse><g class="rig" style="transform-origin:6.8px 6px;animation:fox-legB 1.6s ease-in-out infinite;animation-delay:var(--d,0s);"><path d="M5.4 4 L8.2 4 L7.8 13.2 L5.8 13.2 Z" fill="#C56F36"></path><ellipse cx="6.8" cy="13.4" rx="1.9" ry="1.2" fill="#5A3A2E"></ellipse></g><g class="rig" style="transform-origin:-6.2px 6px;animation:fox-legA 1.6s ease-in-out infinite;animation-delay:var(--d,0s);"><path d="M-7.6 4 L-4.8 4 L-5.2 13.2 L-7.2 13.2 Z" fill="#C56F36"></path><ellipse cx="-6.2" cy="13.4" rx="1.9" ry="1.2" fill="#5A3A2E"></ellipse></g><g class="rig" style="transform-origin:9.4px 6px;animation:fox-legA 1.6s ease-in-out infinite;animation-delay:var(--d,0s);"><path d="M8 4 L10.8 4 L10.4 13.6 L8.4 13.6 Z" fill="#E08A4A"></path><ellipse cx="9.4" cy="13.8" rx="1.9" ry="1.2" fill="#5A3A2E"></ellipse></g><g class="rig" style="transform-origin:-4px 6px;animation:fox-legB 1.6s ease-in-out infinite;animation-delay:var(--d,0s);"><path d="M-5.4 4 L-2.6 4 L-3 13.6 L-5 13.6 Z" fill="#E08A4A"></path><ellipse cx="-4" cy="13.8" rx="1.9" ry="1.2" fill="#5A3A2E"></ellipse></g><path d="M-9 6 C -9 -2 -3 -6 3 -6 C 10 -6 13 0 12.5 5 C 12 9 8 11 2 11 C -4 11 -9 10 -9 6 Z" fill="#E08A4A"></path><path d="M-7 8 C -7 3 -2 0 4 0 C 10 0 13 3 12.5 6 C 6 5 0 6 -7 8 Z" fill="#F4ECE2" opacity=".95"></path><ellipse cx="2" cy="9" rx="6.5" ry="2.6" fill="#F4ECE2"></ellipse><g class="rig" style="transform-origin:5px 3px;animation:fox-head 1.6s ease-in-out infinite;animation-delay:var(--d,0s);"><path d="M5 -10 C 8 -13 16 -13 19 -10 C 21 -6 20 0 17 3 C 13 6 7 6 4 3 C 1 0 2 -6 5 -10 Z" fill="#E08A4A"></path><path d="M5 -10 C 8 -8 8 -4 6 0 C 9 1 14 1 17 0 C 19 -4 18 -8 19 -10 C 16 -13 8 -13 5 -10 Z" fill="#F4ECE2" opacity=".22"></path><path d="M12 -2 C 9 -1 7 1 7 3 C 7 5 9 6 12 6 C 15 6 17 5 17 3 C 17 1 15 -1 12 -2 Z" fill="#F4ECE2"></path><path d="M12 4.2 C 10.6 4.2 9.4 5 9.4 6 C 9.4 7.4 10.8 8 12 8 C 13.2 8 14.6 7.4 14.6 6 C 14.6 5 13.4 4.2 12 4.2 Z" fill="#3A2E2A"></path><circle cx="9.6" cy="-3.4" r="1.5" fill="#2A2326"></circle><circle cx="14.4" cy="-3.4" r="1.5" fill="#2A2326"></circle><circle cx="10.1" cy="-3.9" r=".5" fill="#FBF7F2"></circle><circle cx="14.9" cy="-3.9" r=".5" fill="#FBF7F2"></circle><ellipse cx="8" cy="0.5" rx="1.8" ry="1.3" fill="#F0A86A" opacity=".45"></ellipse><g class="rig" style="transform-origin:12px -10px;animation:fox-ear 0.6s ease-in-out infinite;animation-delay:var(--d,0s);"><path d="M5 -9 L 1.5 -19 C 6 -18 9 -15 10 -11 Z" fill="#E08A4A"></path><path d="M19 -9 L 22 -19 C 17.5 -18 15 -15 14 -11 Z" fill="#E08A4A"></path><path d="M5.5 -10 L 3.5 -16 C 6 -15.5 7.5 -13.5 8.5 -11.5 Z" fill="#5A3A2E"></path><path d="M18.5 -10 L 20.5 -16 C 18 -15.5 16.5 -13.5 15.5 -11.5 Z" fill="#5A3A2E"></path></g></g></g></symbol>
   <symbol id="bear" viewBox="-24 -26 50 50" overflow="visible"><ellipse cx="0" cy="18" rx="16" ry="2.6" fill="#2A2326" opacity=".13"></ellipse><g class="rig" style="transform-origin:0px 0px;animation:bear-bob 1.7s linear infinite;animation-delay:var(--d,0s);"><g class="rig" style="transform-origin:-8.2px 8px;animation:bear-legB 1.7s linear infinite;animation-delay:var(--d,0s);"><path d="M-10 8 L-6.4 8 L-6.9 17 L-9.5 17 Z" fill="#6E4F39"></path><ellipse cx="-8.2" cy="17.3" rx="2.6" ry="1.3" fill="#4E382A"></ellipse></g><g class="rig" style="transform-origin:5.8px 8px;animation:bear-legA 1.7s linear infinite;animation-delay:var(--d,0s);"><path d="M4 8 L7.6 8 L7.1 17 L4.5 17 Z" fill="#6E4F39"></path><ellipse cx="5.8" cy="17.3" rx="2.6" ry="1.3" fill="#4E382A"></ellipse></g><g class="rig" style="transform-origin:-10.2px 8.5px;animation:bear-legA 1.7s linear infinite;animation-delay:var(--d,0s);"><path d="M-12 8.5 L-8.4 8.5 L-8.9 17.4 L-11.5 17.4 Z" fill="#7A5A42"></path><ellipse cx="-10.2" cy="17.7" rx="2.6" ry="1.3" fill="#4E382A"></ellipse></g><g class="rig" style="transform-origin:8.2px 8.5px;animation:bear-legB 1.7s linear infinite;animation-delay:var(--d,0s);"><path d="M6.4 8.5 L10 8.5 L9.5 17.4 L6.9 17.4 Z" fill="#7A5A42"></path><ellipse cx="8.2" cy="17.7" rx="2.6" ry="1.3" fill="#4E382A"></ellipse></g><ellipse cx="-1" cy="4" rx="14" ry="10" fill="#7A5A42"></ellipse><ellipse cx="-1" cy="6.5" rx="9.5" ry="6.5" fill="#8F6B4C" opacity=".7"></ellipse><g class="rig" style="transform-origin:10px -6px;animation:bear-head 1.7s linear infinite;animation-delay:var(--d,0s);"><circle cx="11" cy="-6" r="8.5" fill="#7A5A42"></circle><circle cx="5.5" cy="-13" r="3.2" fill="#7A5A42"></circle><circle cx="5.5" cy="-13" r="1.6" fill="#8F6B4C"></circle><circle cx="16.5" cy="-12.5" r="3.2" fill="#7A5A42"></circle><circle cx="16.5" cy="-12.5" r="1.6" fill="#8F6B4C"></circle><ellipse cx="14" cy="-3" rx="5" ry="4" fill="#C9B291"></ellipse><ellipse cx="15.5" cy="-3.5" rx="1.6" ry="1.2" fill="#3A2E2A"></ellipse><circle cx="8.5" cy="-7.5" r="1.4" fill="#2A2326"></circle><circle cx="13.5" cy="-8" r="1.4" fill="#2A2326"></circle><circle cx="9" cy="-8" r=".4" fill="#fff"></circle><circle cx="14" cy="-8.5" r=".4" fill="#fff"></circle></g></g></symbol>
   <symbol id="hedgehog" viewBox="-22 -20 44 38" overflow="visible"><ellipse cx="0" cy="11" rx="15" ry="2.4" fill="#2A2326" opacity=".13"></ellipse><g class="rig" style="animation:hedgehog-bob 0.9s linear infinite;animation-delay:var(--d,0s);"><g class="rig" style="transform-origin:-6px 7px;animation:hedgehog-legA 0.9s linear infinite;animation-delay:var(--d,0s);"><ellipse cx="-6" cy="9.6" rx="2.4" ry="1.6" fill="#6E5844"></ellipse></g><g class="rig" style="transform-origin:5px 7px;animation:hedgehog-legB 0.9s linear infinite;animation-delay:var(--d,0s);"><ellipse cx="5" cy="9.6" rx="2.4" ry="1.6" fill="#5A4636"></ellipse></g><ellipse cx="-1" cy="3" rx="13.5" ry="9" fill="#A6906F"></ellipse><path d="M-14.2 5.0 L-18.4 4.5 L-14.5 3.1 L-18.4 1.8 L-14.3 1.2 L-17.8 -0.9 L-13.5 -0.6 L-16.4 -3.4 L-12.2 -2.3 L-14.5 -5.6 L-10.5 -3.8 L-12.0 -7.5 L-8.4 -5.0 L-9.0 -9.0 L-5.9 -5.8 L-5.8 -10.0 L-3.3 -6.4 L-2.3 -10.5 L-0.6 -6.5 L1.2 -10.4 L2.0 -6.3 L4.6 -9.8 L4.6 -5.6 L7.8 -8.7 L6.9 -4.7 L10.7 -7.1 L9.0 -3.4 L13.0 -5.1 L10.6 -1.9 L14.8 -2.8 L11.7 -0.2 L16.0 -0.2 L12.4 1.7 Z" fill="#6E5844"></path><path d="M-12.9 3.2 L-16.2 2.3 L-13.0 1.3 L-15.9 -0.2 L-12.4 -0.5 L-14.9 -2.7 L-11.4 -2.3 L-13.2 -5.0 L-9.8 -3.8 L-10.9 -6.9 L-7.8 -5.0 L-8.2 -8.3 L-5.4 -5.9 L-5.0 -9.3 L-2.9 -6.4 L-1.7 -9.7 L-0.2 -6.5 L1.7 -9.5 L2.4 -6.2 L4.9 -8.8 L4.8 -5.4 L7.8 -7.5 L7.0 -4.3 L10.3 -5.8 L8.8 -2.9 L12.3 -3.7 L10.1 -1.3 L13.6 -1.3 L10.8 0.5 Z" fill="#8B7358"></path><path d="M8 4 C 12 4 18 2 20 -1 C 18 -2 14 -1 10 0 C 8 0.6 7.5 3 8 4 Z" fill="#E8D3B8"></path><g class="rig" style="transform-origin:13px 1px;animation:hedgehog-nose 0.9s linear infinite;animation-delay:var(--d,0s);"><circle cx="19.4" cy="-1" r="1.5" fill="#3A2E2A"></circle><circle cx="19" cy="-1.6" r=".4" fill="#fff" opacity=".7"></circle></g><circle cx="12" cy="-1.2" r="1.4" fill="#2A2326"></circle><circle cx="12.5" cy="-1.7" r=".4" fill="#fff"></circle><path d="M8.5 -2.5 C 9.5 -4 11.5 -4 12.5 -2.8 C 11 -2.2 9.8 -2.2 8.5 -2.5 Z" fill="#8B7358"></path></g></symbol>
@@ -2391,9 +2396,7 @@ let _wanderSeq=0,_floatSeq=0;
 function wanderR(seed,n){ const v=Math.sin((seed*127.1+n*31.7)*43758.5453); return v-Math.floor(v); }
 function mkWander(seed,amp,opts){
   opts=opts||{};
-  const grounded=!!opts.grounded;
-  const water=!!opts.flat && !grounded;
-  const yDrift=grounded?Math.min(2,(opts.yDrift??14)*0.1):water?(opts.yDrift??14)*0.28:(opts.yDrift??14)*(opts.flat?0.35:1);
+  const yDrift=(opts.yDrift??14)*(opts.flat?0.35:1);
   const id='wd'+(_wanderSeq++);
   const R=n=>wanderR(seed,n);
   const n=7+Math.floor(R(0)*4);
@@ -2402,7 +2405,7 @@ function mkWander(seed,amp,opts){
     const t=Math.min(96,Math.round((i/n)*90+R(i+3)*9));
     let x=pts[pts.length-1].x+(R(i+10)-0.48)*amp*(0.52+R(i+11)*0.45);
     x=Math.max(-amp*1.15,Math.min(amp*1.15,x));
-    pts.push({t,x,y:(R(i+20)-0.5)*yDrift*(grounded?0.35:1.6)});
+    pts.push({t,x,y:(R(i+20)-0.5)*yDrift*1.6});
   }
   if(R(40)>0.35){
     const h=pts[pts.length-1], ht=Math.min(92,Math.round(52+R(41)*32));
@@ -2418,9 +2421,8 @@ function mkWander(seed,amp,opts){
     const dx=p.x-prevX, dy=p.y-prevY;
     if(Math.abs(dx)>Math.max(2,amp*0.14)) face=p.x>prevX?1:-1;
     let y=p.y;
-    // Bounce belongs in the gait (hop/trot), not the travel lane — avoids double-bobbing.
-    if(opts.bouncy && !grounded && Math.abs(dx)>0.3) y-=Math.min(5,Math.abs(dx)*0.12);
-    const tilt=grounded?Math.max(-1.1,Math.min(1.1,dx*0.022)):Math.max(-2,Math.min(2,dx*0.045+dy*0.03));
+    if(opts.bouncy && Math.abs(dx)>0.3) y-=Math.min(5,Math.abs(dx)*0.12);
+    const tilt=Math.max(-2,Math.min(2,dx*0.045+dy*0.03));
     prevX=p.x; prevY=p.y;
     const ease=p.t===0?'':'animation-timing-function:cubic-bezier(0.42,0,0.28,1);';
     kf+=`${p.t}%{transform:translate(${p.x.toFixed(1)}px,${y.toFixed(1)}px) rotate(${tilt.toFixed(1)}deg) scale(${face},1);${ease}}`;
@@ -2451,15 +2453,11 @@ function skyBird(delay,tx,ty,sc,opacity,rev){
   const inner=rev?`<g transform="scale(-1 1)">${use}</g>`:use;
   return `<g class="${cls}" style="animation-delay:${delay}s${opacity?`;opacity:${opacity}`:''}">${inner}</g>`;
 }
-function roveTx(el){
-  const rove=el&&el.querySelector('.rove');
-  if(!rove) return null;
-  const m=getComputedStyle(rove).transform;
+function floatTx(el){
+  const fl=el&&el.querySelector('.float');
+  if(!fl) return null;
+  const m=getComputedStyle(fl).transform;
   if(!m||m==='none') return 0;
-  if(m.startsWith('matrix3d(')){
-    const p=m.slice(9,-1).split(',').map(Number);
-    return p[12]||0;
-  }
   if(m.startsWith('matrix(')){
     const p=m.slice(7,-1).split(',').map(Number);
     return p[4]||0;
@@ -2467,90 +2465,235 @@ function roveTx(el){
   const tx=m.match(/translate\(([-\d.]+)px/);
   return tx?+tx[1]:0;
 }
-function roveFace(el){
-  const rove=el&&el.querySelector('.rove');
-  if(!rove) return 1;
-  const m=getComputedStyle(rove).transform;
-  if(!m||m==='none') return 1;
-  const p=m.startsWith('matrix3d(')?m.slice(9,-1).split(',').map(Number):m.startsWith('matrix(')?m.slice(7,-1).split(',').map(Number):null;
-  if(p) return (p[0]||1)>=0?1:-1;
-  const sc=m.match(/scale\((-?\d+)/);
-  return sc&&+sc[1]<0?-1:1;
-}
 
 
-/* ── the Motion Atlas director, flipbook edition: each visible animal gets its gait pre-rendered
-   ONCE into N exact frames (verbatim atlas renders); the loop then only flips visibility — no per-frame
-   SVG parsing, so phones stay smooth. Off-screen animals rest on frame 0; calm/reduced-motion freeze. ── */
+/* ── the Motion Atlas director v2 — a tiny WALKER brain per animal ─────────────────────────────
+   Travel lives in JS now (the old CSS wander keyframes are gone for animals). Each roamer is a
+   small state machine: walk a stretch of its home range → stop → play one of ITS OWN atlas
+   behaviours (graze / sniff / groom / upend→shake / clatter / stretch…) → wander on. The rules
+   that keep motion honest, learned the hard way:
+   • facing ALWAYS equals the sign of velocity — and the sprite only flips while standing still.
+     (The old system interpolated scale(-1,1) inside keyframes: a slow squash-mirror that read as
+     a senseless turn; and `alternate` playback reversed the path but not the facing → moonwalk.)
+   • gait frames advance only while actually moving, scaled to real speed — stop = feet stop.
+   • every atlas animal is drawn facing RIGHT (centre-line RAW-render audit), so no fl needed —
+     facing is just scale(dir,1). fl:1 (mirror) is kept in code only for any future left-facing art.
+   Insects keep their organic CSS drift (position only, no facing baked in); the walker just flips
+   their .face to match the measured drift direction, with hysteresis — and their wings never
+   freeze (the old loop stopped wingbeats at drift turnarounds). Flipbook rendering stays: frames
+   are pre-rendered once per motion, ≤2 motion sets cached per animal, loop toggles visibility. ── */
+const FABLE_BEHAV={
+  fox:      {go:'trot',   spd:34, idles:[['stand',3]],                 rare:[['pounce',1.2]]},
+  deer:     {go:'walk',   spd:26, idles:[['graze',4],['alert',1]]},
+  rabbit:   {go:'hop',    spd:60, idles:[['sit',3],['groom',2],['alert',1]], chain:{sit:'groom'}},
+  bear:     {go:'amble',  spd:24, idles:[['sniff',3]],                 rare:[['rear',1]]},
+  hedgehog: {go:'trundle',spd:20, idles:[['sniff',3]],                 rare:[['curl',0.8]]},
+  stork:    {go:'stride', spd:34, idles:[['stand',3],['clatter',1]]},
+  turtle:   {go:'walk',   spd:16, idles:[['bask',2]],                  rare:[['hide',0.7]]},
+  mallard:  {go:'swim',   spd:34, idles:[['upend',2],['shake',1]],     chain:{upend:'shake'}},
+  fish:     {go:'swim',   spd:18, idles:[['gulp',1]]},
+  snail:    {go:'glide',  spd:14, idles:[['peek',2]],                  rare:[['hide',0.5]]},
+  ladybug:  {go:'walk',   spd:8,  idles:[['check',2]]},
+  frog:     {go:'hop',    spd:22, idles:[['sit',5],['croak',1]]},
+  mouse:    {go:'scurry', spd:46, idles:[['nibble',3],['alert',1]]},
+  owl:      {idles:[['perch',3],['headturn',1]]},
+  bee:      {}, dragonfly:{}, butterfly:{}
+};
+// EVERY atlas animal is drawn facing RIGHT — verified 2026-07-06 with a centre-line RAW-render
+// grid (all 13 walker gaits + bee/dragonfly). So fl (mirror-when-moving-right) stays 0 for all.
+// The earlier fl:1 on bear+bee came from eyeballing the busy in-scene render and reading them
+// backwards — which is exactly why they moon-walked. Only re-add fl:1 with a centre-line check.
 let fableEls=null,fableTimer=0,fableStarted=false;
 function fableRender(A,mid,t,roam){
-  const prevTicks=window.__FABLE_NO_TICKS;
-  const prevRoam=window.__FABLE_ROAM;
+  const prev=window.__FABLE_NO_TICKS;
   window.__FABLE_NO_TICKS=!!roam;
-  window.__FABLE_ROAM=roam||null;
   try{ return A.render(mid,t); }
-  finally{ window.__FABLE_NO_TICKS=prevTicks; window.__FABLE_ROAM=prevRoam; }
+  finally{ window.__FABLE_NO_TICKS=prev; }
 }
+function fableDur(A,mid){ const mo=A&&A.motions&&A.motions.find(m=>m.id===mid); return (mo&&mo.dur)||1; }
 function fableCollect(){
-  const REG=window.__FABLE_ANIMALS; if(!REG) return;
+  const REG=window.__FABLE_ANIMALS||{};
   fableEls=[...document.querySelectorAll('#sceneWrap g.fable')].map(el=>{
-    const A=REG[el.dataset.id]; if(!A) return null;
-    const mo=(A.motions&&A.motions.find(m=>m.id===el.dataset.mid))||(A.motions&&A.motions[0])||{id:el.dataset.mid,dur:1};
-    const roam=!!el.querySelector('.rove');
-    return {
-      el, fin:el.querySelector('.fin'), A, mid:mo.id, dur:mo.dur||1,
-      off:+el.dataset.off||0, x:+el.dataset.x||0,
-      roamAmp:+el.dataset.roamAmp||0, roamDur:+el.dataset.roamDur||0,
-      roam, frames:null, cur:0, n:0, lastTx:null, lastFace:1
-    };
+    const id=el.dataset.id, A=REG[id]||null, B=FABLE_BEHAV[id]||{};
+    const isFloat=el.dataset.flt==='1', art=!!B.art;
+    if(!A&&!art) return null;
+    const f={el, fin:el.querySelector('.fin'), face:el.querySelector('.face'), mover:el.querySelector('.mover'),
+      A, B, id, art, isFloat,
+      x:+el.dataset.x||0, off:+el.dataset.off||0,
+      amp:+el.dataset.amp||0, yd:+el.dataset.yd||0,
+      fl:B.fl?1:0, seed:(+el.dataset.x||1)*7+(+el.dataset.off||0)*97, rnd:0,
+      sets:{}, setsOrder:[], curSet:null, curK:-1, firstBuild:true,
+      mode:'idle', ox:0, oy:0, dir:1, tgt:0, tgtY:0, spdCur:0, until:0, ph:((+el.dataset.off||0)*3.7)%1,
+      midCur:null, durCur:1, durGo:(B.go&&A)?fableDur(A,B.go):1,
+      lastTx:null, acc:0};
+    const R=n=>wanderR(f.seed,n);
+    if(isFloat){
+      const mo=(A.motions.find(m=>m.id===el.dataset.mid))||A.motions[0];
+      f.midCur=mo.id; f.durCur=mo.dur||1;
+      try{ f.fin.innerHTML=fableRender(A,f.midCur,0.32,false); }catch(_){}
+      return f;
+    }
+    // home range clamped to the panorama (a wide range near an edge must not walk off-world)
+    f.lo=Math.max(36,f.x-f.amp)-f.x; f.hi=Math.min(PANO_W-36,f.x+f.amp)-f.x;
+    if(f.hi<f.lo){ f.lo=0; f.hi=0; }
+    // walkers: deterministic scattered starting pose, staggered first decision
+    f.ox=f.lo+(R(1))*(f.hi-f.lo)*0.9+(f.hi-f.lo)*0.05; f.oy=(R(2)-0.5)*2*f.yd;
+    f.dir=R(3)>0.5?1:-1;
+    f.until=R(4)*2.5;
+    const firstMid=(B.go&&B.go!=='art')?B.go:((B.idles&&B.idles[0]&&B.idles[0][0])||null);
+    if(A&&firstMid){ try{ f.fin.innerHTML=fableRender(A,firstMid,0.32,f.amp>0); }catch(_){} }
+    if(f.mover) f.mover.setAttribute('transform',`translate(${f.ox.toFixed(1)} ${f.oy.toFixed(1)}) scale(${f.dir*(f.fl?-1:1)},1)`);
+    return f;
   }).filter(Boolean);
-  fableEls.forEach(f=>{ try{ f.fin.innerHTML=fableRender(f.A,f.mid,0.32,f.roam?{face:1}:null); }catch(_){} });
   if(!fableStarted){ fableStarted=true; requestAnimationFrame(fableLoop); }
 }
-function fableBuild(f){
-  if(f.frames) return;
-  const air=['flit','flutter','sail','hover','patrol','flight','dart'].includes(f.mid);
-  const n=Math.max(air?16:12,Math.min(air?36:28,Math.round(f.dur*(air?40:24))));
-  const roam=f.roam?{face:f.lastFace||1}:null;
+function fableBuildSet(f,mid){
+  if(f.firstBuild){ f.fin.innerHTML=''; f.firstBuild=false; f.curSet=null; }
+  const air=['flit','flutter','sail','hover','patrol','flight','dart'].includes(mid);
+  const dur=fableDur(f.A,mid);
+  const n=Math.max(air?16:12,Math.min(air?36:28,Math.round(dur*(air?40:24))));
+  // the mallard's upend paints its own demo water-band; clip those frames at the atlas
+  // waterline (y=6.4) instead — hides both the band and the underwater head, cleanly
+  let clipRef='';
+  if(mid==='upend'){
+    const cid='updc'+Math.abs(f.seed|0);
+    if(!f.fin.querySelector('#'+cid)){
+      const d=document.createElementNS('http://www.w3.org/2000/svg','defs');
+      d.innerHTML=`<clipPath id="${cid}"><rect x="-70" y="-90" width="140" height="96.4"/></clipPath>`;
+      f.fin.appendChild(d);
+    }
+    clipRef=` clip-path="url(#${cid})"`;
+  }
   let html='';
-  for(let k=0;k<n;k++){ let fr=''; try{ fr=fableRender(f.A,f.mid,k/n,roam); }catch(_){}
-    html+=`<g visibility="${k?'hidden':'visible'}">${fr}</g>`; }
-  f.fin.innerHTML=html; f.frames=[...f.fin.children]; f.n=n; f.cur=0;
+  for(let k=0;k<n;k++){ let fr=''; try{ fr=fableRender(f.A,mid,k/n,!f.isFloat&&f.amp>0); }catch(_){}
+    html+=`<g style="display:none"${clipRef}>${fr}</g>`; }   // display (not visibility): WebKit repaints it reliably
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.style.display='none'; g.innerHTML=html;
+  f.fin.appendChild(g);
+  const set={g,frames:[...g.children],n,mid,lastK:-1};
+  f.sets[mid]=set; f.setsOrder.push(mid);
+  if(f.setsOrder.length>2){
+    const ev=f.setsOrder.shift();
+    if(ev!==mid&&f.sets[ev]){ if(f.curSet===f.sets[ev]) f.curSet=null; f.sets[ev].g.remove(); delete f.sets[ev]; }
+  }
+  return set;
 }
-function fableLoop(now){
-  requestAnimationFrame(fableLoop);
+function fableDraw(f){
+  if(f.art||!f.A||!f.midCur) return;
+  let set=f.sets[f.midCur]; if(!set) set=fableBuildSet(f,f.midCur);
+  if(f.curSet!==set){
+    if(f.curSet) f.curSet.g.style.display='none';
+    set.g.style.display=''; f.curSet=set;
+  }
+  const k=Math.floor((((f.ph%1)+1)%1)*set.n)%set.n;
+  if(k!==set.lastK){                     // frame memory lives on the SET — re-entering a cached
+    if(set.lastK>=0&&set.frames[set.lastK]) set.frames[set.lastK].style.display='none';
+    if(set.frames[k]) set.frames[k].style.display='';
+    set.lastK=k;                         // motion never leaves its old frame lit under the new one
+  }
+}
+function fableSetMotion(f,mid){
+  f.midCur=mid; f.durCur=f.art?1:fableDur(f.A,mid); f.ph=0;
+}
+function fablePickIdle(f,tnow){
+  const B=f.B, R=()=>wanderR(f.seed,f.rnd++);
+  let pool=(B.idles||[]).slice();
+  if(B.rare&&R()<0.16) pool=pool.concat(B.rare);
+  if(!pool.length){ f.midCur=f.art?f.midCur:null; f.until=tnow+(f.art?0.5+R()*0.8:0.8+R()*1.8); return; }
+  let tot=0; pool.forEach(p=>tot+=p[1]);
+  let pick=R()*tot, mid=pool[0][0];
+  for(const p of pool){ pick-=p[1]; if(pick<=0){ mid=p[0]; break; } }
+  fableSetMotion(f,mid);
+  const cycles=f.durCur>3?1:(R()>0.6?3:2);
+  f.until=tnow+f.durCur*cycles;
+  f.chainTo=(B.chain&&B.chain[mid]&&R()>0.5)?B.chain[mid]:null;
+}
+function fablePickTarget(f,tnow){
+  const B=f.B, R=()=>wanderR(f.seed,f.rnd++);
+  if(!B.go){ fablePickIdle(f,tnow); return; }
+  const span=Math.max(1,f.hi-f.lo);
+  let dir=f.dir;
+  const room=dir>0?(f.hi-f.ox):(f.ox-f.lo);
+  if(room<span*0.22||R()<(B.turn??0.32)) dir=-dir;
+  const room2=dir>0?(f.hi-f.ox):(f.ox-f.lo);
+  const d=Math.max(12,(0.35+R()*0.65)*room2);
+  f.tgt=Math.max(f.lo,Math.min(f.hi,f.ox+dir*d));
+  f.tgtY=(R()-0.5)*2*f.yd;
+  f.dir=f.tgt>=f.ox?1:-1;                // the flip happens HERE — while standing still
+  fableSetMotion(f,B.go);
+  f.mode='go'; f.spdCur=B.spd*0.15;
+}
+function fableStep(f,dt,tnow){
+  const B=f.B;
+  if(f.mode==='go'){
+    const ramp=B.spd*dt/0.35;
+    const dist=Math.abs(f.tgt-f.ox);
+    const brake=(f.spdCur*f.spdCur)/(2*(B.spd/0.35));
+    if(dist<=Math.max(2,brake)) f.spdCur=Math.max(B.spd*0.5,f.spdCur-ramp);   // floor 0.5: a slow-crawl
+    else f.spdCur=Math.min(B.spd,f.spdCur+ramp);                              // gait reads broken (stork legs)
+    const step=Math.min(dist,f.spdCur*dt);
+    f.ox+=f.dir*step;
+    f.oy+=(f.tgtY-f.oy)*Math.min(1,dt*1.6);
+    f.ph+=(f.spdCur/B.spd)*dt/f.durGo;   // gait tempo follows real speed — no treadmill
+    if(dist-step<=0.6){ f.mode='idle'; f.spdCur=0; fablePickIdle(f,tnow); }
+  } else {
+    if(f.midCur&&!f.art) f.ph+=dt/f.durCur;
+    if(tnow>=f.until){
+      if(f.chainTo){ fableSetMotion(f,f.chainTo); f.chainTo=null;
+        f.until=tnow+f.durCur*(f.durCur>3?1:2); }
+      else fablePickTarget(f,tnow);
+    }
+  }
+}
+function fableFloatStep(f,dt,x0,x1){
+  const tx=floatTx(f.el);
+  if(tx!==null){
+    const dx=tx-(f.lastTx??tx); f.lastTx=tx;
+    f.acc=f.acc*0.82+dx;
+    if(Math.abs(f.acc)>1.1){
+      const nf=f.acc>0?1:-1;
+      if(nf!==f.dir&&f.face){ f.dir=nf; f.face.setAttribute('transform',`scale(${f.dir*(f.fl?-1:1)},1)`); }
+    }
+  }
+  const worldX=f.x+(tx||0);
+  if(worldX<x0||worldX>x1) return;
+  f.ph=(f.ph||0)+dt/f.durCur;            // wings always beat, even at drift turnarounds
+  if(f.firstBuild) fableBuildSet(f,f.midCur);
+  fableDraw(f);
+}
+let __fableTestNow=0;
+function fableTickNow(now){
   if(!fableEls||!fableEls.length) return;
   if(store.settings.motion!=='full') return;
   if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if(now-fableTimer<33) return; fableTimer=now;
+  if(now-fableTimer<33) return;
+  const dt=Math.min(0.1,Math.max(0.016,(now-fableTimer)/1000));
+  fableTimer=now;
   const w=document.getElementById('sceneWrap'); const svg=w&&w.querySelector('svg'); if(!svg||!svg.isConnected) return;
   const sc=(svg.getBoundingClientRect().height/PANO_H)||1;
   const x0=w.scrollLeft/sc-170, x1=(w.scrollLeft+w.clientWidth)/sc+170;
   const t=now/1000;
   for(const f of fableEls){
-    const tx=f.roam?roveTx(f.el):null;
-    const worldX=f.x+(tx||0);
-    if(!f.el.closest('.glide,.glide-rev')&&(worldX<x0||worldX>x1)) continue;
-    if(f.roam){
-      const face=roveFace(f.el);
-      if(face!==f.lastFace){ f.lastFace=face; f.frames=null; f.lastTx=tx; }
+    if(f.isFloat){ fableFloatStep(f,dt,x0,x1); continue; }
+    fableStep(f,dt,t);
+    if(f.mover){
+      const tr=`translate(${f.ox.toFixed(1)} ${f.oy.toFixed(1)}) scale(${f.dir*(f.fl?-1:1)},1)`;
+      if(tr!==f.lastTr){ f.mover.setAttribute('transform',tr); f.lastTr=tr; }
     }
-    if(!f.frames){ fableBuild(f); continue; }
-    let advance=true, spd=1;
-    if(tx!==null){
-      const dx=tx-(f.lastTx??tx);
-      f.lastTx=tx;
-      advance=Math.abs(dx)>0.04;
-      const pxPerFrame=Math.abs(dx);
-      const avg=f.roamAmp&&f.roamDur?(2*f.roamAmp)/(f.roamDur*30):0.35;
-      const rel=avg>0.01?pxPerFrame/avg:1;
-      spd=Math.min(2.6,Math.max(0.82,rel*1.02));
-    }
-    if(!advance) continue;
-    const k=Math.floor((((t+f.off)/f.dur*spd)%1)*f.n);
-    if(k!==f.cur&&f.frames[k]){ f.frames[f.cur].setAttribute('visibility','hidden'); f.frames[k].setAttribute('visibility','visible'); f.cur=k; }
+    const worldX=f.x+f.ox;
+    if(worldX<x0||worldX>x1) continue;   // state advances offscreen; frame work only in view
+    fableDraw(f);
   }
 }
+function fableLoop(now){
+  requestAnimationFrame(fableLoop);
+  if(window.__FABLE_TEST) return;        // tests drive fableTickNow via __fableTest.tick
+  fableTickNow(now);
+}
+window.__fableTest={
+  tick(ms){ __fableTestNow+=ms; fableTickNow(__fableTestNow); },
+  state(){ return (fableEls||[]).filter(f=>!f.isFloat).map(f=>({id:f.id,ox:+f.ox.toFixed(1),oy:+f.oy.toFixed(1),dir:f.dir,mode:f.mode,mid:f.midCur,spd:+(f.spdCur||0).toFixed(1),amp:f.amp,lo:+(f.lo??-f.amp).toFixed(1),hi:+(f.hi??f.amp).toFixed(1)})); }
+};
 
 function renderMeadow(force){
   const phase=dayPhase(), seasonName=season();
@@ -2659,27 +2802,20 @@ function renderMeadow(force){
       return `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)})"${extra||''}><g class="float" style="--d:${delay}s;animation:${fl.id} ${fl.dur}s ease-in-out infinite alternate;animation-delay:${delay}s"><g transform="scale(${sc})">${art}</g></g></g>`; }
     return `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${sc})" style="--d:${delay}s"${extra||''}>${art}</g>`;
   };
-  const BF=[-21.8,-24.3,43.7,48.6], BEE=[-16.9,-24.1,33.8,46.2], DF=[-27,-16.9,56.1,33.8], RB=[-33.7,-58.2,75.4,85.4], DE=[-20,-36,48,58], DK=[-24.8,-23.6,53.6,41.2], FR=[-26.5,-30,53,51], FX=[-31.5,-29.3,61,49.6], BR=[-24,-26,50,50];
+  const BF=[-21.8,-24.3,43.7,48.6], BEE=[-16.9,-24.1,33.8,46.2], DF=[-27,-16.9,56.1,33.8], RB=[-33.7,-58.2,75.4,85.4], DE=[-20,-36,48,58], SQ=[-27.8,-33.8,55.6,55.6], DK=[-24.8,-23.6,53.6,41.2], FR=[-26.5,-30,53,51], FX=[-31.5,-29.3,61,49.6], BR=[-24,-26,50,50];
   const HH=[-22,-20,44,38], OW=[-20,-24,40,46], LBG=[-27,-23.5,54,45], SN=[-22,-18,46,30], STK=[-21,-22,46,48], FI=[-25,-19,50,38], TU=[-24,-21,48,38];
   // ── THE MOTION ATLAS cast — procedural fable animals, rendered per-frame by their own physics ──
   // (fable-animals.js, verbatim). Each entry: which animal, which of ITS motions, where it lives,
   // and optionally a travel lane (rove) or a drift (float) — the atlas does everything else.
   const FB=(o)=>{
-    const REG=window.__FABLE_ANIMALS;
-    const A=REG&&REG[o.id];
-    const gy=A&&A.groundY!=null?A.groundY:0;
-    const footY=o.y+gy*o.sc;
-    const anchor=(-gy*o.sc).toFixed(2);
-    const inner=`<g class="fin" transform="translate(0 ${anchor}) scale(${o.sc})"></g>`;
-    const trav=o.travel?(()=>{ const w=regWander(o.travel.seed??(o.x*3+o.y+o.off*999),o.travel.amp,o.travel);
-      const dur=(o.travel.dur*(0.9+wanderR(o.travel.seed??o.x,50)*0.22)).toFixed(2);
-      return `<g class="rove" style="animation:${w.id} ${dur}s ease-in-out infinite ${w.alt};animation-delay:${(-(o.off||0)*o.travel.dur).toFixed(1)}s">${inner}</g>`; })()
-      : o.flt?(()=>{ const fl=regFloat(o.fltSeed??(o.x*5+o.y+o.off*777),o.fltAmp||22,typeof o.flt==='number'?o.flt:o.flt.dur);
-      return `<g class="float" style="animation:${fl.id} ${fl.dur}s ease-in-out infinite alternate;animation-delay:${(-(o.off||0)*fl.dur).toFixed(1)}s">${inner}</g>`; })()
-      : inner;
-    const roamAmp=o.travel?o.travel.amp:0;
-    const roamDur=o.travel?o.travel.dur:0;
-    return `<g class="fable" data-id="${o.id}" data-mid="${o.mid}" data-x="${o.x.toFixed(0)}" data-roam-amp="${roamAmp}" data-roam-dur="${roamDur}" data-off="${((o.off||0)*7).toFixed(2)}" transform="translate(${o.x.toFixed(0)} ${footY.toFixed(0)})"${o.extra||''}>${trav}</g>`;
+    const fin=`<g class="fin" transform="scale(${o.sc||1})"></g>`;
+    const data=`data-id="${o.id}" data-mid="${o.mid||''}" data-x="${o.x.toFixed(0)}" data-off="${((o.off||0)*7).toFixed(2)}"`;
+    if(o.flt){ // insects: organic CSS drift for position; .face is flipped by the walker to match drift
+      const fl=regFloat(o.fltSeed??(o.x*5+o.y+o.off*777),o.fltAmp||22,typeof o.flt==='number'?o.flt:o.flt.dur);
+      return `<g class="fable" ${data} data-flt="1" transform="translate(${o.x.toFixed(0)} ${o.y.toFixed(0)})"${o.extra||''}><g class="float" style="animation:${fl.id} ${fl.dur}s ease-in-out infinite alternate;animation-delay:${(-(o.off||0)*fl.dur).toFixed(1)}s"><g class="face">${fin}</g></g></g>`;
+    }
+    // walkers (incl. art mode): the JS director owns .mover's translate + facing flip
+    return `<g class="fable" ${data} data-amp="${(o.amp||0).toFixed(0)}" data-yd="${(o.yd||0).toFixed(0)}" transform="translate(${o.x.toFixed(0)} ${o.y.toFixed(0)})"${o.extra||''}><g class="mover">${o.art||fin}</g></g>`;
   };
   // blue nuthatches crossing the sky — SVG symbol #bird with CSS wing rigs (always flapping, even while gliding)
   if(!dusky){
@@ -2687,26 +2823,27 @@ function renderMeadow(force){
     s+=skyBird(-38,90,102,0.58,0.65);
   }
   const CAST=[
-    {id:'rabbit',   mid:'hop',    x:HABX.connection-88, y:HABY.connection+34, sc:.95, off:.10, travel:{amp:48,dur:24,yDrift:6,seed:101,grounded:true}},
-    {id:'fox',      mid:'trot',   x:HABX.body-268, y:HABY.body+24,  sc:.90, off:.35, travel:{amp:55,dur:17,yDrift:5,seed:102,grounded:true}},
+    {id:'rabbit',   x:HABX.connection-88, y:HABY.connection+34, sc:.95, off:.10, amp:70, yd:16},
+    {id:'fox',      x:HABX.body-268, y:HABY.body+24,  sc:.90, off:.35, amp:130, yd:14},
     {id:'butterfly',mid:'flutter',x:HABX.body+130, y:HABY.body-150, sc:1.05,off:.50, flt:20,fltAmp:24,fltSeed:201},
-    {id:'ladybug',  mid:'walk',   x:HABX.body+55,  y:HABY.body+68,  sc:.45, off:.05, travel:{amp:35,dur:52,yDrift:4,seed:103,grounded:true}},
+    {id:'ladybug',  x:HABX.body+55,  y:HABY.body+68,  sc:.45, off:.05, amp:30, yd:8},
     {id:'bee',      mid:'patrol', x:HABX.home+70,  y:HABY.home-118, sc:.90, off:.20, flt:16,fltAmp:18,fltSeed:202},
-    {id:'hedgehog', mid:'trundle',x:HABX.home-158, y:HABY.home+56,  sc:.80, off:.65, travel:{amp:32,dur:12,yDrift:4,seed:104,grounded:true}},
+    {id:'hedgehog', x:HABX.home-158, y:HABY.home+56,  sc:.80, off:.65, amp:46, yd:12},
+    {id:'mouse',    x:HABX.home+128, y:HABY.home+66,  sc:.50, off:.48, amp:40, yd:9},
     {id:'butterfly',mid:'sail',   x:HABX.connection+70, y:HABY.connection-150, sc:.95, off:.75, flt:22,fltAmp:27,fltSeed:203},
-    {id:'deer',     mid:'walk',   x:1000, y:336, sc:.72, off:.60, travel:{amp:42,dur:18,yDrift:5,seed:105,grounded:true}, extra:` opacity="${dusky?.5:.72}"`},
-    {id:'deer',     mid:'graze',  x:1380, y:320, sc:.80, off:.15, extra:` opacity="${dusky?.5:.7}"`},
-    {id:'bear',     mid:'amble',  x:590,  y:354, sc:.78, off:.40, travel:{amp:35,dur:22,yDrift:5,seed:106,grounded:true}, extra:` opacity="${dusky?.62:.9}"`},
+    {id:'deer',     x:1000, y:336, sc:.72, off:.60, amp:80, yd:14, extra:` opacity="${dusky?.5:.72}"`},
+    {id:'deer',     x:1380, y:320, sc:.80, off:.15, amp:34, yd:8, extra:` opacity="${dusky?.5:.7}"`},
+    {id:'bear',     x:590,  y:354, sc:.78, off:.40, amp:60, yd:14, extra:` opacity="${dusky?.62:.9}"`},
     {id:'bee',      mid:'waggle', x:HABX.craft+168, y:HABY.craft-56, sc:.62, off:.90, flt:14,fltAmp:15,fltSeed:204},
     {id:'dragonfly',mid:'hover',  x:HABX.future-30, y:HABY.future-40, sc:.95, off:.80, flt:14,fltAmp:30,fltSeed:205},
-    {id:'stork',    mid:'stand',  x:HABX.future+32, y:HABY.future+62, sc:1, off:.45, extra:` opacity="${dusky?.6:1}"`},
-    {id:'turtle',   mid:'walk',   x:HABX.future-124,y:HABY.future+64, sc:.60, off:.70, travel:{amp:22,dur:42,yDrift:4,seed:108,flat:true}},
-    {id:'mallard',  mid:'swim',   x:HABX.calm-4,    y:HABY.calm+66,  sc:.92, off:.30, travel:{amp:45,dur:38,yDrift:6,seed:109,flat:true}},
-    {id:'frog',     mid:'sit',    x:HABX.calm-74,   y:HABY.calm+72,  sc:.70, off:.55},
-    {id:'fish',     mid:'swim',   x:HABX.calm-92,   y:HABY.calm+52,  sc:.45, off:.25, travel:{amp:22,dur:28,yDrift:3,seed:110,flat:true}, extra:' opacity=".8"'},
-    {id:'snail',    mid:'glide',  x:HABX.calm+118,  y:HABY.calm+106, sc:.55, off:.85, travel:{amp:16,dur:120,yDrift:2,seed:111,flat:true}},
+    {id:'stork',    x:HABX.future+32, y:HABY.future+62, sc:1, off:.45, amp:46, yd:5, extra:` opacity="${dusky?.6:1}"`},
+    {id:'turtle',   x:HABX.future-124,y:HABY.future+64, sc:.60, off:.70, amp:26, yd:3},
+    {id:'mallard',  x:HABX.calm-4,    y:HABY.calm+66,  sc:.92, off:.30, amp:45, yd:3},
+    {id:'frog',     x:HABX.calm-74,   y:HABY.calm+72,  sc:.70, off:.55, amp:22, yd:4},
+    {id:'fish',     x:HABX.calm-92,   y:HABY.calm+52,  sc:.45, off:.25, amp:22, yd:4, extra:' opacity=".8"'},
+    {id:'snail',    x:HABX.calm+118,  y:HABY.calm+106, sc:.55, off:.85, amp:16, yd:3},
   ];
-  if(dusky) CAST.push({id:'owl',mid:'perch',x:1452,y:320,sc:.45,off:.5,extra:' opacity=".85"'});
+  if(dusky) CAST.push({id:'owl',mid:'perch',x:1452,y:320,sc:.45,off:.5,amp:0,yd:0,extra:' opacity=".85"'});
   if(total>=12) CAST.push({id:'butterfly',mid:'bask',x:HABX.meaning-90,y:HABY.meaning-150,sc:.85,off:.33,flt:20});
   if(total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-30,y:HABY.calm-150,sc:.82,off:.66,flt:22});
   CAST.forEach(o=>{ s+=FB(o); });
