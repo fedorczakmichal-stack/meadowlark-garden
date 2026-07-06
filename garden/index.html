@@ -19,7 +19,7 @@
   :root{
     --cream:#FBF7F2; --bg-2:#F6EEE2; --surface:#FFFFFF;
     --dawn:#FBB36A; --sunrise:#EF9C7E; --gold:#E8943E; --gold-deep:#C9781F; --gold-text:#A85F12;
-    --ink:#3A3450; --muted:#675E72; --faint:#655C70; --hairline:rgba(58,52,80,.12);
+    --ink:#3A3450; --muted:#564D67; --faint:#5B5269; --hairline:rgba(58,52,80,.12);
     --body:#EF9C7E; --home:#6FB89A; --connection:#E68AB0; --meaning:#E8943E; --future:#5B9BD9; --calm:#9E7CC2;
     --ff-brand:'Hanken Grotesk',-apple-system,system-ui,sans-serif;
     --ff:'Figtree',-apple-system,system-ui,sans-serif;
@@ -116,6 +116,12 @@
   .cp-title{font-size:21px;font-weight:700;color:var(--ink);margin:2px 0 3px}
   .cp-sub{font-size:13.5px;color:var(--muted);margin:0 0 14px;line-height:1.5}
   .cp-sec{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:18px 0 8px}
+  .cp-pay-wrap{margin-top:16px;border-top:1px solid var(--hairline);padding-top:12px}
+  .cp-pay-wrap>summary{list-style:none;cursor:pointer;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);display:flex;align-items:center;gap:7px;min-height:32px;-webkit-tap-highlight-color:transparent}
+  .cp-pay-wrap>summary::-webkit-details-marker{display:none}
+  .cp-pay-wrap>summary::before{content:"›";display:inline-block;transition:transform .2s var(--ease);font-size:15px;color:var(--gold)}
+  .cp-pay-wrap[open]>summary::before{transform:rotate(90deg)}
+  .cp-pay-wrap[open]>summary{margin-bottom:10px}
   .cp-pay{display:flex;gap:8px}
   .cp-chip{flex:1;background:var(--cream);border:1px solid var(--hairline);border-radius:12px;padding:9px 6px;text-align:center}
   .cp-chip b{display:block;font-size:15.5px;color:var(--ink)}
@@ -250,6 +256,8 @@
   .safe-line .reg{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);min-width:96px;flex:none}
   .safe-line a{color:var(--gold-text);font-weight:600}
   .safe-line b{font-family:var(--mono)}
+  a.safe-tel{color:var(--ink);font-weight:700;text-decoration:none;border-bottom:1.5px solid rgba(232,148,62,.5);padding:1px 1px;border-radius:2px}
+  a.safe-tel:active{background:rgba(232,148,62,.12)}
   @media(max-width:430px){.safe-line{flex-direction:column;align-items:flex-start;gap:3px}.safe-line .reg{min-width:0}}
 
   /* ── settings rows ── */
@@ -329,6 +337,11 @@
   @keyframes pollen{0%{transform:translate(0,0);opacity:0}14%{opacity:.8}100%{transform:translate(16px,-120px);opacity:0}}
   .firefly{animation:fly 7s ease-in-out infinite;transform-box:fill-box}
   @keyframes fly{0%,100%{opacity:.25;transform:translate(0,0)}50%{opacity:1;transform:translate(10px,-12px)}}
+  /* seasonal fall: snow / leaves / petals drifting down (motion only) */
+  .fall{animation:fallDown linear infinite;will-change:transform}
+  @keyframes fallDown{0%{transform:translate(0,-16px);opacity:0}8%{opacity:1}100%{transform:translate(34px,650px);opacity:.14}}
+  .spin{transform-box:fill-box;transform-origin:center;animation:spin 3.4s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .dew{animation:dewDrift 3.2s ease-in-out infinite;transform-box:fill-box}
   @keyframes dewDrift{0%,100%{transform:translate(0,0);opacity:.5}50%{transform:translate(2px,-5px);opacity:1}}
   .rise{animation:rise 3.6s ease-in-out infinite;transform-box:fill-box}
@@ -493,13 +506,15 @@
   body.motion-calm .rig,body.motion-calm .flow,
   body.motion-calm .firefly,body.motion-calm .dew,body.motion-calm .twinkle,
   body.motion-calm .grow-in,body.motion-calm .view,body.motion-calm .lwn,body.motion-calm .lwf,
+  body.motion-calm .fall,body.motion-calm .spin,
   body.motion-calm .rise{animation:none!important}
-  body.motion-calm .glide,body.motion-calm .glide-rev,body.motion-calm .pollen{opacity:0!important}
+  body.motion-calm .glide,body.motion-calm .glide-rev,body.motion-calm .fall{opacity:0!important}
+  body.motion-calm .pollen{opacity:.4!important}   /* kept, just still — a quiet dusting, not a dead field */
   body.motion-calm .firefly{opacity:.8!important}
   @media (prefers-reduced-motion:reduce){
-    .sway,.glide,.glide-rev,.rove,.float,.pollen,.firefly,.dew,.twinkle,.grow-in,.view,.lwn,.lwf,.rise,.rig,.flow{animation:none!important}
+    .sway,.glide,.glide-rev,.rove,.float,.pollen,.firefly,.dew,.twinkle,.grow-in,.view,.lwn,.lwf,.rise,.rig,.flow,.fall,.spin{animation:none!important}
     html{scroll-behavior:auto}
-    .glide,.glide-rev,.pollen{opacity:0!important}
+    .glide,.glide-rev,.pollen,.fall{opacity:0!important}
   }
 </style>
 </head>
@@ -664,8 +679,8 @@
         <h2 class="lead-h" id="safety" style="font-size:22px">A calm garden — not medical care</h2>
         <p class="sub">Meadowlark isn't therapy, treatment, or a substitute for talking to someone — and it will never claim to be. If you're struggling and need someone now, please reach out. These lines are free, any time.</p>
         <div class="safe-lines">
-          <div class="safe-line"><span class="reg">US &amp; Canada</span><span>Call or text <b>988</b> — Suicide &amp; Crisis Lifeline</span></div>
-          <div class="safe-line"><span class="reg">UK &amp; Ireland</span><span>Samaritans — call <b>116 123</b></span></div>
+          <div class="safe-line"><span class="reg">US &amp; Canada</span><span><a href="tel:988" class="safe-tel">Call 988</a> or <a href="sms:988" class="safe-tel">text 988</a> — Suicide &amp; Crisis Lifeline</span></div>
+          <div class="safe-line"><span class="reg">UK &amp; Ireland</span><span>Samaritans — <a href="tel:116123" class="safe-tel">call 116 123</a></span></div>
           <div class="safe-line"><span class="reg">Anywhere</span><span>Find a line near you at <a href="https://findahelpline.com" target="_blank" rel="noopener">findahelpline.com</a></span></div>
         </div>
         <p class="sub" style="font-size:13px">Crisis help is always free — never behind a paywall or a sign-up. In an emergency, contact your local emergency services.</p>
@@ -749,11 +764,11 @@
     <div class="count" id="ownCount">120</div>
   </div>
   <div id="inviteFoot"></div>
+  <p class="reassure">One small thing is enough. Rest counts too. And if today's not the day, that's a fine answer.</p>
   <div class="sheet-actions">
     <button class="tend-btn" id="tendBtn">Tend this</button>
     <button class="close-btn" id="closeBtn" aria-label="Close, nothing lost">Not now</button>
   </div>
-  <p class="reassure">One small thing is enough. Rest counts too. And if today's not the day, that's a fine answer.</p>
 </div>
 
 <!-- craft path sheet: the road to the chosen craft, mapped (US data — a map, not a race) -->
@@ -1461,14 +1476,19 @@ function openCraftPath(){
   const me=craftUserPathStage(p);
   const el=document.getElementById('craftPathBody');
   let h=`<div class="cp-title">${p.label} — the road, mapped</div>
-  <p class="cp-sub">Typical numbers for the US, so you know the shape of the land. It's a map, not a race — your pace is yours, and every stage counts as a life, not a waiting room.</p>`;
+  <p class="cp-sub">The shape of the land — the stages, the ways in, how long it tends to take. It's a map, not a race: your pace is yours, and every stage counts as a life, not a waiting room.</p>`;
   h+=craftRoadSVG(p,me);
   h+=`<div class="cp-note" style="text-align:center;margin-top:6px">You're on the <b>${esc(p.stages[me].name)}</b> stretch — ${esc(craftStageLabel())}.</div>`;
-  h+=`<div class="cp-sec">What it tends to pay</div><div class="cp-pay">
+  // Pay is real but kept OFF the default view — a salary is a comparison lens, and "am I behind?"
+  // is the exact thought this app protects you from. Here only if you deliberately open it.
+  h+=`<details class="cp-pay-wrap"><summary>The honest money — open only if it helps</summary>
+    <div class="cp-pay">
     <div class="cp-chip"><b>${p.pay.entry}</b><span>starting out</span></div>
     <div class="cp-chip"><b>${p.pay.median}</b><span>typical</span></div>
     <div class="cp-chip"><b>${p.pay.top}</b><span>seasoned</span></div></div>
-  <div class="cp-note">${p.pay.source} · ${p.outlook}</div>`;
+    <div class="cp-note">${p.pay.source} · ${p.outlook}</div>
+    <div class="cp-note" style="font-style:italic;margin-top:4px">A number to orient by, never a bar to clear.</div>
+  </details>`;
   h+=`<div class="cp-sec">How long the whole road is</div>
   <div class="cp-line"><b>${p.time.fromZero}</b> from the very beginning.</div>
   <div class="cp-note">${p.time.note}</div>`;
@@ -1489,7 +1509,7 @@ function craftQuick(){ return craftThread().steps.slice(0,5); }
 
 /* ---- growth: care -> stage (pure, clock-independent, non-decreasing) ---- */
 const THRESH = [0,8,22,42,65];               // 5 stages — a full cycle takes ~65 small returns, not 10 (slow, earned growth)
-const STAGE_WORD = ['resting','sprouting','a sapling','a young tree','in full leaf'];
+const STAGE_WORD = ['quiet','sprouting','a sapling','a young tree','in full leaf'];
 const GLOW_WINDOW_MS = 18*60*60*1000;        // freshly-tended glow window (cosmetic only; additive — nothing wilts)
 const STORE_KEY = 'meadowlark.garden';
 
@@ -1502,7 +1522,7 @@ function totalCare(){ return AREAS.reduce((n,a)=>n+(careOf(a.id)||0),0); }
 let demoCare=null;
 function careOf(areaId){ return demoCare!=null?demoCare:(store.areas[areaId]?store.areas[areaId].care:0); }
 function growthOf(areaId){ const c=careOf(areaId); return clamp((stageOf(c)+fracOf(c))/4,0,1); }
-function glowStrength(areaId){ const lt=store.areas[areaId].lastTendAt||0; if(!lt) return 0; return clamp(1-(Date.now()-lt)/GLOW_WINDOW_MS,0,1); }
+function glowStrength(areaId){ const area=store.areas[areaId]; if(!area) return 0; const lt=area.lastTendAt||0; if(!lt) return 0; return clamp(1-(Date.now()-lt)/GLOW_WINDOW_MS,0,1); }
 
 /* ---- local calendar date (NOT toISOString — must be local, frozen at write) ---- */
 function localYMD(d){ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),da=String(d.getDate()).padStart(2,'0'); return y+'-'+m+'-'+da; }
@@ -1576,7 +1596,7 @@ function loadStore(){
   }
 }
 let saveTimer=null;
-function persist(){ try{ localStorage.setItem(STORE_KEY,JSON.stringify(store)); if(memoryOnly){ memoryOnly=false; updateStorageNote(); } }catch(err){ memoryOnly=true; updateStorageNote(); } }
+function persist(){ try{ localStorage.setItem(STORE_KEY,JSON.stringify(store)); if(memoryOnly){ memoryOnly=false; updateStorageNote(); } }catch(err){ const was=memoryOnly; memoryOnly=true; updateStorageNote(); if(!was){ try{ toast('Storage is full — your garden is held in memory for now. In More, keep a copy with “Save a copy”.'); }catch(_){} } } }
 function updateStorageNote(){ const el=document.getElementById('storageNote'); if(!el) return; el.style.display=memoryOnly?'block':'none'; }
 function save(){ if(saveTimer) cancelAnimationFrame(saveTimer); saveTimer=requestAnimationFrame(persist); }
 function saveNow(){ if(saveTimer){ cancelAnimationFrame(saveTimer); saveTimer=null; } persist(); }
@@ -2664,6 +2684,12 @@ function fableFloatStep(f,dt,x0,x1){
   fableDraw(f);
 }
 let __fableTestNow=0;
+// scene→screen scale is stable between resizes; caching it kills a forced synchronous layout
+// (getBoundingClientRect) that used to run every animation frame — the main jank source on phones.
+let _sceneScale=0;
+function invalidateSceneScale(){ _sceneScale=0; }
+window.addEventListener('resize',invalidateSceneScale);
+window.addEventListener('orientationchange',invalidateSceneScale);
 function fableTickNow(now){
   if(!fableEls||!fableEls.length) return;
   if(store.settings.motion!=='full') return;
@@ -2672,7 +2698,7 @@ function fableTickNow(now){
   const dt=Math.min(0.1,Math.max(0.016,(now-fableTimer)/1000));
   fableTimer=now;
   const w=document.getElementById('sceneWrap'); const svg=w&&w.querySelector('svg'); if(!svg||!svg.isConnected) return;
-  const sc=(svg.getBoundingClientRect().height/PANO_H)||1;
+  let sc=_sceneScale; if(!sc){ sc=(svg.getBoundingClientRect().height/PANO_H)||1; _sceneScale=sc; }   // read layout once per resize, not per frame
   const x0=w.scrollLeft/sc-170, x1=(w.scrollLeft+w.clientWidth)/sc+170;
   const t=now/1000;
   for(const f of fableEls){
@@ -2697,6 +2723,40 @@ window.__fableTest={
   state(){ return (fableEls||[]).filter(f=>!f.isFloat).map(f=>({id:f.id,ox:+f.ox.toFixed(1),oy:+f.oy.toFixed(1),dir:f.dir,mode:f.mode,mid:f.midCur,spd:+(f.spdCur||0).toFixed(1),amp:f.amp,lo:+(f.lo??-f.amp).toFixed(1),hi:+(f.hi??f.amp).toFixed(1)})); }
 };
 
+/* Seasons were text-only (winter looked exactly like summer). This is an additive overlay —
+   a gentle seasonal light wash + fallen ground scatter + drifting particles — so it never fights
+   the fixed-colour Growth Atlas trees, and stays on-ethos (winter = rest, not falling behind).
+   Everything is deterministic; falling particles are motion-gated (hidden in calm/reduced-motion). */
+function drawSeasonOverlay(W,H,seasonName,phase,dusky){
+  if(seasonName==='summer') return '';
+  let o='';
+  // 1) a whisper of seasonal light over the whole scene (skip at dusk/night — the veil owns the mood)
+  const WASH={winter:'#CFE1EC',autumn:'#E79B3C',spring:'#E7F3D6'}, WOP={winter:.11,autumn:.075,spring:.06};
+  if(!dusky && WASH[seasonName]) o+=`<rect width="${W}" height="${H}" fill="${WASH[seasonName]}" opacity="${WOP[seasonName]}" pointer-events="none"/>`;
+  // 2) static ground scatter (present even in calm mode) — settled snow / fallen leaves / drifted petals
+  let g='';
+  if(seasonName==='winter'){
+    for(let i=0;i<44;i++){ const x=(i*173+40)%W, y=474+((i*57)%116), r=6+((i*11)%11); g+=`<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${(r*0.4).toFixed(1)}" fill="#FBFDFF" opacity="${(dusky?.24:.6)}"/>`; }
+  } else if(seasonName==='autumn'){
+    const LC=['#E08A2E','#C96B2A','#D89A3A','#B5532A'];
+    for(let i=0;i<36;i++){ const x=(i*211+30)%W, y=476+((i*63)%118), rot=(i*47)%360, sc=(0.5+((i*13)%20)/26); g+=`<g transform="translate(${x} ${y}) rotate(${rot}) scale(${sc.toFixed(2)})" opacity="${dusky?.45:.82}"><path d="M0 -5 C 4 -4 4 4 0 6 C -4 4 -4 -4 0 -5Z" fill="${LC[i%4]}"/></g>`; }
+  } else if(seasonName==='spring'){
+    for(let i=0;i<42;i++){ const x=(i*233+50)%W, y=470+((i*53)%120), sc=(0.6+((i*7)%16)/20); g+=`<ellipse cx="${x}" cy="${y}" rx="${(3.7*sc).toFixed(1)}" ry="${(2.3*sc).toFixed(1)}" fill="${i%2?'#F1BAD2':'#FBD9E6'}" opacity="${dusky?.5:.82}"/>`; }
+  }
+  if(g) o+=`<g pointer-events="none">${g}</g>`;
+  // 3) drifting particles falling through the scene (motion-gated by CSS)
+  let p='';
+  if(seasonName==='winter'){
+    for(let i=0;i<24;i++){ const x=(i*271+30)%W, r=(1.5+(i%3)*0.9), dur=(9+(i%6)*2), del=-(i*1.3).toFixed(1); p+=`<circle class="fall" cx="${x}" cy="0" r="${r}" fill="#FFFFFF" style="animation-duration:${dur}s;animation-delay:${del}s;opacity:${dusky?.5:.85}"/>`; }
+  } else if(seasonName==='autumn'){
+    const LC=['#E08A2E','#C96B2A','#D89A3A','#B5532A'];
+    for(let i=0;i<16;i++){ const x=(i*331+40)%W, sc=(0.7+((i*9)%14)/18), dur=(11+(i%5)*2.5), del=-(i*1.7).toFixed(1); p+=`<g class="fall" style="animation-duration:${dur}s;animation-delay:${del}s;opacity:${dusky?.6:.95}"><g transform="translate(${x} 0) scale(${sc.toFixed(2)})"><path class="spin" d="M0 -6 C 5 -5 5 5 0 7 C -5 5 -5 -5 0 -6Z" fill="${LC[i%4]}"/></g></g>`; }
+  } else if(seasonName==='spring'){
+    for(let i=0;i<16;i++){ const x=(i*307+60)%W, sc=(0.7+((i*11)%12)/16), dur=(12+(i%5)*2), del=-(i*1.9).toFixed(1); p+=`<g class="fall" style="animation-duration:${dur}s;animation-delay:${del}s;opacity:${dusky?.5:.8}"><g transform="translate(${x} 0) scale(${sc.toFixed(2)})"><ellipse class="spin" cx="0" cy="0" rx="3.6" ry="2.2" fill="${i%2?'#F4C6DA':'#FCE4EC'}"/></g></g>`; }
+  }
+  if(p) o+=`<g>${p}</g>`;
+  return o;
+}
 function renderMeadow(force){
   const phase=dayPhase(), seasonName=season();
   _phase=phase;   // flora helpers (flowers/leaves/grass) read this to darken at dusk/night
@@ -2733,8 +2793,8 @@ function renderMeadow(force){
   // sun (with ray-lines + a small flock) / moon + stars
   const sunx=1700, suny=84;
   if(dusky){
-    s+=`<circle cx="2160" cy="92" r="60" fill="url(#moonHalo)"/><circle cx="2160" cy="92" r="30" fill="url(#moon)"/>`;
-    let stars=''; for(let i=0;i<40;i++){ const x=(i*173)%W, y=40+((i*97)%150), r=i%3?1.3:1.9; stars+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#FBF7F2" opacity="${((.5+(i%3)*.18)*(phase==='night'?1:.55)).toFixed(2)}"/>`; }
+    s+=`<circle cx="2160" cy="92" r="120" fill="url(#moonHalo)"/><circle cx="2160" cy="92" r="62" fill="url(#moonHalo)"/><circle cx="2160" cy="92" r="30" fill="url(#moon)"/>`;
+    let stars=''; for(let i=0;i<92;i++){ const x=(i*173)%W, y=32+((i*97)%180), r=(i%7===0?2.2:(i%2?1.0:1.5)); stars+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#FBF7F2" opacity="${((.4+(i%3)*.2)*(phase==='night'?1:.5)).toFixed(2)}"/>`; }
     s+=`<g class="twinkle">${stars}</g>`;
   } else {
     s+=`<circle cx="${sunx}" cy="${suny}" r="158" fill="url(#halo)"/><circle cx="${sunx}" cy="${suny}" r="56" fill="url(#sun)"/>`;
@@ -2786,7 +2846,8 @@ function renderMeadow(force){
     const care=careOf(id), st=stageOf(care), fr=fracOf(care), f=glowStrength(id);
     const scale=treeScale(id);
     const swayCls=(st>=1 && store.settings.motion==='full')?' sway':'';
-    s+=`<g id="tw-${id}" transform="translate(${cx} ${by})"><g class="treeart${swayCls}" transform="scale(${scale.toFixed(3)})">${tree(st,fr,id,seasonName,phase,FORM[id])}</g><g id="glw-${id}">${glowSparkles(st,scale,a.accent,f)}</g></g>`;
+    const shR=(scale*(4+st*6)).toFixed(1);   // soft contact shadow, grows with the tree so it never floats
+    s+=`<g id="tw-${id}" transform="translate(${cx} ${by})"><ellipse cx="0" cy="3" rx="${shR}" ry="${(scale*2.4).toFixed(1)}" fill="rgba(58,44,26,${dusky?.08:.15})"/><g class="treeart${swayCls}" transform="scale(${scale.toFixed(3)})">${tree(st,fr,id,seasonName,phase,FORM[id])}</g><g id="glw-${id}">${glowSparkles(st,scale,a.accent,f)}</g></g>`;
   });
 
   // ── a LIVING landscape: a gently-animated creature in every habitat ──
@@ -2853,7 +2914,9 @@ function renderMeadow(force){
   s+=`<rect width="${W}" height="${H}" fill="url(#glow)" pointer-events="none"/>`;
 
   // motes: pollen drifting by day, fireflies by dusk/night (spread across the world)
-  if(store.settings.motion==='full'){
+  // atmospheric motes render ALWAYS (calm mode keeps them, just still — a static field still reads
+  // as a living meadow; the CSS below drops only their drift in calm/reduced-motion, not their presence)
+  {
     if(dusky){
       let ff=''; for(let i=0;i<26;i++){ const x=(i*211+60)%W, y=410+((i*73)%70); ff+=`<circle class="firefly" style="animation-delay:${-(i*0.7).toFixed(1)}s" cx="${x}" cy="${y}" r="${(2.4+(i%3)*0.5)}" fill="#FCFBE0"/>`; }
       s+=`<g>${ff}</g>`;
@@ -2862,6 +2925,9 @@ function renderMeadow(force){
       s+=`<g>${pl}</g>`;
     }
   }
+
+  // seasonal atmosphere (wash + fallen scatter + drifting snow/leaves/petals) — under the night veil
+  s+=drawSeasonOverlay(W,H,seasonName,phase,dusky);
 
   // dusk/night veil
   if(dusky) s+=`<rect width="${W}" height="${H}" fill="#2A2740" opacity="${phase==='night'?.22:.12}"/>`;
@@ -2898,6 +2964,7 @@ function patchTree(id){
   const phase=dayPhase(), seasonName=season();
   const a=AREA[id], care=careOf(id), st=stageOf(care), f=glowStrength(id), scale=treeScale(id);
   const swayCls=(st>=1 && store.settings.motion==='full')?' sway':'';
+  const shadow=host.querySelector('ellipse'); if(shadow){ shadow.setAttribute('rx',(scale*(4+st*6)).toFixed(1)); shadow.setAttribute('ry',(scale*2.4).toFixed(1)); }
   const NS='http://www.w3.org/2000/svg';
   const ng=document.createElementNS(NS,'g');
   ng.setAttribute('class','treeart'+swayCls);
@@ -3019,6 +3086,7 @@ function maybeWelcomeBack(){
   let msg=null;
   if(tended && gap>=30*DAY) msg="You're back, and the garden held its place for you. However long it's been, none of it was lost.";
   else if(tended && gap>=WEEK) msg="Welcome back. The meadow kept growing — nothing lapsed, nothing to catch up on.";
+  else if(!tended && store.meta.firstOpenAt===store.meta.lastSeenAt) msg="Welcome. This is your garden — seven quiet corners of a life. Tap one small thing below, or just sit here a while.";
   if(msg){
     slot.innerHTML=`<div class="welcome"><svg class="wb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-3 3-5 6-5 9a5 5 0 0 0 10 0c0-3-2-6-5-9z"/><path d="M12 12v9"/></svg><p>${msg}</p><button class="wb-x" aria-label="Dismiss">close</button></div>`;
     slot.querySelector('.wb-x').addEventListener('click',()=>slot.innerHTML='');
@@ -3126,7 +3194,7 @@ function renderMemoryCard(reshuffle){
 /* the garden's story so far, told as gentle chapters (stages as WORDS, never care numbers) */
 function renderChapters(){
   const box=document.getElementById('lbChapters'); if(!box) return;
-  const J=[...store.journal].sort((a,b)=>a.t-b.t);
+  const J=[...store.journal].filter(e=>e&&AREA[e.area]).sort((a,b)=>a.t-b.t);   // skip malformed entries so one bad record can't blank Look Back
   if(!J.length){ box.innerHTML=''; return; }
   const ch=[], f=J[0], fa=AREA[f.area];
   ch.push({c:fa.accent,t:'Where it began',d:`${niceDay(f.ymd,{day:'numeric',month:'long'})} — you tended ${fa.label}: “${esc(f.text)}”`});
@@ -3347,7 +3415,7 @@ function renderPath(){
 /* ============================== TEND SHEET ================================ */
 let sheetArea=null, sheetSel=null, lastFocusedEl=null;
 function openTend(areaId){
-  const a=AREA[areaId]; if(!a) return;
+  const a=AREA[areaId]; if(!a||!store.areas[areaId]) return;
   lastFocusedEl=document.activeElement;
   sheetArea=areaId; sheetSel=null;
   const st=stageOf(store.areas[areaId].care);
@@ -3418,6 +3486,7 @@ function showTendToast(a,res){
   else if(res.isFirst) msg=`${a.label} has its first small return. A sprout appears.`;
   else if(res.after===4 && res.before<4) msg=`${a.label} grew back whole — in full leaf, in its own time.`;
   else if(res.after>res.before) msg=`Something's growing — ${a.label} is ${STAGE_WORD[res.after]} now.`;
+  else if(res.before===4 && res.after===4) msg=`${a.label} is in full leaf, and you tended it again — the roots just grow deeper.`;
   else if(res.gap>=WEEK) msg=`You came back, and it counts the same as ever. ${a.label} grows a little.`;
   else msg=`A small return, kept. ${a.label} grows a little.`;
   toast(msg);
@@ -3493,7 +3562,7 @@ function renderCraftResults(q){
   if(q.length>=2&&craftIndex){
     for(const r of craftIndex.rows){
       if(out.length>=30) break;
-      if(r[1].toLowerCase().includes(q)) out.push({key:'soc:'+r[0],title:r[1],wage:r[3]>0?('$'+r[3]+'k median'):'',star:false});
+      if(r[1].toLowerCase().includes(q)) out.push({key:'soc:'+r[0],title:r[1],wage:'',star:false});   // no wage — a craft is not a salary; measuring pace against money is exactly what this app refuses
     }
   }
   box.innerHTML=out.map(o=>`<button class="cr-item${pickOcc===o.key?' sel':''}" data-k="${o.key}" data-t="${esc(o.title)}">
@@ -3599,7 +3668,7 @@ function init(){
   document.getElementById('craftPathClose').addEventListener('click',closeCraftPath);
   wireCraftPick();
   document.getElementById('tendBtn').addEventListener('click',doTend);
-  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&sheetArea) closeTend(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeTend(); closeCraftPick(); closeCraftPath(); } });
   document.getElementById('sheet').addEventListener('keydown',trapTab);
   const ot=document.getElementById('ownText');
   ot.addEventListener('input',()=>{ document.getElementById('ownCount').textContent=String(120-ot.value.length); if(ot.value){ document.querySelectorAll('#quick button').forEach(x=>x.classList.remove('sel')); sheetSel=null; } });
