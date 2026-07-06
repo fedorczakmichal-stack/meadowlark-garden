@@ -1673,8 +1673,9 @@ function drawMidground(W,dusky){
   let g='';
   const inStream=(x)=>Math.abs(x-(HABX.future+34))<85;   // keep the slope plants out of the river's corridor
   const inTrail=(x)=>Math.abs(x-(HABX.home+124))<72;      // …and out of the Home trail's corridor (it climbs the same slope)
+  const inBearClearing=(x)=>Math.abs(x-BEARX)<BEARAMP+30; // …and clear a patch under the woods for the ambling bear
   // BACK row — densely packed, small, hazy
-  for(let x=20,i=0; x<W; x+=42,i++){ if(inStream(x)||inTrail(x)) continue; const t=[0,1,2,0,3][i%5]; const sc=0.6+((i*17)%22)/100; const y=372+((i*13)%14); g+=plant(x+((i*23)%14)-7, y, sc, PB, t, ACC[i%6]); }
+  for(let x=20,i=0; x<W; x+=42,i++){ if(inStream(x)||inTrail(x)||inBearClearing(x)) continue; const t=[0,1,2,0,3][i%5]; const sc=0.6+((i*17)%22)/100; const y=372+((i*13)%14); g+=plant(x+((i*23)%14)-7, y, sc, PB, t, ACC[i%6]); }
   // FRONT row — slightly larger, richer, offset between the back ones
   for(let x=48,i=0; x<W; x+=56,i++){ if(inStream(x)||inTrail(x)) continue; const t=[0,3,2,1,0,4][i%6]; const sc=0.8+((i*19)%28)/100; const y=412+((i*11)%16); g+=plant(x+((i*29)%16)-8, y, sc, PF, t, ACC[(i+2)%6]); }
   return g;
@@ -1710,6 +1711,7 @@ function tree(stage, frac, areaId, seasonName, phase, form){
 const HAB=['body','home','connection','meaning','craft','future','calm'];
 const HABX={body:340,home:780,connection:1220,meaning:1660,craft:2080,future:2500,calm:2880};
 const HABY={body:458,home:454,connection:460,meaning:432,craft:452,future:472,calm:456};
+const BEARX=600, BEARAMP=78;   // the bear ambles this stretch just below the treeline — drawMidground carves a clearing here so it never stands on a shrub
 const FORM={body:'fruit',home:'round',connection:'blossom',meaning:'round',craft:'fruit',future:'willow',calm:'round'};
 const HAB_DESC={body:'a wildflower meadow',home:'a homestead garden',connection:'a blossom thicket',meaning:'a sunlit knoll',craft:'a working garden',future:'a stream to the horizon',calm:'a still, quiet pool'};
 const HAB_TX={future:84}; // nudge the willow onto the right bank so it isn't standing in the river
@@ -2833,7 +2835,7 @@ function renderMeadow(force){
     {id:'butterfly',mid:'sail',   x:HABX.connection+70, y:HABY.connection-150, sc:.95, off:.75, flt:22,fltAmp:27,fltSeed:203},
     {id:'deer',     x:1000, y:336, sc:.72, off:.60, amp:80, yd:14, extra:` opacity="${dusky?.5:.72}"`},
     {id:'deer',     x:1380, y:320, sc:.80, off:.15, amp:34, yd:8, extra:` opacity="${dusky?.5:.7}"`},
-    {id:'bear',     x:486,  y:468, sc:.80, off:.40, amp:44, yd:6,  extra:` opacity="${dusky?.85:1}"`},   // foreground open grass, well below the rounded midground shrubs (which sit y~372–440) — no climbing
+    {id:'bear',     x:BEARX,y:352, sc:.74, off:.40, amp:BEARAMP, yd:7, extra:` opacity="${dusky?.6:.9}"`},   // ambling just under the treeline; drawMidground clears the shrubs from this stretch (inBearClearing)
     {id:'bee',      mid:'waggle', x:HABX.craft+168, y:HABY.craft-56, sc:.62, off:.90, flt:14,fltAmp:15,fltSeed:204},
     {id:'dragonfly',mid:'hover',  x:HABX.future-30, y:HABY.future-40, sc:.95, off:.80, flt:14,fltAmp:30,fltSeed:205},
     {id:'stork',    x:HABX.future+32, y:HABY.future+62, sc:1, off:.45, amp:46, yd:5, extra:` opacity="${dusky?.9:1}"`},   // white bird over water: .6 at dusk read as see-through
