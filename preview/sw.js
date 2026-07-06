@@ -1,5 +1,5 @@
 /* Meadowlark service worker — offline-first, cache the shell. No push, no notifications, ever. */
-const CACHE = 'meadowlark-garden-v43';
+const CACHE = 'meadowlark-garden-v48';
 const ASSETS = ['.', 'index.html', 'manifest.json', 'icon.svg', 'icon-maskable.svg', 'craft-index.json', 'fable-animals.js'];
 
 self.addEventListener('install', e => {

@@ -2488,7 +2488,7 @@ const FABLE_BEHAV={
   rabbit:   {go:'hop',    spd:60, idles:[['sit',3],['groom',2],['alert',1]], chain:{sit:'groom'}},
   bear:     {go:'amble',  spd:24, idles:[['sniff',3]],                 rare:[['rear',1]]},
   hedgehog: {go:'trundle',spd:20, idles:[['sniff',3]],                 rare:[['curl',0.8]]},
-  stork:    {go:'stride', spd:34, idles:[['stand',3],['clatter',1]]},
+  stork:    {go:'stride', spd:34, idles:[['stand',3]]},   // no 'clatter' — its head snaps UP/back (looks like the wrong way to fish); just wade + stand
   turtle:   {go:'walk',   spd:16, idles:[['bask',2]],                  rare:[['hide',0.7]]},
   mallard:  {go:'swim',   spd:34, idles:[['upend',2],['shake',1]],     chain:{upend:'shake'}},
   fish:     {go:'swim',   spd:18, idles:[['gulp',1]]},
@@ -2833,10 +2833,10 @@ function renderMeadow(force){
     {id:'butterfly',mid:'sail',   x:HABX.connection+70, y:HABY.connection-150, sc:.95, off:.75, flt:22,fltAmp:27,fltSeed:203},
     {id:'deer',     x:1000, y:336, sc:.72, off:.60, amp:80, yd:14, extra:` opacity="${dusky?.5:.72}"`},
     {id:'deer',     x:1380, y:320, sc:.80, off:.15, amp:34, yd:8, extra:` opacity="${dusky?.5:.7}"`},
-    {id:'bear',     x:590,  y:354, sc:.78, off:.40, amp:60, yd:14, extra:` opacity="${dusky?.62:.9}"`},
+    {id:'bear',     x:486,  y:468, sc:.80, off:.40, amp:44, yd:6,  extra:` opacity="${dusky?.85:1}"`},   // foreground open grass, well below the rounded midground shrubs (which sit y~372–440) — no climbing
     {id:'bee',      mid:'waggle', x:HABX.craft+168, y:HABY.craft-56, sc:.62, off:.90, flt:14,fltAmp:15,fltSeed:204},
     {id:'dragonfly',mid:'hover',  x:HABX.future-30, y:HABY.future-40, sc:.95, off:.80, flt:14,fltAmp:30,fltSeed:205},
-    {id:'stork',    x:HABX.future+32, y:HABY.future+62, sc:1, off:.45, amp:46, yd:5, extra:` opacity="${dusky?.6:1}"`},
+    {id:'stork',    x:HABX.future+32, y:HABY.future+62, sc:1, off:.45, amp:46, yd:5, extra:` opacity="${dusky?.9:1}"`},   // white bird over water: .6 at dusk read as see-through
     {id:'turtle',   x:HABX.future-124,y:HABY.future+64, sc:.60, off:.70, amp:26, yd:3},
     {id:'mallard',  x:HABX.calm-4,    y:HABY.calm+66,  sc:.92, off:.30, amp:45, yd:3},
     {id:'frog',     x:HABX.calm-74,   y:HABY.calm+72,  sc:.70, off:.55, amp:22, yd:4},
