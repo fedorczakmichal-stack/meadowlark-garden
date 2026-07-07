@@ -336,6 +336,69 @@
   .pressed-text{font-size:11.5px;color:var(--muted);line-height:1.35;margin-top:4px;font-style:italic;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
   @media(max-width:430px){.safe-line{flex-direction:column;align-items:flex-start;gap:3px}.safe-line .reg{min-width:0}}
 
+  /* ── "the garden noticed…" — a quiet weekly observation (no numbers, never a score) ── */
+  .noticed{background:linear-gradient(180deg,rgba(158,124,194,.08),rgba(158,124,194,.02));border:1px solid var(--hairline);border-radius:18px;padding:15px 17px;margin:16px 0}
+  .noticed-head{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#7C63A8}
+  .noticed-head svg{width:16px;height:16px;flex:none}
+  .noticed-body{margin:9px 0 0;font-size:15px;line-height:1.5;color:var(--ink);text-wrap:pretty}
+  .noticed-body b{color:#6E559C;font-weight:600}
+
+  /* ── letters to your future self (private, sleeps in localStorage, surfaces only when its day arrives) ── */
+  .letter-arrived{background:linear-gradient(135deg,#FFF3DD,#FBE7C6);border:1px solid rgba(232,148,62,.4);border-radius:18px;padding:16px 17px;margin:16px 0;box-shadow:0 18px 40px -30px rgba(207,111,76,.6)}
+  .letter-arrived .la-lead{margin:2px 0 12px;font-size:15px;line-height:1.5;color:var(--ink)}
+  .la-open{min-height:44px;padding:0 20px;border-radius:999px;border:0;background:linear-gradient(100deg,var(--sunrise),var(--gold));color:#FFFDFB;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 12px 24px -14px rgba(207,111,76,.6)}
+  .la-open:active{transform:scale(.98)}
+  .letter-open{background:var(--surface);border:1px solid var(--hairline);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:10px 0}
+  .letter-open .lo-meta{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+  .letter-open .lo-text{margin:6px 0 0;font-size:14.5px;line-height:1.55;color:var(--ink);white-space:pre-wrap;text-wrap:pretty}
+  .letter-sealed{margin:2px 0 4px}
+  .letter-sealed .ls-row{display:flex;align-items:flex-start;gap:9px;font-size:13.5px;color:var(--muted);padding:5px 0;line-height:1.45}
+  .letter-sealed .ls-wax{flex:none;color:var(--gold-text)}
+  .letter-sealed b{color:var(--ink);font-weight:600}
+  .letter-write{margin-top:10px;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--gold);background:transparent;color:var(--gold-text);font-family:inherit;font-weight:600;font-size:14.5px;cursor:pointer}
+  .letter-write:active{transform:scale(.98)}
+  .letter-form{background:linear-gradient(180deg,rgba(232,148,62,.06),rgba(232,148,62,.015));border:1px solid var(--hairline);border-radius:16px;padding:15px 16px;margin-top:10px}
+  .letter-form .lf-hint{margin:0 0 11px;font-size:13px;line-height:1.5;color:var(--muted)}
+  .letter-form textarea{width:100%;box-sizing:border-box;border:1px solid var(--hairline);border-radius:12px;padding:11px 12px;font-family:inherit;font-size:15px;line-height:1.5;color:var(--ink);background:var(--surface);resize:vertical;min-height:96px}
+  .lf-when-label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:13px 0 7px}
+  .lf-when{display:flex;gap:8px;flex-wrap:wrap}
+  .lf-when-opt{min-height:40px;padding:0 15px;border-radius:999px;border:1px solid var(--hairline);background:var(--surface);color:var(--muted);font-family:inherit;font-weight:600;font-size:13.5px;cursor:pointer;transition:all .15s var(--ease)}
+  .lf-when-opt.sel{border-color:var(--gold);background:rgba(232,148,62,.12);color:var(--gold-text)}
+  .lf-actions{display:flex;gap:10px;margin-top:14px}
+  .lf-seal{min-height:44px;padding:0 22px;border-radius:999px;border:0;background:var(--gold);color:#fff;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer}
+  .lf-cancel{min-height:44px;padding:0 14px;border-radius:999px;border:0;background:transparent;color:var(--muted);font-family:inherit;font-weight:600;font-size:14px;cursor:pointer}
+
+  /* ── printable keepsake invite (Look back) ── */
+  .keepsake-card{background:var(--surface);border:1px solid var(--hairline);border-radius:16px;padding:15px 16px}
+  .keepsake-card .ks-line{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--muted)}
+  .ks-btn{display:inline-flex;align-items:center;gap:9px;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--gold);background:rgba(232,148,62,.08);color:var(--gold-text);font-family:inherit;font-weight:600;font-size:14.5px;cursor:pointer}
+  .ks-btn svg{width:18px;height:18px;flex:none}
+  .ks-btn:active{transform:scale(.98)}
+
+  /* ── the keepsake page itself — hidden on screen, laid out only for print / Save as PDF ── */
+  #printKeepsake{display:none}
+  @media print{
+    @page{margin:14mm}
+    html,body{background:#fff !important}
+    #app,#scrim,.sheet,.toast-zone{display:none !important}
+    #printKeepsake{display:block !important}
+    .pk-page{-webkit-print-color-adjust:exact;print-color-adjust:exact;color:#3A3450;font-family:'Hanken Grotesk',system-ui,sans-serif;max-width:640px;margin:0 auto;text-align:center;padding:10mm 8mm;border:1.5px solid #E4D8C4;border-radius:16px}
+    .pk-brand{font-family:'Space Grotesk',system-ui,sans-serif;font-size:12px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:#A85F12}
+    .pk-title{font-size:30px;font-weight:600;letter-spacing:-.02em;margin:8px 0 3px;color:#3A3450}
+    .pk-date{font-size:13px;color:#7A6E6A;font-family:'Space Grotesk',system-ui,sans-serif;letter-spacing:.02em}
+    .pk-vignette{margin:14px auto 4px;max-width:520px}
+    .pk-vignette svg{width:100%;height:auto;display:block}
+    .pk-craft{font-size:14.5px;color:#564D67;margin:6px 0 2px}
+    .pk-craft b{color:#A85F12;font-weight:600}
+    .pk-sec{font-family:'Space Grotesk',system-ui,sans-serif;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#8A8296;margin:20px 0 12px}
+    .pk-returns{text-align:left;max-width:520px;margin:0 auto;display:grid;gap:11px}
+    .pk-return{display:flex;align-items:flex-start;gap:10px;break-inside:avoid}
+    .pk-dot{flex:none;width:9px;height:9px;border-radius:50%;margin-top:6px}
+    .pk-rt{font-size:14.5px;line-height:1.5;color:#3A3450}
+    .pk-rm{font-family:'Space Grotesk',system-ui,sans-serif;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:#8A8296;margin-top:2px}
+    .pk-foot{margin-top:22px;font-size:12.5px;font-style:italic;color:#7A6E6A;line-height:1.5}
+  }
+
   /* ── settings rows ── */
   .set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--hairline)}
   .set-row:last-child{border-bottom:0}
@@ -725,11 +788,14 @@
         <h1 class="lead-h">The sky was always full</h1>
         <p class="sub">A quiet look at the nights you came back — not a race, not a finish line. Each small return is a light that stayed.</p>
         <div class="lb-summary" id="pathSummary"></div>
+        <div id="lbNoticed"></div>
+        <div id="lbLetters"></div>
         <div id="lbThenNow"></div>
         <div id="lbMemory"></div>
         <div id="lbCompass"></div>
         <div id="lbPressed"></div>
         <div id="lbChapters"></div>
+        <div id="lbKeepsake"></div>
       </div>
       <div class="path-wrap" id="pathWrap"></div>
       <p class="cairn-cap" id="cairnCap" aria-live="polite">Tap a light to return to that day.</p>
@@ -898,6 +964,9 @@
 </div>
 
 <div class="toast-zone" id="toastZone" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<!-- printable keepsake: hidden on screen, laid out only for print / Save as PDF (built on demand) -->
+<div id="printKeepsake" aria-hidden="true"></div>
 
 <script src="fable-animals.js"></script>
 <script>
@@ -3454,6 +3523,141 @@ function renderChapters(){
   ch.push({c:AREA[last.area].accent,t:'The latest light',d:`${fuzzyGroup(last.ymd)} — “${esc(last.text)}” (${AREA[last.area].label}).`});
   box.innerHTML=`<div class="lb-sec">Chapters of this garden</div>`+ch.map(x=>`<div class="lb-ch"><span class="d" style="background:${x.c}"></span><div><b>${x.t}</b><span>${x.d}</span></div></div>`).join('');
 }
+
+/* "The garden noticed…" — one warm weekly observation drawn ONLY from data already here.
+   No numbers, no score, never "you're behind" — just gentle noticing. Rotated by iso-week so it's
+   stable within a week and quietly changes; stages are WORDS (STAGE_WORD), never care values. */
+const NOTICE_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="2.6"/></svg>';
+function renderNoticed(){
+  const box=document.getElementById('lbNoticed'); if(!box) return;
+  const J=store.journal;
+  if(J.length<3){ box.innerHTML=''; return; }   // needs a little history before there's anything true to notice
+  const obs=[];
+  // deepest-rooted corner (care order only decides which — the number itself is never shown)
+  const deep=AREAS.map(a=>({a,c:store.areas[a.id]?store.areas[a.id].care:0})).filter(x=>x.c>0).sort((x,y)=>y.c-x.c)[0];
+  if(deep) obs.push(`<b>${deep.a.label}</b> has been quietly growing — ${STAGE_WORD[stageOf(deep.c)]} now. Roots don’t hurry.`);
+  // the corner you keep finding your way back to (most-tended area, no count shown)
+  const freq={}; J.forEach(e=>{ if(AREA[e.area]) freq[e.area]=(freq[e.area]||0)+1; });
+  const top=Object.entries(freq).sort((a,b)=>b[1]-a[1])[0];
+  if(top && top[1]>=2) obs.push(`You keep finding your way back to <b>${AREA[top[0]].label}</b>. Something there is worth returning to.`);
+  // a widening garden
+  const corners=new Set(J.filter(e=>AREA[e.area]).map(e=>e.area)).size;
+  if(corners>=4) obs.push(`Your garden keeps widening — more of its corners are catching the light.`);
+  // craft-as-core tie-in, when a craft is set and has taken any care
+  if(craftIsSet() && (store.areas.craft?store.areas.craft.care:0)>0) obs.push(`Your craft is taking root here — one small step at a time, the way real things grow.`);
+  // the most recent place your care landed
+  const lastE=[...J].sort((a,b)=>b.t-a.t).find(e=>AREA[e.area]);
+  if(lastE) obs.push(`Lately your care has been landing on <b>${AREA[lastE.area].label}</b>. Wherever you show up counts.`);
+  if(!obs.length){ box.innerHTML=''; return; }
+  const pick=obs[isoWeek()%obs.length];   // stable within the week, gently rotates
+  box.innerHTML=`<div class="noticed"><div class="noticed-head">${NOTICE_ICON}<span>The garden noticed…</span></div><p class="noticed-body">${pick}</p></div>`;
+}
+
+/* Letter to your future self — a private note that sleeps in localStorage and surfaces, gently, only
+   once its chosen day arrives (an invitation to read in Look back — never a nag, no badge, no notification).
+   Nothing leaves the device. */
+function getLetters(){ try{ return JSON.parse(localStorage.getItem('meadowlark.letters')||'[]'); }catch(_){ return []; } }
+function saveLetters(a){ try{ localStorage.setItem('meadowlark.letters',JSON.stringify(a)); }catch(_){} }
+function addDaysYMD(days){ const d=new Date(); d.setDate(d.getDate()+days); return localYMD(d); }
+function nextSpringYMD(){ const now=new Date(); let y=now.getFullYear(); let sp=new Date(y,2,20);   // ~Mar 20
+  if((sp-now)/DAY < 21) sp=new Date(y+1,2,20);   // too close or already past → next year's spring
+  return localYMD(sp); }
+const LETTER_WHEN=[
+  {k:'season', label:'In a season',      ymd:()=>addDaysYMD(92)},
+  {k:'spring', label:'Next spring',      ymd:nextSpringYMD},
+  {k:'year',   label:'A year from now',  ymd:()=>addDaysYMD(365)},
+];
+function renderLetters(){
+  const box=document.getElementById('lbLetters'); if(!box) return;
+  const today=localYMD(new Date());
+  const letters=getLetters();
+  const arrived=letters.filter(l=>l&&!l.opened&&l.openYMD<=today);
+  const opened =letters.filter(l=>l&&l.opened).sort((a,b)=>(b.openedAt||0)-(a.openedAt||0));
+  const sealed =letters.filter(l=>l&&!l.opened&&l.openYMD>today).sort((a,b)=>a.openYMD<b.openYMD?-1:1);
+  let h='';
+  arrived.forEach(l=>{ h+=`<div class="letter-arrived">
+      <div class="eyebrow" style="margin-bottom:5px">A letter has arrived</div>
+      <p class="la-lead">You left this for yourself on ${niceDay(l.createdYMD,{day:'numeric',month:'long',year:'numeric'})} — meant for a day like today. It’s ready whenever you are.</p>
+      <button class="la-open" data-open="${l.id}">Open it, gently</button></div>`; });
+  h+=`<div class="lb-sec">A letter to your future self</div>`;
+  opened.forEach(l=>{ h+=`<div class="letter-open"><div class="lo-meta">Written ${niceDay(l.createdYMD,{day:'numeric',month:'short',year:'numeric'})} · opened ${fuzzyGroup(localYMD(new Date(l.openedAt||Date.now())))}</div><p class="lo-text">${esc(l.text)}</p></div>`; });
+  if(sealed.length){ h+=`<div class="letter-sealed">`+sealed.map(l=>`<div class="ls-row"><span class="ls-wax" aria-hidden="true">✎</span><span>A letter is sealed until <b>${niceDay(l.openYMD,{day:'numeric',month:'long',year:'numeric'})}</b> — it’ll be waiting here then.</span></div>`).join('')+`</div>`; }
+  h+=`<div id="letterCompose"></div>
+      <button class="letter-write" id="letterWriteBtn">${letters.length?'Write another letter':'Write a letter to open later'}</button>`;
+  box.innerHTML=h;
+  box.querySelectorAll('.la-open').forEach(b=>b.addEventListener('click',()=>openLetter(b.dataset.open)));
+  const wb=document.getElementById('letterWriteBtn'); if(wb) wb.addEventListener('click',showLetterCompose);
+}
+function openLetter(id){
+  const letters=getLetters(); const l=letters.find(x=>x&&x.id===id); if(!l) return;
+  l.opened=true; l.openedAt=Date.now(); saveLetters(letters);
+  renderLetters();
+  toast('A letter from you, opened. It stays here now — a keepsake.');
+}
+function showLetterCompose(){
+  const box=document.getElementById('letterCompose'); if(!box) return;
+  const wb=document.getElementById('letterWriteBtn'); if(wb) wb.style.display='none';
+  let when=LETTER_WHEN[0].k;
+  box.innerHTML=`<div class="letter-form">
+    <p class="lf-hint">A private note to the you who’ll read it later. It sleeps here, sealed, until the day you choose — then it’ll be waiting in Look back. Nothing ever leaves this device.</p>
+    <textarea id="letterText" maxlength="700" placeholder="Dear future me…"></textarea>
+    <div class="lf-when-label">Let it find you…</div>
+    <div class="lf-when">`+LETTER_WHEN.map((w,i)=>`<button type="button" class="lf-when-opt${i===0?' sel':''}" data-k="${w.k}">${w.label}</button>`).join('')+`</div>
+    <div class="lf-actions"><button class="lf-seal" id="letterSeal">Seal it</button><button class="lf-cancel" id="letterCancel">Not now</button></div>
+  </div>`;
+  box.querySelectorAll('.lf-when-opt').forEach(b=>b.addEventListener('click',()=>{ when=b.dataset.k; box.querySelectorAll('.lf-when-opt').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); }));
+  document.getElementById('letterCancel').addEventListener('click',renderLetters);
+  document.getElementById('letterSeal').addEventListener('click',()=>{
+    const t=(document.getElementById('letterText').value||'').trim();
+    if(!t){ toast('A line or two first — even a few words are enough.'); return; }
+    const w=LETTER_WHEN.find(x=>x.k===when)||LETTER_WHEN[0]; const openYMD=w.ymd();
+    const letters=getLetters();
+    letters.push({id:'L'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),text:t.slice(0,700),createdYMD:localYMD(new Date()),openYMD:openYMD,opened:false});
+    saveLetters(letters);
+    renderLetters();
+    toast('Sealed. It’ll find you '+niceDay(openYMD,{day:'numeric',month:'long'})+'.');
+  });
+  const ta=document.getElementById('letterText'); if(ta) ta.focus();
+}
+
+/* Printable keepsake — a warm, frameable page of the garden as it stands (the vignette + a handful of
+   your own returns), for print or "Save as PDF". Built on demand into #printKeepsake; window.print()
+   handles the rest. No server, nothing leaves the device. */
+const KEEPSAKE_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/></svg>';
+function renderKeepsake(){
+  const box=document.getElementById('lbKeepsake'); if(!box) return;
+  if(!store.journal.length){ box.innerHTML=''; return; }
+  box.innerHTML=`<div class="lb-sec">A keepsake</div>
+    <div class="keepsake-card">
+      <p class="ks-line">Make a warm, frameable page of your garden as it stands — the whole vignette, and a few of your own returns. Print it, or save it as a PDF. It never leaves this device.</p>
+      <button class="ks-btn" id="keepsakeBtn">${KEEPSAKE_ICON}<span>Print or save a keepsake</span></button>
+    </div>`;
+  const kb=document.getElementById('keepsakeBtn'); if(kb) kb.addEventListener('click',printKeepsake);
+}
+function buildKeepsake(){
+  const root=document.getElementById('printKeepsake'); if(!root) return;
+  const today=niceDay(localYMD(new Date()),{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const map={}; store.journal.forEach(e=>map[e.id]=e);
+  let picks=getPressed().map(id=>map[id]).filter(Boolean);              // prefer the ones you pressed as keepsakes
+  if(picks.length<3){ picks=[...store.journal].filter(e=>AREA[e.area]).sort((a,b)=>b.t-a.t).slice(0,6); }   // else the most recent few
+  else picks=picks.slice(0,8);
+  const returns=picks.map(e=>{ const a=AREA[e.area]||{accent:'#E8943E',label:'A return'};
+    return `<div class="pk-return"><span class="pk-dot" style="background:${a.accent}"></span><div><div class="pk-rt">“${esc(e.text)}”</div><div class="pk-rm">${a.label} · ${niceDay(e.ymd,{day:'numeric',month:'short',year:'numeric'})}</div></div></div>`; }).join('');
+  const craftLine=craftIsSet()?`<div class="pk-craft">The heart of it — <b>${esc(craftLabel())}</b></div>`:'';
+  const vignette=miniGardenSVG(true).replace(/lbtn-/g,'pktn-');          // distinct gradient ids so it never collides with Look back's vignette
+  root.innerHTML=`<div class="pk-page">
+    <div class="pk-brand">Meadowlark</div>
+    <div class="pk-title">Your garden</div>
+    <div class="pk-date">${today}</div>
+    <div class="pk-vignette">${vignette}</div>
+    ${craftLine}
+    <div class="pk-sec">A few of your returns</div>
+    <div class="pk-returns">${returns}</div>
+    <div class="pk-foot">None of it was lost. Every small return became a light.<br>A calm garden for hard seasons.</div>
+  </div>`;
+}
+function printKeepsake(){ buildKeepsake(); setTimeout(()=>{ try{ window.print(); }catch(_){} },40); }
+
 function renderPath(){
   const wrap=document.getElementById('pathWrap');
   // group the journal by day → { ymd, areas[], count }
@@ -3477,6 +3681,7 @@ function renderPath(){
     }
   }
   renderThenNow(); renderMemoryCard(true); renderCompass(); renderPressed(); renderChapters();
+  renderNoticed(); renderLetters(); renderKeepsake();   // v57: weekly noticing · letter to future self · printable keepsake
 
   // ── Nocne Niebo Powrotów — a private night sky; every small return is a faint star ──
   // No beginning, no end, no axis, no "you are here as goal" — just a full dome of scattered light that
