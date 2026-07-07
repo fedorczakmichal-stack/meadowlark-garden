@@ -215,6 +215,13 @@
   .path-wrap{position:relative;width:100%}
   .path-wrap svg{display:block;width:100%;height:auto}
   .cairn-cap{text-align:center;color:var(--muted);font-size:14px;margin-top:8px;min-height:22px;transition:opacity .3s}
+  /* Night Sky of Returns — a tapped light swells gently and its halo blooms */
+  .path-wrap .cairnTap{cursor:pointer}
+  .path-wrap .rt-scale{transform-box:fill-box;transform-origin:center;transition:transform .5s cubic-bezier(.2,.9,.25,1)}
+  .path-wrap .cairnTap.lit .rt-scale{transform:scale(2.2)}
+  .path-wrap .rt-halo{opacity:0;transition:opacity .5s}
+  .path-wrap .cairnTap.lit .rt-halo{opacity:.85}
+  @media (prefers-reduced-motion:reduce){.path-wrap .rt-scale{transition:none}.path-wrap .rt-halo{transition:none}}
   .lb-summary{margin-top:16px}
   .lb-stats{display:flex;gap:10px}
   .lb-stat{flex:1;background:var(--cream);border:1px solid var(--hairline);border-radius:14px;padding:12px 8px;text-align:center;position:relative;overflow:hidden}
@@ -656,8 +663,8 @@
     <section class="view" id="view-path" aria-label="Look back">
       <div class="pad">
         <div class="eyebrow">Look back, gently</div>
-        <h1 class="lead-h">The ground you've covered</h1>
-        <p class="sub">A quiet look at the path behind you — not a race, not a finish line. Each stone is a day you came back.</p>
+        <h1 class="lead-h">The sky was always full</h1>
+        <p class="sub">A quiet look at the nights you came back — not a race, not a finish line. Each small return is a light that stayed.</p>
         <div class="lb-summary" id="pathSummary"></div>
         <div id="lbThenNow"></div>
         <div id="lbMemory"></div>
@@ -666,7 +673,7 @@
         <div id="lbChapters"></div>
       </div>
       <div class="path-wrap" id="pathWrap"></div>
-      <p class="cairn-cap" id="cairnCap">Tap a stone to remember that day.</p>
+      <p class="cairn-cap" id="cairnCap">Tap a light to return to that day.</p>
       <div style="height:24px"></div>
     </section>
 
@@ -1396,126 +1403,119 @@ function renderTrail(stages, currentIndex, accent, interactive, lblScale){
   stages = (stages||[]).slice(0, n);
   currentIndex = Math.max(0, Math.min(n-1, currentIndex|0));
   var P = 'qm' + (++__trailSeq);
-  var W = 680, H = 360, HZ = 132, cx = 344, sunY = HZ - 6;
+  var W = 680, H = 352, CX = 340, CY = 166;
 
-  // ── switchback anchors: stages climb toward the sunrise, alternating sides; the upper ones
-  //    funnel gently back toward the light so the road reads as one journey, not a zigzag ──
-  var yBot = 322, yTop = 178, anchors = [];
-  for(var k=0;k<n;k++){
-    var t = n===1 ? 0 : k/(n-1);
-    var yy = yBot + (yTop-yBot)*(0.78*t + 0.22*t*t);      // slight ease — the far stages tuck up a touch
-    var amp = 96*(1-0.24*t);                               // the weave narrows with distance
-    var pull = Math.max(0,(t-0.5)/0.5);                    // upper half drifts toward the sun
-    var dir = (k%2===0) ? -1 : 1;
-    var xx = cx + dir*amp*(1-0.5*pull);
-    anchors.push({x:xx, y:yy, t:t, i:k, s:0.56+0.5*(1-t)});
+  // ── Nocna Figura — the craft drawn as a CONSTELLATION on a calm dusk-blue sky ──
+  // Each stage is a STAR (size/warmth grow with the stage; the current one is warmest, with a soft halo).
+  // The layout is a loose 2-D scatter — never a line, ladder or road, so there is no start, no finish, no
+  // "distance covered". Positions are deterministic (a hash, not Math.random) so the figure never reshuffles;
+  // phyllotaxis spreads them, a relax pass keeps names from crowding, and the sequence is threaded by
+  // nearest-neighbour so the hair-thin filaments read as one figure to recognise, not a track to run.
+  var hsh = function(i,sd){ var v=Math.sin(i*127.1 + sd*311.7 + 17.13)*43758.5453; return v-Math.floor(v); };
+  var hx = function(c){ c=String(c).replace('#',''); if(c.length===3)c=c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+    return [parseInt(c.slice(0,2),16),parseInt(c.slice(2,4),16),parseInt(c.slice(4,6),16)]; };
+  var mixC = function(a,b,t){ var x=hx(a),y=hx(b), f=function(v){ v=Math.round(v); v=v<0?0:(v>255?255:v); return (v<16?'0':'')+v.toString(16); };
+    return '#'+f(x[0]+(y[0]-x[0])*t)+f(x[1]+(y[1]-x[1])*t)+f(x[2]+(y[2]-x[2])*t); };
+  // 1 — scatter the stars (even spread, jittered)
+  var pos=[], RADX=206, RADY=112;
+  for(var i=0;i<n;i++){
+    var ga = i*2.39996323 + (hsh(i,2)-0.5)*0.7;
+    var rr = Math.sqrt((i+0.6)/n) * (0.86 + 0.32*hsh(i,4));
+    pos.push({ x: CX + Math.cos(ga)*rr*RADX, y: CY + Math.sin(ga)*rr*RADY });
   }
-  // smooth centreline (Catmull-Rom) through a foreground entry point + the anchors
-  var ctrl = [{x:anchors[0].x-22, y:H+16}];
-  for(var a1=0;a1<anchors.length;a1++) ctrl.push({x:anchors[a1].x, y:anchors[a1].y});
-  function cr(p0,p1,p2,p3,u){ var u2=u*u,u3=u2*u; return {
-    x:0.5*((2*p1.x)+(-p0.x+p2.x)*u+(2*p0.x-5*p1.x+4*p2.x-p3.x)*u2+(-p0.x+3*p1.x-3*p2.x+p3.x)*u3),
-    y:0.5*((2*p1.y)+(-p0.y+p2.y)*u+(2*p0.y-5*p1.y+4*p2.y-p3.y)*u2+(-p0.y+3*p1.y-3*p2.y+p3.y)*u3) }; }
-  var cen=[];
-  for(var i=0;i<ctrl.length-1;i++){
-    var p0=ctrl[Math.max(0,i-1)], p1=ctrl[i], p2=ctrl[i+1], p3=ctrl[Math.min(ctrl.length-1,i+2)];
-    var steps = i===0 ? 10 : 16;
-    for(var j=0;j<steps;j++) cen.push(cr(p0,p1,p2,p3,j/steps));
+  // 2 — relax so no two stars crowd (every name gets room to breathe)
+  var MIN = n<=4 ? 150 : 122;
+  for(var it=0; it<90; it++){
+    for(var a=0;a<n;a++) for(var b=a+1;b<n;b++){
+      var ddx=pos[b].x-pos[a].x, ddy=pos[b].y-pos[a].y, dd=Math.sqrt(ddx*ddx+ddy*ddy)||0.01;
+      if(dd<MIN){ var pu=(MIN-dd)/2, ux=ddx/dd, uy=ddy/dd;
+        pos[a].x-=ux*pu; pos[a].y-=uy*pu; pos[b].x+=ux*pu; pos[b].y+=uy*pu; }
+    }
+    for(a=0;a<n;a++){ pos[a].x=clmp(pos[a].x,116,W-116); pos[a].y=clmp(pos[a].y,78,262); }
   }
-  cen.push(ctrl[ctrl.length-1]);
-  function wHalf(y){ var f=clmp((y-yTop)/(yBot-yTop),0,1); return 2.6+15.5*Math.pow(f,1.14); }   // a slim trail — wider near the viewer, never a blobby road
-  var left=[], right=[];
-  for(var c=0;c<cen.length;c++){
-    var pa=cen[c], pb=cen[Math.min(cen.length-1,c+1)], dx=pb.x-pa.x, dy=pb.y-pa.y, L=Math.hypot(dx,dy)||1;
-    var nx=-dy/L, ny=dx/L, w=wHalf(pa.y);
-    left.push([pa.x+nx*w, pa.y+ny*w]); right.push([pa.x-nx*w, pa.y-ny*w]);
+  // 3 — thread the sequence through the scatter by nearest-neighbour (from the leftmost point) so
+  //     consecutive stages sit near each other → a legible figure, no crossing threads
+  var used=[], tour=[], startIdx=0;
+  for(i=1;i<n;i++) if(pos[i].x<pos[startIdx].x) startIdx=i;
+  var curp=startIdx; used[curp]=true; tour.push(curp);
+  for(var kk=1;kk<n;kk++){ var best=-1,bd=1e9;
+    for(var jj=0;jj<n;jj++){ if(used[jj])continue; var dm=Math.hypot(pos[jj].x-pos[curp].x,pos[jj].y-pos[curp].y); if(dm<bd){bd=dm;best=jj;} }
+    used[best]=true; tour.push(best); curp=best;
   }
-  function fmt(pt){ return pt[0].toFixed(1)+' '+pt[1].toFixed(1); }
-  var ribbon='M'+left.map(fmt).join(' L ')+' L '+right.slice().reverse().map(fmt).join(' L ')+' Z';
-  var centerLine='M '+cen.map(function(p){return p.x.toFixed(1)+' '+p.y.toFixed(1);}).join(' L ');
-  function hill(topY,curve,fill){
-    return '<path d="M0 '+topY+' Q170 '+(topY-curve)+' 340 '+topY+' T680 '+topY+' V'+H+' H0 Z" fill="'+fill+'"/>';
-  }
-  function tuft(x,y,sc,c1){
-    var g='<g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+sc.toFixed(2)+')" opacity="0.9">';
-    g+='<path d="M-3 0 Q-3 -7 -1 -9" stroke="#8FB07A" stroke-width="1.4" fill="none"/>';
-    g+='<path d="M0 0 Q0 -8 0 -11" stroke="#8FB07A" stroke-width="1.4" fill="none"/>';
-    g+='<path d="M3 0 Q3 -6 1.4 -8.5" stroke="#8FB07A" stroke-width="1.4" fill="none"/>';
-    g+='<circle cx="-1" cy="-9.4" r="2.1" fill="'+c1+'"/><circle cx="0" cy="-11.4" r="2.3" fill="#FBE7C0"/><circle cx="1.4" cy="-8.9" r="1.9" fill="'+c1+'"/>';
-    g+='<circle cx="0" cy="-10.6" r="0.9" fill="#C9781F"/></g>';
-    return g;
-  }
+  var star=[];
+  for(i=0;i<n;i++){ var pp=pos[tour[i]]; star.push({ x:pp.x, y:pp.y, i:i, t:(n===1?0.5:i/(n-1)) }); }
+
+  // motion gate — safe on the landing too (no store there); a slow-twinkling MINORITY only, never the named stars
+  var reduce = (typeof matchMedia==='function') && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var calm = (typeof store!=='undefined') && store && store.settings && store.settings.motion && store.settings.motion!=='full';
+  var anim = !reduce && !calm;
+
   var o=[];
-  o.push('<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" width="100%" style="height:auto;display:block" role="img" font-family="\'Figtree\',ui-sans-serif,system-ui,sans-serif">');
+  o.push('<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" width="100%" style="height:auto;display:block" role="img" aria-label="'+esc((stages[currentIndex]||'')+' — your place in a constellation of '+n+' stages')+'" font-family="\'Figtree\',ui-sans-serif,system-ui,sans-serif">');
   o.push('<defs>');
-  o.push('<linearGradient id="'+P+'sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F9E4D5"/><stop offset="0.55" stop-color="#F3E9E0"/><stop offset="1" stop-color="#EAF2F0"/></linearGradient>');
-  o.push('<radialGradient id="'+P+'sun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFF6DE"/><stop offset="0.3" stop-color="#FCEBC8"/><stop offset="0.62" stop-color="#FBD9A0" stop-opacity="0.5"/><stop offset="1" stop-color="#FBB36A" stop-opacity="0"/></radialGradient>');
-  o.push('<linearGradient id="'+P+'rib" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EFDDB8"/><stop offset="1" stop-color="#E7CDA0"/></linearGradient>');
-  o.push('<radialGradient id="'+P+'glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="'+accent+'" stop-opacity="0.5"/><stop offset="1" stop-color="'+accent+'" stop-opacity="0"/></radialGradient>');
+  o.push('<linearGradient id="'+P+'sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1E1B36"/><stop offset="0.5" stop-color="#2A2748"/><stop offset="0.82" stop-color="#3A3760"/><stop offset="1" stop-color="#4A4670"/></linearGradient>');
+  o.push('<radialGradient id="'+P+'gW" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFF6DE" stop-opacity="0.9"/><stop offset="0.45" stop-color="#FCEBC8" stop-opacity="0.28"/><stop offset="1" stop-color="#FCEBC8" stop-opacity="0"/></radialGradient>');
+  o.push('<radialGradient id="'+P+'gA" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="'+accent+'" stop-opacity="0.55"/><stop offset="0.5" stop-color="'+accent+'" stop-opacity="0.18"/><stop offset="1" stop-color="'+accent+'" stop-opacity="0"/></radialGradient>');
   o.push('</defs>');
+  if(anim) o.push('<style>@keyframes '+P+'tw{0%,100%{opacity:var(--o,0.4)}50%{opacity:1}}.'+P+'tw{animation:'+P+'tw var(--d,6s) ease-in-out infinite}@media(prefers-reduced-motion:reduce){.'+P+'tw{animation:none}}</style>');
   o.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="url(#'+P+'sky)"/>');
-  o.push('<circle cx="'+cx+'" cy="'+(HZ-2)+'" r="168" fill="url(#'+P+'sun)"/>');
-  o.push('<circle cx="'+cx+'" cy="'+(sunY).toFixed(1)+'" r="31" fill="#FFF6DE" opacity="0.92"/>');
-  o.push('<path d="M0 '+(HZ-2)+' Q150 '+(HZ-20)+' 320 '+(HZ-8)+' T680 '+(HZ-13)+' V'+(HZ+40)+' H0 Z" fill="#CDBBD6" opacity="0.45"/>');
-  o.push(hill(HZ+6,10,'#E6EEDB')); o.push(hill(HZ+42,22,'#DCE8CD')); o.push(hill(HZ+96,32,'#CFE0BC')); o.push(hill(HZ+160,44,'#BFD8A8'));
-  // a few grassy tufts scattered off the road, deterministic, kept clear of the ribbon
-  [[0.20,-1,58],[0.35,1,66],[0.52,-1,74],[0.66,1,60],[0.80,-1,44],[0.90,1,36]].forEach(function(tt){
-    var idx=Math.min(anchors.length-1, Math.round(tt[0]*(anchors.length-1)));
-    var an=anchors[idx]; var s=(0.5+0.5*(1-an.t)); var off=(wHalf(an.y)+tt[2]*s)*tt[1];
-    o.push(tuft(clmp(an.x+off,20,W-20), an.y+8*s, s, accent));
-  });
-  o.push('<path d="'+ribbon+'" fill="#000000" opacity="0.06" transform="translate(0,4)"/>');
-  o.push('<path d="'+ribbon+'" fill="url(#'+P+'rib)" stroke="#C8B183" stroke-width="1"/>');
-  o.push('<path d="'+centerLine+'" fill="none" stroke="#F5E5C6" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="6 11" opacity="0.85"/>');
-  function lantern(m){
-    var s=m.s, x=m.x, y=m.y, isCur=m.i===currentIndex, isPast=m.i<currentIndex;
-    var ph=40*s, lw=12*s, lh=15*s, topY=y-ph;
-    var lightFill=isCur?accent:(isPast?'#FBD9A0':'#F1EAE0');
-    var lightStroke=isCur?accent:'#C9A96A';
-    var op=isCur?1:(isPast?0.98:0.82);
-    var hit=Math.max(17, 24*s);
+  // a whisper of warmth low in the sky — the same horizon glow the Look-Back firmament uses, so the two read as one sky
+  o.push('<ellipse cx="'+CX+'" cy="'+(H+26)+'" rx="'+(W*0.6).toFixed(0)+'" ry="92" fill="#6E5F86" opacity="0.38"/>');
+  // faint background stars for depth (deterministic; a slow-twinkling minority when motion is on)
+  var bg='';
+  for(i=0;i<58;i++){ var bx=(hsh(i,31)*W).toFixed(1), by=(8+hsh(i,37)*(H-30)).toFixed(1), br=(0.5+hsh(i,41)*1.2).toFixed(1), bo=(0.16+hsh(i,43)*0.34).toFixed(2);
+    if(anim && hsh(i,47)>0.82) bg+='<circle class="'+P+'tw" cx="'+bx+'" cy="'+by+'" r="'+br+'" fill="#E7E2F4" style="--o:'+bo+';--d:'+(4.5+hsh(i,53)*5).toFixed(1)+'s;animation-delay:-'+(hsh(i,59)*6).toFixed(1)+'s"/>';
+    else bg+='<circle cx="'+bx+'" cy="'+by+'" r="'+br+'" fill="#E7E2F4" opacity="'+bo+'"/>';
+  }
+  o.push('<g>'+bg+'</g>');
+  // filaments threading the figure (under the stars) — hair-thin, a soft under-glow + a crisp thread
+  var thread='M '+star.map(function(m){return m.x.toFixed(1)+' '+m.y.toFixed(1);}).join(' L ');
+  o.push('<path d="'+thread+'" fill="none" stroke="#8C87C4" stroke-width="3.4" opacity="0.10" stroke-linecap="round" stroke-linejoin="round"/>');
+  o.push('<path d="'+thread+'" fill="none" stroke="#B9B4E4" stroke-width="1" opacity="0.42" stroke-linecap="round" stroke-linejoin="round"/>');
+  // stars — dim→bright so the brighter / current ones sit over the faint ones
+  function drawStar(m){
+    var isCur=m.i===currentIndex, warm=m.t;
+    var core = isCur ? mixC(accent,'#FFF6DE',0.5) : mixC('#C4CBEA','#FFF6DE',0.28+0.46*warm);
+    var r = (2.0 + 2.5*warm) * (isCur?1.5:1);
+    var glowR = r*(isCur?5:3.1);
     var iattr = interactive ? ' style="cursor:pointer" tabindex="0" role="button" aria-label="Stand at: '+esc(stages[m.i])+'"' : '';
-    var g=['<g class="trail-stage" data-i="'+m.i+'" opacity="'+op.toFixed(2)+'"'+iattr+'>'];
-    if(interactive) g.push('<circle cx="'+x.toFixed(1)+'" cy="'+(y-ph*0.5).toFixed(1)+'" r="'+hit.toFixed(1)+'" fill="#000" opacity="0" pointer-events="all"/>');
-    if(isCur){ g.push('<circle cx="'+x.toFixed(1)+'" cy="'+(topY-lh*0.4).toFixed(1)+'" r="'+(34*s).toFixed(1)+'" fill="url(#'+P+'glow)"/>'); }
-    g.push('<ellipse cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" rx="'+(6*s).toFixed(1)+'" ry="'+(2.4*s).toFixed(1)+'" fill="#7A6A57" opacity="0.32"/>');
-    g.push('<line x1="'+x.toFixed(1)+'" y1="'+y.toFixed(1)+'" x2="'+x.toFixed(1)+'" y2="'+topY.toFixed(1)+'" stroke="#8A6A4A" stroke-width="'+(3*s).toFixed(1)+'" stroke-linecap="round"/>');
-    g.push('<line x1="'+(x-7*s).toFixed(1)+'" y1="'+topY.toFixed(1)+'" x2="'+(x+7*s).toFixed(1)+'" y2="'+topY.toFixed(1)+'" stroke="#8A6A4A" stroke-width="'+(2.2*s).toFixed(1)+'" stroke-linecap="round"/>');
-    // hanging loop + the lantern body, with a warm glass panel
-    g.push('<line x1="'+(x-4.4*s).toFixed(1)+'" y1="'+topY.toFixed(1)+'" x2="'+(x-lw*0.5).toFixed(1)+'" y2="'+(topY-lh-2*s).toFixed(1)+'" stroke="#8A6A4A" stroke-width="'+(1.2*s).toFixed(1)+'" opacity="0.7"/>');
-    g.push('<rect x="'+(x-lw*0.62).toFixed(1)+'" y="'+(topY-lh-3*s).toFixed(1)+'" width="'+(lw*1.24).toFixed(1)+'" height="'+(3*s).toFixed(1)+'" rx="'+(1.3*s).toFixed(1)+'" fill="#8A6A4A"/>');
-    g.push('<rect x="'+(x-lw/2).toFixed(1)+'" y="'+(topY-lh).toFixed(1)+'" width="'+lw.toFixed(1)+'" height="'+lh.toFixed(1)+'" rx="'+(3.2*s).toFixed(1)+'" fill="'+lightFill+'" stroke="'+lightStroke+'" stroke-width="'+(1.2*s).toFixed(1)+'"/>');
-    g.push('<circle cx="'+x.toFixed(1)+'" cy="'+(topY-lh*0.5).toFixed(1)+'" r="'+(3*s).toFixed(1)+'" fill="#FFF9E8" opacity="'+(isCur?0.98:(isPast?0.8:0.55))+'"/>');
-    if(isCur){ g.push('<circle cx="'+(x+10*s).toFixed(1)+'" cy="'+(y-4*s).toFixed(1)+'" r="'+(3.8*s).toFixed(1)+'" fill="'+accent+'" stroke="#FBF7F2" stroke-width="1.3"/>'); }
+    var g=['<g class="trail-stage" data-i="'+m.i+'"'+iattr+'>'];
+    if(interactive) g.push('<circle cx="'+m.x.toFixed(1)+'" cy="'+m.y.toFixed(1)+'" r="'+Math.max(18,r+16).toFixed(1)+'" fill="#000" opacity="0" pointer-events="all"/>');
+    g.push('<circle cx="'+m.x.toFixed(1)+'" cy="'+m.y.toFixed(1)+'" r="'+glowR.toFixed(1)+'" fill="url(#'+P+(isCur?'gA':'gW')+')"'+(isCur?'':' opacity="'+(0.5+0.5*warm).toFixed(2)+'"')+'/>');
+    if(isCur) g.push('<circle cx="'+m.x.toFixed(1)+'" cy="'+m.y.toFixed(1)+'" r="'+(glowR*0.5).toFixed(1)+'" fill="url(#'+P+'gW)"/>');
+    if(isCur || warm>0.7){ var L=(isCur?glowR*0.92:r*3.4);
+      g.push('<g stroke="'+(isCur?mixC(accent,'#FFF6DE',0.6):'#FFF6DE')+'" stroke-width="'+(isCur?1.1:0.7)+'" opacity="'+(isCur?0.7:0.4)+'" stroke-linecap="round">');
+      g.push('<line x1="'+(m.x-L).toFixed(1)+'" y1="'+m.y.toFixed(1)+'" x2="'+(m.x+L).toFixed(1)+'" y2="'+m.y.toFixed(1)+'"/>');
+      g.push('<line x1="'+m.x.toFixed(1)+'" y1="'+(m.y-L).toFixed(1)+'" x2="'+m.x.toFixed(1)+'" y2="'+(m.y+L).toFixed(1)+'"/></g>');
+    }
+    g.push('<circle cx="'+m.x.toFixed(1)+'" cy="'+m.y.toFixed(1)+'" r="'+r.toFixed(1)+'" fill="'+core+'"/>');
+    g.push('<circle cx="'+(m.x-r*0.28).toFixed(1)+'" cy="'+(m.y-r*0.3).toFixed(1)+'" r="'+(r*0.42).toFixed(1)+'" fill="#FFFDF6" opacity="0.85"/>');
     g.push('</g>');
     return g.join('');
   }
-  // draw far→near so nearer lanterns overlap the ones behind them
-  anchors.slice().sort(function(a,b){return a.y-b.y;}).forEach(function(m){ o.push(lantern(m)); });
+  star.slice().sort(function(a,b){return a.t-b.t;}).forEach(function(m){ o.push(drawStar(m)); });
 
-  // ── labels: each hugs the OUTER side of its switchback, stacked per side so none collide ──
-  var lampTopOf=function(m){ return m.y - 40*m.s - 8; };
-  function labelW(str,fs){ return fs*0.54*String(str).length; }
-  function emitLabel(m, lx, ly, anchor){
-    var isCur=m.i===currentIndex;
-    var fs=(13.6 - m.t*1.4)*lblScale;
-    var col=isCur?accent:'#8A8194';
-    var tieX = anchor==='end' ? lx+3 : lx-3;
-    o.push('<line x1="'+m.x.toFixed(1)+'" y1="'+lampTopOf(m).toFixed(1)+'" x2="'+tieX.toFixed(1)+'" y2="'+(ly-4).toFixed(1)+'" stroke="'+col+'" stroke-width="'+(isCur?1.5:0.9)+'" opacity="0.5"/>');
-    o.push('<circle cx="'+tieX.toFixed(1)+'" cy="'+(ly-4).toFixed(1)+'" r="1.9" fill="'+col+'"/>');
-    o.push('<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" font-size="'+fs.toFixed(1)+'" text-anchor="'+anchor+'" fill="'+(isCur?accent:'#3A3450')+'" font-weight="'+(isCur?'700':'600')+'" paint-order="stroke" stroke="#FBF7F2" stroke-width="'+(2.6*lblScale).toFixed(1)+'" stroke-linejoin="round">'+esc(stages[m.i])+'</text>');
-  }
+  // ── labels: each star is NAMED like a star chart — side chosen by which half it sits in, a faint leader
+  //    ties the name to its star, and same-side names are pushed apart so none collide ──
+  function labelW(str,fs){ return fs*0.55*String(str).length; }
   var Ls=[], Rs=[];
-  anchors.forEach(function(m){ (m.x<=cx?Ls:Rs).push(m); });
+  star.forEach(function(m){ (m.x<=CX?Ls:Rs).push(m); });
   function placeSide(arr, side){
-    arr.sort(function(a,b){ return a.y-b.y; });   // top of the slope first
-    var gap=20*lblScale, prevY=-1e9;
+    arr.sort(function(a,b){ return a.y-b.y; });
+    var prevY=-1e9;
     arr.forEach(function(m){
-      var fs=(13.6 - m.t*1.4)*lblScale, w=labelW(stages[m.i], fs);
-      var lx = side==='L' ? clmp(m.x-(14*m.s+10), 6+w, cx-8) : clmp(m.x+(14*m.s+10), cx+8, W-6-w);
-      var ly = Math.max(prevY+gap, lampTopOf(m)+4);
-      ly = clmp(ly, 20, H-14); prevY = ly;
-      emitLabel(m, side==='L'?lx:lx, ly, side==='L'?'end':'start');
+      var isCur=m.i===currentIndex;
+      var fs=(12.4 + (isCur?1.2:0))*lblScale;
+      var w=labelW(stages[m.i], fs);
+      var r=(2.0+2.5*m.t)*(isCur?1.5:1), gap=10+r;
+      var lx = side==='L' ? clmp(m.x-gap, 6+w, CX-4) : clmp(m.x+gap, CX+4, W-6-w);
+      var ly = Math.max(prevY + fs*1.55, m.y + fs*0.34);
+      ly = clmp(ly, 18, H-10); prevY = ly;
+      var col = isCur?accent:'#CFCADF';
+      var anchor = side==='L'?'end':'start';
+      var tieX = side==='L' ? lx+2 : lx-2;
+      o.push('<line x1="'+m.x.toFixed(1)+'" y1="'+m.y.toFixed(1)+'" x2="'+tieX.toFixed(1)+'" y2="'+(ly-fs*0.32).toFixed(1)+'" stroke="'+col+'" stroke-width="'+(isCur?1:0.7)+'" opacity="'+(isCur?0.5:0.32)+'"/>');
+      o.push('<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" font-size="'+fs.toFixed(1)+'" text-anchor="'+anchor+'" fill="'+col+'" font-weight="'+(isCur?'700':'500')+'" paint-order="stroke" stroke="#1B1832" stroke-width="'+(2.6*lblScale).toFixed(1)+'" stroke-linejoin="round">'+esc(stages[m.i])+'</text>');
     });
   }
   placeSide(Ls,'L'); placeSide(Rs,'R');
@@ -1535,10 +1535,10 @@ function openCraftPath(){
   const p=craftPathData(); if(!p) return;
   const me=craftUserPathStage(p);
   const el=document.getElementById('craftPathBody');
-  let h=`<div class="cp-title">${p.label} — the road, mapped</div>
-  <p class="cp-sub">The shape of the land — the stages, the ways in, how long it tends to take. It's a map, not a race: your pace is yours, and every stage counts as a life, not a waiting room.</p>`;
+  let h=`<div class="cp-title">${p.label} — the shape of it</div>
+  <p class="cp-sub">The stages, the ways in, how long it tends to take — laid out like a constellation, not a ladder. Your pace is yours, and every stage counts as a life, not a waiting room.</p>`;
   h+=craftRoadSVG(p,me);
-  h+=`<div class="cp-note" style="text-align:center;margin-top:6px">You're on the <b>${esc(p.stages[me].name)}</b> stretch — ${esc(craftStageLabel())}.</div>`;
+  h+=`<div class="cp-note" style="text-align:center;margin-top:6px">You're at <b>${esc(p.stages[me].name)}</b> right now — ${esc(craftStageLabel())}.</div>`;
   // Pay is real but kept OFF the default view — a salary is a comparison lens, and "am I behind?"
   // is the exact thought this app protects you from. Here only if you deliberately open it.
   h+=`<details class="cp-pay-wrap"><summary>The honest money — open only if it helps</summary>
@@ -1549,12 +1549,12 @@ function openCraftPath(){
     <div class="cp-note">${p.pay.source} · ${p.outlook}</div>
     <div class="cp-note" style="font-style:italic;margin-top:4px">A number to orient by, never a bar to clear.</div>
   </details>`;
-  h+=`<div class="cp-sec">How long the whole road is</div>
+  h+=`<div class="cp-sec">How long it all tends to take</div>
   <div class="cp-line"><b>${p.time.fromZero}</b> from the very beginning.</div>
   <div class="cp-note">${p.time.note}</div>`;
   h+=`<div class="cp-sec">Ways in, from where you stand</div>`+p.routes.map(r=>
     `<div class="cp-route"><div class="from">${r.from}</div><div class="how">${r.path}<i>${r.span}</i></div></div>`).join('');
-  h+=`<div class="cp-sec">The road, stage by stage</div><div class="cp-stages">`+p.stages.map((s,i)=>
+  h+=`<div class="cp-sec">Stage by stage</div><div class="cp-stages">`+p.stages.map((s,i)=>
     `<div class="cp-stage${i===me?' me':''}"><b>${s.name}</b><span class="span">${s.span}</span>${i===me?'<span class="span" style="color:#C1663B">· you are here</span>':''}<p>${s.what}</p></div>`).join('')+`</div>`;
   el.innerHTML=h;
   document.getElementById('scrim').classList.add('show');
@@ -3373,7 +3373,7 @@ function renderChapters(){
   const deep=AREAS.map(a=>({a,c:store.areas[a.id].care})).sort((x,y)=>y.c-x.c)[0];
   if(deep&&deep.c>0) ch.push({c:deep.a.accent,t:'Deepest roots',d:`${deep.a.label} has grown the furthest — ${STAGE_WORD[stageOf(deep.c)]}.`});
   const last=J[J.length-1];
-  ch.push({c:AREA[last.area].accent,t:'The latest stone',d:`${fuzzyGroup(last.ymd)} — “${esc(last.text)}” (${AREA[last.area].label}).`});
+  ch.push({c:AREA[last.area].accent,t:'The latest light',d:`${fuzzyGroup(last.ymd)} — “${esc(last.text)}” (${AREA[last.area].label}).`});
   box.innerHTML=`<div class="lb-sec">Chapters of this garden</div>`+ch.map(x=>`<div class="lb-ch"><span class="d" style="background:${x.c}"></span><div><b>${x.t}</b><span>${x.d}</span></div></div>`).join('');
 }
 function renderPath(){
@@ -3388,187 +3388,98 @@ function renderPath(){
   const sum=document.getElementById('pathSummary');
   if(sum){
     if(totalReturns===0){
-      sum.innerHTML=`<p class="lb-line">Your path begins the moment you tend one small thing. Nothing to catch up on — just a first step, whenever you like.</p>`;
+      sum.innerHTML=`<p class="lb-line">Your sky begins the moment you tend one small thing. Nothing to catch up on — just a first light, whenever you like.</p>`;
     } else {
+      // No scoreboard, no counters — just the warm reflection. (Every return still becomes a light below.)
       const firstNice=niceDay(dayKeys[0],{day:'numeric',month:'long'});
       const line = daysBack===1
-        ? `You came back and tended something small. <b>That's the whole path so far</b> — and it's a good beginning.`
-        : `Since ${firstNice}, you've come back ${daysBack} days and made ${totalReturns} small returns. <b>None of it was lost</b> — it all added up to the garden you have now.`;
-      sum.innerHTML=`<div class="lb-stats">
-        <div class="lb-stat"><span class="lb-n">${totalReturns}</span><span class="lb-l">small return${totalReturns>1?'s':''}</span></div>
-        <div class="lb-stat"><span class="lb-n">${daysBack}</span><span class="lb-l">day${daysBack>1?'s':''} you came back</span></div>
-        <div class="lb-stat"><span class="lb-n">${corners}</span><span class="lb-l">corner${corners>1?'s':''} tended</span></div>
-      </div><p class="lb-line">${line}</p>`;
+        ? `You came back and tended something small — <b>one light in the dark</b>, and a good beginning.`
+        : `Since ${firstNice}, you've kept coming back, a little at a time. <b>None of it was lost</b> — every small return became a light up there.`;
+      sum.innerHTML=`<p class="lb-line">${line}</p>`;
     }
   }
   renderThenNow(); renderMemoryCard(true); renderCompass(); renderPressed(); renderChapters();
 
-  // ── the scene: ONE trail receding to the sunrise — a stone for each day; the nearest is the most recent ──
-  // the cards above refresh every visit; the scene itself only rebuilds when a day/return was added
-  const sig=`${totalReturns}|${daysBack}|${dayKeys[dayKeys.length-1]||''}`;
+  // ── Nocne Niebo Powrotów — a private night sky; every small return is a faint star ──
+  // No beginning, no end, no axis, no "you are here as goal" — just a full dome of scattered light that
+  // grows a little denser each time you come back. Deterministic scatter (hash, not Math.random) so the sky
+  // never reshuffles; the most recent glimmers softly as "tonight". Tap a light → that entry's own words rise
+  // below. (This replaces the receding stone trail: a track has a start and a finish; a sky has neither.)
+  const sig=`sky|${totalReturns}|${daysBack}|${dayKeys[dayKeys.length-1]||''}`;
   if(wrap.dataset.sig===sig) return;
   wrap.dataset.sig=sig;
-  const nodes=[{first:true}].concat(dayKeys.map(k=>({first:false,...byDay[k]})));
-  const N=nodes.length, W=1000, HOR=150;
-  const H=Math.max(430, 240+N*52);
-  // trail centreline: meanders down from a vanishing point at the sun to the wide foreground
-  const cps=[{x:618,y:HOR+4,w:6}];
-  const steps=Math.max(4, Math.ceil(N*0.9)+2);
-  for(let k=1;k<=steps;k++){ const t=k/steps;
-    cps.push({ x:(608-140*t)+Math.sin(k*1.02+0.5)*(40+42*t), y:HOR+18+(H-64-(HOR+18))*t, w:6+44*t }); }   // a calm, gentle wind — not a restless zigzag
-  const segs=cps.length-1;
-  const trailPt=u=>{ u=clamp(u,0,1); const f=u*segs, j=Math.min(segs-1,Math.floor(f)), t=f-j;
-    const a=cps[j], b=cps[j+1], my=(a.y+b.y)/2, m=1-t;
-    return { x: m*m*m*a.x + 3*m*m*t*a.x + 3*m*t*t*b.x + t*t*t*b.x,
-             y: m*m*m*a.y + 3*m*m*t*my + 3*m*t*t*my + t*t*t*b.y }; };
-  const wAt=y=>6+44*clamp((y-(HOR+18))/((H-64)-(HOR+18)),0,1);   // road half-width profile (matches how cps were built)
-  const keepPhase=_phase; _phase='day';   // this scene is always dawn-lit
-  let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A winding trail of stones toward the sunrise, one stone for each day you came back.">`;
-  s+=`<defs><linearGradient id="pSky" x1="0" y1="0" x2="0" y2="1">${gradStops(SKY.dawn)}</linearGradient>
-    <radialGradient id="pSun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFF7DF"/><stop offset=".7" stop-color="#FFE6B4"/><stop offset="1" stop-color="#FFE6B4" stop-opacity="0"/></radialGradient></defs>`;
-  s+=`<rect width="${W}" height="${H}" fill="url(#pSky)"/>`;
-  // dawn mountain ranges cradling the sunrise — far violet peaks (with a lit snowcap or two), then blue-green foothills;
-  // the ranges dip into a saddle around x≈618 so the sun rises between them
-  s+=`<path d="M0 ${HOR} L48 ${HOR-56} L104 ${HOR-24} L168 ${HOR-92} L232 ${HOR-34} L292 ${HOR-70} L352 ${HOR-16} L420 ${HOR-46} L484 ${HOR-12} L560 ${HOR-24} L676 ${HOR-12} L738 ${HOR-60} L800 ${HOR-22} L862 ${HOR-86} L920 ${HOR-30} L1000 ${HOR-58} L1000 ${HOR} Z" fill="#BCA9CF" opacity=".6"/>`;
-  s+=`<path d="M168 ${HOR-92} L184 ${HOR-74} L172 ${HOR-71} L153 ${HOR-79} Z M862 ${HOR-86} L876 ${HOR-70} L865 ${HOR-67} L849 ${HOR-74} Z M292 ${HOR-70} L303 ${HOR-58} L294 ${HOR-56} L281 ${HOR-61} Z" fill="#F6EFF7" opacity=".75"/>`;
-  s+=`<path d="M0 ${HOR} L74 ${HOR-36} L152 ${HOR-10} L238 ${HOR-48} L322 ${HOR-8} L412 ${HOR-30} L500 ${HOR-4} L600 ${HOR-18} L710 ${HOR-4} L798 ${HOR-42} L888 ${HOR-10} L1000 ${HOR-30} L1000 ${HOR} Z" fill="#A2BB98" opacity=".6"/>`;
-  s+=`<circle cx="618" cy="${HOR-6}" r="96" fill="#FDE3AE" opacity=".45"/><circle cx="618" cy="${HOR-6}" r="34" fill="url(#pSun)"/>`;
-  // far ridge + layered woods along the skyline
-  s+=`<path d="M0 ${HOR} C 140 ${HOR-16} 300 ${HOR-4} 470 ${HOR-10} C 660 ${HOR-18} 840 ${HOR-2} 1000 ${HOR-12} L1000 ${HOR+30} L0 ${HOR+30} Z" fill="#C7DAB5" opacity=".85"/>`;
-  [[70,-6,1],[176,-11,1.4],[298,-5,1],[398,-9,.8],[560,-4,.7],[742,-12,1.3],[876,-5,1],[956,-10,1.2]].forEach(([cx,dy,sc])=>{
-    s+=`<g transform="translate(${cx} ${HOR+dy}) scale(${sc})" opacity=".9"><circle cx="-14" cy="2" r="9" fill="#8FB47A"/><circle cx="13" cy="1" r="8" fill="#8FB47A"/><circle cx="-5" cy="-3" r="11" fill="#A8C48D"/><circle cx="6" cy="-1" r="9" fill="#9CBD83"/></g>`; });
-  // meadow: sun-washed far band settling into deeper green up close
-  s+=`<rect x="0" y="${HOR}" width="${W}" height="${H-HOR}" fill="#93C173"/>`;
-  s+=`<path d="M0 ${HOR} C 250 ${HOR+14} 640 ${HOR+2} 1000 ${HOR+16} L1000 ${HOR+96} C 620 ${HOR+80} 300 ${HOR+96} 0 ${HOR+78} Z" fill="#B3D694" opacity=".85"/>`;
-  s+=`<path d="M0 ${H-110} C 260 ${H-140} 620 ${H-96} 1000 ${H-128} L1000 ${H} L0 ${H} Z" fill="#79B25C"/>`;
-  s+=`<path d="M0 ${H-44} C 300 ${H-66} 640 ${H-36} 1000 ${H-58} L1000 ${H} L0 ${H} Z" fill="#68A64E"/>`;
-  // morning mist along the horizon
-  s+=`<ellipse cx="300" cy="${HOR+8}" rx="240" ry="14" fill="#FFF6E2" opacity=".4" filter="url(#glDof)"/>`;
-  s+=`<ellipse cx="760" cy="${HOR+12}" rx="220" ry="12" fill="#FFF6E2" opacity=".32" filter="url(#glDof)"/>`;
-  // ── greenery lining the trail: forest clumps, lone trees, bushes and flower drifts, scaled by depth ──
-  // deterministic scatter (hash, not random) so the scene doesn't reshuffle on every visit
-  const rnd01=i=>(((i*2654435761)>>>0)%1000)/1000;
-  const roadXat=y=>{ const u=clamp((y-(HOR+18))/((H-64)-(HOR+18)),0,1); return trailPt(u).x; };
-  const dtree=(x,y,sc,i)=>{ const g1=['#7FB363','#74AA58','#86BA6C'][i%3], g2=['#639B4A','#5C9344','#6BA452'][i%3];
-    return `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${sc.toFixed(2)})"><ellipse cx="0" cy="2" rx="15" ry="3.4" fill="rgba(60,40,20,.12)"/><path d="M-2.6 2 L2.6 2 L1.8 -21 L-1.8 -21 Z" fill="#8A6B4A"/><circle cx="-10" cy="-25" r="12" fill="${g2}"/><circle cx="10" cy="-26" r="11" fill="${g2}"/><circle cx="-5" cy="-30" r="11" fill="${g1}"/><circle cx="1" cy="-35" r="13" fill="${g1}"/><circle cx="5" cy="-39" r="8" fill="#9BCB7F" opacity=".7"/></g>`; };
-  const dbush=(x,y,sc,i)=>{ const b=['#6FA857','#79B25C','#67A150'][i%3];
-    return `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${sc.toFixed(2)})"><ellipse cx="0" cy="1.5" rx="12" ry="2.6" fill="rgba(60,40,20,.1)"/><circle cx="-7" cy="-4" r="7" fill="${b}"/><circle cx="7" cy="-4" r="6.4" fill="${b}"/><circle cx="0" cy="-7" r="7.6" fill="#84BB68"/><circle cx="2" cy="-9" r="4" fill="#9BCB7F" opacity=".6"/></g>`; };
-  const drift=(x,y,sc,i)=>{ let d=''; const n=3+(i%3);
-    for(let k=0;k<n;k++){ const a=AREAS[(i+k)%AREAS.length]; d+=`<g transform="translate(${(x+(k-(n-1)/2)*14*sc).toFixed(0)} ${(y+((k%2)?4:-2)*sc).toFixed(0)}) scale(${(sc*(0.11+0.04*(k%2))).toFixed(3)})" color="${a.accent}"><use href="#flower6" x="-50" y="-50" width="100" height="100"/></g>`; }
-    return d; };
-  let veg='';
-  // soft ground patches so the open field isn't one flat green (painted under everything else)
-  let patches='';
-  const nPatch=Math.min(30, 8+Math.floor((H-HOR)/140));
-  for(let i=0;i<nPatch;i++){
-    const py=HOR+60+rnd01(i*41+13)*(H-HOR-120), pdepth=(py-HOR)/(H-HOR);
-    const px=30+rnd01(i*53+29)*(W-60), prx=(50+150*pdepth)*(0.6+0.8*rnd01(i*7+2));
-    patches+=`<ellipse cx="${px.toFixed(0)}" cy="${py.toFixed(0)}" rx="${prx.toFixed(0)}" ry="${(prx*0.24).toFixed(0)}" fill="${rnd01(i*19+3)>0.5?'#9DC97E':'#84B767'}" opacity=".33"/>`;
+  const entries=[...store.journal].sort((a,b)=>a.t-b.t);   // oldest → newest; the last is "tonight"
+  const N=entries.length, W=1000;
+  const H=Math.round(clamp(544+N*6, 544, 772));
+  const HZ=H-96;                                            // where the dark garden meets the sky
+  const hh=(i,sd)=>{ const v=Math.sin(i*127.1 + sd*311.7 + 7.71)*43758.5453; return v-Math.floor(v); };
+  let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A night sky over your garden. Every small return you've made is a faint star — no beginning, no end.">`;
+  s+=`<defs>
+    <linearGradient id="skySky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#161328"/><stop offset=".46" stop-color="#221F3E"/><stop offset=".76" stop-color="#322E52"/><stop offset="1" stop-color="#403A63"/></linearGradient>
+    <radialGradient id="skyMoon" cx="42%" cy="38%" r="62%"><stop offset="0" stop-color="#FBF7F2"/><stop offset=".7" stop-color="#E4E0F0"/><stop offset="1" stop-color="#C4C0DC"/></radialGradient>
+    <radialGradient id="skyMoonH" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#D8D6EC" stop-opacity=".38"/><stop offset="1" stop-color="#D8D6EC" stop-opacity="0"/></radialGradient>
+    <radialGradient id="skyGlowW" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFF6DE" stop-opacity=".9"/><stop offset=".45" stop-color="#FCEBC8" stop-opacity=".25"/><stop offset="1" stop-color="#FCEBC8" stop-opacity="0"/></radialGradient>
+    <radialGradient id="skyHorizon" cx="50%" cy="100%" r="72%"><stop offset="0" stop-color="#6A5C86" stop-opacity=".5"/><stop offset=".5" stop-color="#4A4470" stop-opacity=".24"/><stop offset="1" stop-color="#4A4470" stop-opacity="0"/></radialGradient>
+  </defs>`;
+  s+=`<rect width="${W}" height="${H}" fill="url(#skySky)"/>`;
+  // a soft moon, low-key off to one side — atmosphere, never a destination
+  const MX=838, MY=112, moonClear=(x,y,pad)=>Math.hypot(x-MX,y-MY)<pad;   // keep points off the moon face
+  s+=`<circle cx="${MX}" cy="${MY}" r="128" fill="url(#skyMoonH)" opacity=".82"/><circle cx="${MX}" cy="${MY}" r="58" fill="url(#skyMoonH)" opacity=".82"/><circle cx="${MX}" cy="${MY}" r="26" fill="url(#skyMoon)" opacity=".92"/>`;
+  // warm horizon glow — the garden breathing in the dark
+  s+=`<rect x="0" y="${HZ-130}" width="${W}" height="${H-(HZ-130)}" fill="url(#skyHorizon)"/>`;
+  // a full field of faint background stars for depth (deterministic; a slow-twinkling minority) — kept dim
+  // so the RETURNS (below) read as the brighter characters of the sky, not lost among the decoration
+  let bg='';
+  for(let i=0;i<150;i++){ const bxn=hh(i,3)*W, byn=6+hh(i,7)*(HZ-12); if(moonClear(bxn,byn,58)) continue;   // the moon face stays clean
+    const bx=bxn.toFixed(1), by=byn.toFixed(1), br=(0.5+hh(i,11)*1.1).toFixed(1), bo=(0.1+hh(i,13)*0.32).toFixed(2);
+    if(hh(i,17)>0.86) bg+=`<circle class="twinkle" cx="${bx}" cy="${by}" r="${br}" fill="#E7E2F4" style="--d:${(4.5+hh(i,19)*5).toFixed(1)}s;animation-delay:-${(hh(i,23)*6).toFixed(1)}s;opacity:${bo}"/>`;
+    else bg+=`<circle cx="${bx}" cy="${by}" r="${br}" fill="#E7E2F4" opacity="${bo}"/>`;
   }
-  s+=`<g>${patches}</g>`;
-  // NOTHING may stand on the road, and clusters keep breathing room from one another:
-  // every cluster asks placeClear() for a spot — it pushes the candidate off the road corridor
-  // (the road curves BETWEEN band anchors, so a per-band offset alone isn't enough) and drops it
-  // if it would crowd an already-placed cluster.
-  const placed=[];
-  const placeClear=(x,y,ext)=>{ const rx=roadXat(y), min=wAt(y)/2+ext+10;
-    let nx=x; if(Math.abs(nx-rx)<min) nx=(nx<rx?rx-min:rx+min);
-    nx=clamp(nx,26,W-26);
-    if(Math.abs(nx-rx)<min) return null;                     // clamped back over the road — drop it
-    for(const q of placed){ if(Math.abs(q.y-y)<46 && Math.abs(q.x-nx)<(q.ext+ext)*0.7) return null; }
-    placed.push({x:nx,y,ext}); return nx;
-  };
-  // woodland margins running down BOTH edges — jittered rhythm and varied recipes so they read as organic copses
-  const edgeStep=Math.max(180,(H-244)/15);   // sparser rows — the meadow should breathe, not be wallpapered in trees
-  for(let y=HOR+64, j=0; y<H-30; y+=edgeStep*(0.7+0.7*rnd01(j*23+9)), j++){
-    const depth=(y-HOR)/(H-HOR), escl=0.5+1.15*depth;
-    [[26+rnd01(j*11+2)*66+rnd01(j*5+8)*96, j*2], [W-26-rnd01(j*19+4)*66-rnd01(j*9+6)*96, j*2+1]].forEach(([exc,ei])=>{
-      if(rnd01(ei*17+1)>0.62) return;   // let the margin breathe — skip more often than not
-      const ex=placeClear(exc, y, 42*escl); if(ex===null) return;
-      const r=rnd01(ei*13+7), spread=0.78+0.5*rnd01(ei*29+3);
-      if(r<0.28){ veg+=dtree(ex, y+10, escl*spread, ei); }
-      else if(r<0.6){ veg+=dtree(ex-16*escl, y+rnd01(ei*5+1)*26, escl*0.9*spread, ei)+dtree(ex+14*escl, y+10+rnd01(ei*7+3)*26, escl*spread, ei+1)+dbush(ex+34*escl, y+20, escl*0.75, ei); }
-      else if(r<0.82){ veg+=dtree(ex-20*escl, y, escl*0.85, ei)+dtree(ex+2*escl, y+12, escl*1.08*spread, ei+1)+dtree(ex+26*escl, y+4, escl*0.72, ei+2)+dbush(ex-34*escl, y+18, escl*0.7, ei); }
-      else { veg+=dbush(ex, y+8, escl*0.9*spread, ei)+drift(ex-30*escl, y+26, escl*0.8, ei+2)+`<g transform="translate(${(ex+22).toFixed(0)} ${(y+30).toFixed(0)}) scale(${escl.toFixed(2)})">${grassClump(0,0,null,true)}</g>`; }
-    });
-  }
-  // clusters strung along the trail itself
-  const bands=Math.min(20, Math.max(6, Math.ceil(N/2)+3));   // far fewer trail-hugging clusters — keep the stones company, don't bury them
-  for(let i=0;i<bands;i++){
-    const u=0.04+0.94*(i/(bands-1)); const p=trailPt(u); const depth=(p.y-HOR)/(H-HOR);
-    const side=(i%2?1:-1)*(rnd01(i*7+3)>0.82?-1:1);   // mostly alternating, occasionally doubling up a side
-    const off=wAt(p.y)/2 + 48 + 34*depth + rnd01(i*13+1)*56;
-    const y=p.y+6, sc=0.45+1.05*depth;
-    const kind=Math.floor(rnd01(i*31+7)*4);
-    const ext=[44,26,30,20][kind]*sc;
-    const x=placeClear(clamp(p.x+side*off, 26, W-26), y, ext); if(x===null) continue;
-    if(kind===0){ veg+=dtree(x-12*sc,y,sc*0.92,i)+dtree(x+14*sc,y+7,sc,i+1)+dbush(x+30*sc,y+9,sc*0.8,i); }
-    else if(kind===1){ veg+=dtree(x,y,sc,i)+dbush(x+26*sc,y+11,sc*0.78,i); }
-    else if(kind===2){ veg+=dbush(x,y,sc,i)+dbush(x-22*sc,y+6,sc*0.7,i+2); }
-    else { veg+=`<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${sc.toFixed(2)})">${grassClump(0,0,null,true)}</g>`; }
-    // just occasionally a lone copse drifts halfway toward the edge, so the mid-field isn't wholly empty
-    if(rnd01(i*43+5)>0.9){ const mx=placeClear(clamp(p.x+side*off*2.6, 60, W-60), y+12, 32*sc);
-      if(mx!==null) veg+=dtree(mx, y+12, sc*0.82, i+3)+dbush(mx+22*sc, y+18, sc*0.6, i+1); }
-  }
-  // loose field flowers dotted across the open meadow (kept clear of the trail corridor)
-  let dots='';
-  for(let i=0;i<Math.min(30, 12+N);i++){
-    const y=HOR+46+rnd01(i*17+5)*(H-HOR-110); const x=26+rnd01(i*29+11)*(W-52);
-    const depth=(y-HOR)/(H-HOR);
-    if(Math.abs(x-roadXat(y))<wAt(y)/2+70) continue;
-    const a=AREAS[i%AREAS.length];
-    dots+=rnd01(i*3)>0.5
-      ? `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${(1.6+2.6*depth).toFixed(1)}" fill="${a.accent}" opacity=".6"/>`
-      : `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${(1.3+2*depth).toFixed(1)}" fill="#F5EFD8" opacity=".65"/>`;
-  }
-  s+=`<g>${dots}</g>`+veg;
-  // the trail itself — tapered, sun-warmed, with a lighter worn centre; it runs off the bottom edge toward the viewer
-  const lastCp=cps[cps.length-1];
-  const road=cps.concat([{x:lastCp.x-46,y:H+18,w:lastCp.w+12}]);
-  s+=`<path d="${ribbon(road.map(p=>({x:p.x,y:p.y,w:p.w+4})))}" fill="#C8B183" opacity=".5"/>`;
-  s+=`<path d="${ribbon(road)}" fill="#E7CDA0"/>`;
-  s+=`<path d="${ribbon(road.map(p=>({x:p.x,y:p.y,w:Math.max(2,p.w*0.45)})))}" fill="#F5E5C6" opacity=".75"/>`;
-  // (No loose roadside blooms — each stone already carries its own day's-colour flower, so the trail
-  //  stays about the stones. A few field dots and the framing woods give the meadow its quiet life.)
-  // companion copses — a hazy one by the horizon, a full one in the near corner, in the trail scene's own flat style
-  // (corner pulled left so even a road exiting at its leftmost never runs under the trees)
-  s+=`<g opacity=".9">${dtree(866,HOR+46,0.55,1)+dtree(896,HOR+52,0.62,2)+dbush(922,HOR+56,0.48,0)}</g>`;
-  s+=dtree(46,H-40,1.5,2)+dtree(108,H-16,1.8,0)+dbush(154,H-8,1.3,1)+drift(168,H-34,1.4,3);
-  // foreground grass + a gliding lark
-  s+=grassClump(210,H-8)+grassClump(560,H-4)+grassClump(880,H-10)+grassClump(388,H-14,'#5E9A4E');
-  s+=`<g class="glide" style="animation-delay:-6s"><use href="#lark" x="-34" y="-22" width="46" height="30" transform="translate(150 ${HOR-42})"/></g>`;
-  // stones — drawn far→near so closer ones overlap; warm sandstone, a bloom in that day's colour, the newest glows
-  const pts=nodes.map((n,i)=>{ const u = N===1 ? 0.86 : 0.10+(0.94-0.10)*(i/(N-1)); const p=trailPt(u);
-    const q=trailPt(Math.min(1,u+0.012)); let tx=q.x-p.x, ty=q.y-p.y; const L=Math.hypot(tx,ty)||1; tx/=L; ty/=L;
-    const depth=(p.y-HOR)/(H-HOR), off=(wAt(p.y)/2+15+11*depth)*(i%2?1:-1);   // waymarks stand BESIDE the road, alternating sides
-    return {x:p.x-ty*off, y:p.y+tx*off, n, sc:0.74+0.66*depth, latest:i===N-1}; });
-  pts.forEach(p=>{
-    const n=p.n, cnt=n.first?1:(n.count||1), extra=n.first?0:clamp(cnt-1,0,2);
-    const accent=n.first?'#E8943E':AREA[n.areas[0]].accent;
-    const cap = n.first
-      ? "Where the path begins — one small thing was all it took."
-      : `${niceDay(n.ymd,{weekday:'short',day:'numeric',month:'short'})} — ${n.areas.map(a=>AREA[a].label).join(' · ')} · ${cnt===1?'one small return':cnt+' small returns'}${p.latest?" · you're here":''}`;
-    let cg='';
-    // a soft breath of light lifts each stone off the busy meadow; the newest one truly glows in its day's colour
-    cg+=`<ellipse cx="0" cy="-4" rx="21" ry="16" fill="#FCF8F0" opacity="${p.latest?.5:.22}" filter="url(#glDof)"/>`;
-    if(p.latest&&!n.first) cg+=`<circle cx="0" cy="-7" r="31" fill="${accent}" opacity=".2"/><circle cx="0" cy="-7" r="17" fill="${accent}" opacity=".18"/>`;
-    cg+=`<ellipse cx="1" cy="11" rx="${19+extra*2}" ry="5" fill="rgba(70,48,22,.2)"/>`;
-    cg+=`<path d="M-14 10 C -15.5 1 -8 -4.5 0 -4.5 C 8 -4.5 15.5 1 14 10 Z" fill="#C6B18E"/>`;
-    cg+=`<path d="M-13 10 C -13 4 -9 0 -4 -2 C -8.5 2 -10.5 5.5 -11 10 Z" fill="#B29D79" opacity=".55"/>`;
-    cg+=`<path d="M-9.5 -3 C -9.5 -9.5 -4 -12.5 1 -12.5 C 6.5 -12.5 10.5 -9 10 -3 C 4.5 0 -4.5 0 -9.5 -3 Z" fill="#D8C9A8"/>`;
-    cg+=`<ellipse cx="${extra?1:0}" cy="-14.5" rx="6.4" ry="4.4" fill="#E9DEC5"/>`;
-    let topY=-14.5;
-    for(let k=0;k<extra;k++){ topY-=7.5; cg+=`<ellipse cx="${k%2?-2:2}" cy="${topY.toFixed(1)}" rx="${(5.4-k).toFixed(1)}" ry="${(3.9-k*0.5).toFixed(1)}" fill="${k%2?'#F0E7D3':'#E0D3B6'}"/>`; }
-    cg+=`<ellipse cx="-3.4" cy="-8.8" rx="2.6" ry="1.4" fill="#FFFDF6" opacity=".5"/>`;
-    cg+=`<g transform="translate(0 ${(topY-8).toFixed(1)}) scale(.17)" color="${accent}"><use href="#flower6" x="-50" y="-50" width="100" height="100"/></g>`;
-    s+=`<g class="cairnTap" data-cap="${esc(cap)}" transform="translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) scale(${p.sc.toFixed(2)})" style="cursor:pointer" role="button" tabindex="0" aria-label="${esc(n.first?'Where the path begins':niceDay(n.ymd,{weekday:'long',day:'numeric',month:'long'})+', a day you came back')}">${cg}</g>`;
+  s+=`<g>${bg}</g>`;
+  // the dark garden along the bottom — a low silhouette so the sky has ground, but no path, no axis
+  s+=`<path d="M0 ${HZ} C 150 ${HZ-30} 320 ${HZ-8} 500 ${HZ-22} C 680 ${HZ-36} 840 ${HZ-10} 1000 ${HZ-24} L1000 ${H} L0 ${H} Z" fill="#171430"/>`;
+  s+=`<path d="M0 ${HZ+22} C 240 ${HZ+4} 520 ${HZ+28} 760 ${HZ+10} C 880 ${HZ+2} 950 ${HZ+12} 1000 ${HZ+8} L1000 ${H} L0 ${H} Z" fill="#0F0D22"/>`;
+  const silTree=(x,y,sc)=>`<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${sc.toFixed(2)})" fill="#120F26"><rect x="-2" y="-15" width="4" height="17"/><circle cx="-7" cy="-18" r="9"/><circle cx="7" cy="-19" r="8"/><circle cx="0" cy="-25" r="10.5"/></g>`;
+  const silPine=(x,y,sc)=>`<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${sc.toFixed(2)})" fill="#120F26"><rect x="-1.6" y="-9" width="3.2" height="11"/><path d="M0 -35 L11 -6 L-11 -6 Z"/><path d="M0 -24 L9 -2 L-9 -2 Z"/></g>`;
+  let ridge='';
+  for(let i=0;i<9;i++){ const rx=42+i*((W-84)/8)+(hh(i,29)-0.5)*44; const ry=HZ+2+hh(i,31)*9; const rs=0.7+hh(i,37)*0.7;
+    ridge += (hh(i,41)>0.5?silPine(rx,ry,rs):silTree(rx,ry,rs)); }
+  s+=ridge;
+  // the returns themselves — one faint star per entry, scattered like real stars; density grows softly
+  entries.forEach((e,idx)=>{
+    let gx=34+hh(idx,61)*(W-68);
+    let gy=26+Math.pow(hh(idx,67),0.92)*((HZ-46)-26);
+    if(moonClear(gx,gy,104)){ const ang=Math.atan2(gy-MY,gx-MX)||0.6; gx=clamp(MX+Math.cos(ang)*104,34,W-34); gy=clamp(MY+Math.sin(ang)*104,26,HZ-46); }
+    const latest=idx===N-1;
+    const a=AREA[e.area]||{accent:'#E8943E',label:'A return'};
+    const bright=hh(idx,73);
+    const rr=latest?4.2:(2.0+bright*2.0);
+    const core=mix('#FFF6DE', a.accent, latest?0.32:0.24);
+    const cap=`“${e.text}” — ${a.label}, ${fuzzyGroup(e.ymd).toLowerCase()}`;
+    const aria=a.label+', '+niceDay(e.ymd,{day:'numeric',month:'long'});
+    let g=`<g class="cairnTap" data-cap="${esc(cap)}" role="button" tabindex="0" aria-label="${esc(aria)}">`;
+    g+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="15" fill="#000" opacity="0" pointer-events="all"/>`;
+    g+=`<circle class="rt-halo" cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*5.2).toFixed(1)}" fill="url(#skyGlowW)"/>`;
+    g+=`<g class="rt-scale">`;
+    // every return carries a soft glow tinted by its area — so it reads as a warm point of light, a character
+    // of the sky, distinct from the pinprick background field; the brighter ones and the latest bloom further
+    g+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*(latest?3.4:1.9)).toFixed(1)}" fill="url(#skyGlowW)" opacity="${latest?0.92:(0.34+bright*0.24)}"/>`;
+    g+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*2.2).toFixed(1)}" fill="${a.accent}" opacity="${latest?0.22:0.12}"/>`;
+    if(latest) g+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*4.4).toFixed(1)}" fill="none" stroke="${a.accent}" stroke-width="1" opacity=".28"/>`;
+    const twk=(latest||hh(idx,79)>0.72);
+    const st=twk?` class="twinkle" style="--d:${(4+hh(idx,83)*4).toFixed(1)}s;animation-delay:-${(hh(idx,89)*5).toFixed(1)}s"`:'';
+    g+=`<circle${st} cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${rr.toFixed(1)}" fill="${core}"/>`;
+    g+=`<circle cx="${(gx-rr*0.3).toFixed(1)}" cy="${(gy-rr*0.3).toFixed(1)}" r="${(rr*0.4).toFixed(1)}" fill="#FFFDF6" opacity=".85"/>`;
+    g+=`</g></g>`;
+    s+=g;
   });
-  _phase=keepPhase;
   s+=`</svg>`;
   wrap.innerHTML=s;
   const cap=document.getElementById('cairnCap');
-  wrap.querySelectorAll('.cairnTap').forEach(el=>{
-    const set=()=>{ cap.style.opacity=0; setTimeout(()=>{ cap.textContent=el.dataset.cap; cap.style.opacity=1; },150); };
+  const all=wrap.querySelectorAll('.cairnTap');
+  all.forEach(el=>{
+    const set=()=>{ all.forEach(o=>o.classList.remove('lit')); el.classList.add('lit');
+      cap.style.opacity=0; setTimeout(()=>{ cap.textContent=el.dataset.cap; cap.style.opacity=1; },150); };
     el.addEventListener('click',set);
     el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); set(); } });
   });

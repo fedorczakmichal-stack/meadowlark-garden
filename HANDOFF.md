@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v52 (2026-07-07) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v53 (2026-07-07) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -115,3 +115,19 @@ przemian L/P (każdy etap+etykieta oddycha, koniec zbitej kolumny), większe lat
 etapów. `renderPath` (Look Back) — **kamień = bohater** (większy, cieplejszy, poświata odcina od łąki, najnowszy
 świeci), droga z zygzaka → spokojny wiew, przerzedzone drzewa, USUNIĘTE przydrożne kwiaty/drifty (kamień niesie
 własny kwiat dnia). Harness zrzutów: scratchpad `shoot.mjs`/`shoot_scene.mjs`/`motion_probe.mjs`.
+
+**v53** (2026-07-07): **KIERUNEK „Niebo" — obie „drogi" przemyślane od nowa na poziomie METAFORY (droga→gwiazdy).**
+`renderTrail` = **Nocna Figura (konstelacja)** na spokojnym granatowym niebie: każdy etap = GWIAZDA (rozmiar/ciepło
+rośnie z etapem, bieżący = najcieplejszy/najjaśniejszy z halo + iskrą), luźny nieliniowy scatter (phyllotaxis +
+relaksacja anty-kolizyjna + wątek nearest-neighbour = czytelna figura bez krzyżujących nici), etykiety-nazwy jak na
+mapie nieba (leader + de-kolizja per strona), tło z gwiazdek + poświata horyzontu; **ZERO startu/mety/osi**;
+deterministyczny hash (nie Math.random); self-contained (własny `mixC`, gate ruchu przez matchMedia+store — bezpieczny
+też na landingu). `renderPath` scena = **Nocne Niebo Powrotów**: pełnoekranowa ciemna kopuła, **1 gwiazda = 1 wpis**
+(więcej powrotów = gęstsze niebo, NIE licznik), tinty accentem obszaru, najnowsza „tonight" delikatnie migocze;
+ciemna sylweta ogrodu + księżyc (twarz czysta — moon-avoidance) + glow horyzontu; **tap gwiazdy → swell + własne słowa
+wpisu** w podpisie (`fuzzyGroup` + label, klawiatura Enter/Space, `.cairnTap`→`#cairnCap`). **KONTRAKT: zabity ostatni
+scoreboard** — 3 złote karty-liczby (`.lb-stats`/`.lb-n`) usunięte, została sama ciepła proza `.lb-line` (bez liczb);
+nagłówek Look Back → „The sky was always full", copy karty craftu odcięte od „road/stone" (konstelacja, nie drabina).
+Obie sceny dzielą JEDEN język nieba (paleta dusk/night + słownik gwiazd). Motion-gated (twinkle: `body.motion-calm`
++ reduced-motion; swell `.rt-scale`/`.rt-halo` też). Zweryfikowane headless 3/5/6 etapów i ~3–24 powrotów, brak
+błędów konsoli, motion-probe bez regresji fableCollect. Harness: `shoot_trail.mjs`/`shoot_firmament.mjs`/`check_reduced.mjs`.
