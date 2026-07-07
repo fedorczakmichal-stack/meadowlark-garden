@@ -211,8 +211,9 @@
   .card .c-road{display:inline-flex;align-items:center;gap:4px;align-self:flex-start;margin-top:2px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--accent) 72%,#3A3450);background:color-mix(in srgb,var(--accent) 13%,transparent);border-radius:999px;padding:5px 10px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s var(--ease)}
   .card .c-road:hover{background:color-mix(in srgb,var(--accent) 20%,transparent)}
   /* craft invitation band — the one hero card no other area gets; opens the constellation, no tend sheet first */
-  .craft-slot{padding:12px 18px 0}
+  .craft-slot{padding:14px 18px 2px}
   .craft-slot:empty{padding:0}
+  .craft-slot .ci-eyebrow{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:color-mix(in srgb,#C1663B 72%,var(--muted));margin:0 2px 7px}
   .craft-invite{
     display:flex;align-items:center;gap:13px;width:100%;box-sizing:border-box;text-align:left;cursor:pointer;
     background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 13%,var(--surface)),var(--surface) 70%);
@@ -686,6 +687,7 @@
         <p class="season" id="greetSeason"></p>
       </div>
       <div id="welcomeSlot"></div>
+      <div id="craftSlot" class="craft-slot"></div>
       <div class="scene-stage">
         <div class="scene-wrap" id="sceneWrap"></div>
         <div class="zoom-ctl">
@@ -696,10 +698,9 @@
       <div class="scene-cap" id="sceneCap"></div>
       <div id="habDots" aria-label="Wander to a habitat"></div>
       <div class="scene-hint">← swipe to wander · tap a place to tend →</div>
-      <div id="craftSlot" class="craft-slot"></div>
       <div class="cards-head">
-        <h2>Tend one small thing</h2>
-        <span class="hint">or just sit here</span>
+        <h2 id="cardsHeadTitle">Tend one small thing</h2>
+        <span class="hint" id="cardsHeadHint">or just sit here</span>
       </div>
       <div class="cards" id="cards"></div>
       <footer class="appfoot">
@@ -770,11 +771,9 @@
         <h2 class="lead-h" id="safety" style="font-size:22px">A calm garden — not medical care</h2>
         <p class="sub">Meadowlark isn't therapy, treatment, or a substitute for talking to someone — and it will never claim to be. If you're struggling and need someone now, please reach out. These lines are free, any time.</p>
         <div class="safe-lines" id="safeLines">
-          <div class="safe-line" data-reg="pl"><span class="reg">Poland</span><span><a href="tel:116123" class="safe-tel">116 123</a> for adults · <a href="tel:116111" class="safe-tel">116 111</a> for youth · <a href="tel:800702222" class="safe-tel">800 70 2222</a> — Centrum Wsparcia, any hour</span></div>
-          <div class="safe-line" data-reg="eu"><span class="reg">Europe</span><span>Emergency, anywhere in the EU — <a href="tel:112" class="safe-tel">call 112</a></span></div>
-          <div class="safe-line" data-reg="us"><span class="reg">US &amp; Canada</span><span><a href="tel:988" class="safe-tel">Call 988</a> or <a href="sms:988" class="safe-tel">text 988</a> — Suicide &amp; Crisis Lifeline</span></div>
-          <div class="safe-line" data-reg="uk"><span class="reg">UK &amp; Ireland</span><span>Samaritans — <a href="tel:116123" class="safe-tel">call 116 123</a></span></div>
-          <div class="safe-line" data-reg="any"><span class="reg">Anywhere</span><span>Find a line near you at <a href="https://findahelpline.com" target="_blank" rel="noopener">findahelpline.com</a></span></div>
+          <div class="safe-line"><span class="reg">Any hour</span><span><a href="tel:988" class="safe-tel">Call 988</a> or <a href="sms:988" class="safe-tel">text 988</a> — the Suicide &amp; Crisis Lifeline, free and confidential</span></div>
+          <div class="safe-line"><span class="reg">Prefer to text</span><span>Crisis Text Line — <a href="sms:741741" class="safe-tel">text HOME to 741741</a></span></div>
+          <div class="safe-line"><span class="reg">Outside the US</span><span>Find a line near you at <a href="https://findahelpline.com" target="_blank" rel="noopener">findahelpline.com</a></span></div>
         </div>
         <p class="sub" style="font-size:13px">Crisis help is always free — never behind a paywall or a sign-up. In an emergency, contact your local emergency services.</p>
 
@@ -1794,7 +1793,7 @@ function sampleGrad(stops,off){
 const SKY_OFF=[0,.2,.4,.6,.8,1];
 function blendSky(a,b,t){ return SKY_OFF.map(o=>[o, t?mix(sampleGrad(SKY[a],o),sampleGrad(SKY[b],o),t):sampleGrad(SKY[a],o)]); }
 function blendHills(a,b,t){ return HILLS[a].map((c,i)=> t?mix(c,HILLS[b][i],t):c); }
-function phaseBlendKey(){ const pb=phaseBlend(); return pb.a+pb.b+Math.round(pb.t*8); }
+function phaseBlendKey(){ const pb=phaseBlend(); return pb.a+pb.b+Math.round(pb.t*3); }   // coarser buckets → far fewer scene rebuilds through dawn/dusk (was *8 = 9 rebuilds/window)
 const DUSKY = p => (p==='dusk'||p==='night');
 
 function lerp(a,b,t){ return a+(b-a)*t; }
@@ -2853,14 +2852,21 @@ let _sceneScale=0;
 function invalidateSceneScale(){ _sceneScale=0; }
 window.addEventListener('resize',invalidateSceneScale);
 window.addEventListener('orientationchange',invalidateSceneScale);
+// cache the reduced-motion MediaQueryList once — allocating it every frame was pure churn
+let _rmql=null;
+function reduceMotion(){ if(_rmql===null) _rmql=(window.matchMedia?matchMedia('(prefers-reduced-motion: reduce)'):{matches:false}); return _rmql.matches; }
+// cache the scene SVG ref; it self-heals when the scene rebuilds (the old node's .isConnected goes false)
+let _fableSvg=null, _fableWrap=null;
 function fableTickNow(now){
   if(!fableEls||!fableEls.length) return;
   if(store.settings.motion!=='full') return;
-  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if(now-fableTimer<33) return;
+  if(now-fableTimer<33) return;                  // throttle first — a cheap integer compare
+  if(reduceMotion()) return;                     // cached MQL, no per-frame matchMedia() allocation
   const dt=Math.min(0.1,Math.max(0.016,(now-fableTimer)/1000));
   fableTimer=now;
-  const w=document.getElementById('sceneWrap'); const svg=w&&w.querySelector('svg'); if(!svg||!svg.isConnected) return;
+  let svg=_fableSvg;
+  if(!svg||!svg.isConnected){ _fableWrap=document.getElementById('sceneWrap'); svg=_fableWrap&&_fableWrap.querySelector('svg'); _fableSvg=svg; if(!svg||!svg.isConnected) return; }
+  const w=_fableWrap;
   let sc=_sceneScale; if(!sc){ sc=(svg.getBoundingClientRect().height/PANO_H)||1; _sceneScale=sc; }   // read layout once per resize, not per frame
   const x0=w.scrollLeft/sc-170, x1=(w.scrollLeft+w.clientWidth)/sc+170;
   const t=now/1000;
@@ -3254,9 +3260,10 @@ function renderCraftInvite(){
   const set=craftIsSet();
   const title=set?('Your craft — '+esc(craftLabel())):'Your craft';
   const sub=set
-    ? 'See the whole road — a constellation of where you stand and what’s ahead.'
-    : 'Choose the work you’re walking toward, and see its whole shape.';
-  slot.innerHTML='<button class="craft-invite" id="craftInvite" style="--accent:'+AREA.craft.accent+'" aria-label="'
+    ? 'The heart of your garden. See the whole road — where you stand, and what’s ahead.'
+    : 'The work you’re walking toward — the heart this garden grows around. Choose yours.';
+  slot.innerHTML='<div class="ci-eyebrow">The heart of your garden</div>'
+    +'<button class="craft-invite" id="craftInvite" style="--accent:'+AREA.craft.accent+'" aria-label="'
     +(set?'See the whole road for '+esc(craftLabel()):'Choose your craft')+'">'
     +'<span class="ci-ico" aria-hidden="true">'+CONSTEL_ICON+'</span>'
     +'<span class="ci-body"><span class="ci-title">'+title+'</span><span class="ci-sub">'+sub+'</span></span>'
@@ -3267,6 +3274,9 @@ function renderCraftInvite(){
 /* ---- area cards ---- */
 function renderCards(){
   const wrap=document.getElementById('cards'); let h=''; const craftSet=craftIsSet();
+  // reframe the seven corners as the ground the craft grows from — copy only; care stays equal
+  const chH=document.getElementById('cardsHeadHint');
+  if(chH) chH.textContent = craftSet ? 'the ground your craft grows from' : 'or just sit here';
   AREAS.forEach(a=>{
     const st=stageOf(careOf(a.id)), fresh=glowStrength(a.id)>0, lead=a.id==='craft';
     h+=`<button class="card${fresh?' fresh':''}${lead?' craft-lead':''}" data-area="${a.id}" style="--accent:${a.accent}" aria-label="Tend ${a.label}, ${STAGE_WORD[st]}">
@@ -3847,26 +3857,9 @@ function tick(){
 function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ============================== BOOT ===================================== */
-/* Float the crisis line closest to the reader to the top (by locale + timezone),
-   but always keep findahelpline.com last as the universal fallback. Just reorders
-   what's already in the DOM — every line stays present for everyone. */
-function orderSafeLines(){
-  const box=document.getElementById('safeLines'); if(!box) return;
-  const lang=(navigator.language||'').toLowerCase();
-  let tz=''; try{ tz=Intl.DateTimeFormat().resolvedOptions().timeZone||''; }catch(_){}
-  const isEU=/^(Europe|Atlantic\/(Canary|Madeira|Azores|Faroe|Reykjavik))/.test(tz);
-  const score=r=>{
-    if(r==='any') return 100;                       // universal fallback — always last
-    if(r==='pl'){ if(lang.startsWith('pl')) return 0; if(tz==='Europe/Warsaw') return 1; return isEU?20:50; }
-    if(r==='eu'){ if(lang.startsWith('pl')) return 2; return isEU?10:40; }
-    if(r==='uk'){ if(tz==='Europe/London'||tz==='Europe/Dublin') return 0; if(/en-gb|en-ie/.test(lang)) return 4; return isEU?25:30; }
-    if(r==='us'){ if(/^(America|US|Pacific\/Honolulu)/.test(tz)) return 0; if(/^en(-us)?$/.test(lang)||lang.endsWith('-us')) return 5; return 35; }
-    return 60;
-  };
-  [...box.querySelectorAll('.safe-line')]
-    .sort((a,b)=>score(a.dataset.reg)-score(b.dataset.reg))
-    .forEach(l=>box.appendChild(l));
-}
+/* Meadowlark is a US-first product: the crisis lines are hardcoded US-first
+   (988 Lifeline + Crisis Text Line), with findahelpline.com as the universal
+   "outside the US" fallback. No locale reordering — the order in the DOM is final. */
 function init(){
   loadStore();
   applySettings();
@@ -3887,7 +3880,6 @@ function init(){
   document.getElementById('tendBtn').addEventListener('click',doTend);
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeTend(); closeCraftPick(); closeCraftPath(); } });
   document.addEventListener('keydown',modalTrap);   // keep Tab inside whichever sheet is open
-  orderSafeLines();
   const ot=document.getElementById('ownText');
   ot.addEventListener('input',()=>{ document.getElementById('ownCount').textContent=String(120-ot.value.length); if(ot.value){ document.querySelectorAll('#quick button').forEach(x=>x.classList.remove('sel')); sheetSel=null; } });
   document.getElementById('exportBtn').addEventListener('click',exportGarden);
