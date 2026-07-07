@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v55 (2026-07-07) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v57 (2026-07-07) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -169,3 +169,29 @@ usunięty martwy `foregroundFlora()`. Zweryfikowane DSF2: `shoot_ws1.mjs` (baner
 - Assety w `sw.js` ASSETS (24 ścieżki: 4 ikony + 20 fontów), CACHE `v55`. Zweryfikowane headless DSF2:
   `verify_ws.mjs` (0 błędów konsoli, 0 external req, focus-trap Tab-wrap, Escape+restore, aria-*), `verify_ws2.mjs`
   (PL-first order, focus wraca do `craftOccBtn`, tel-linki), `motion_probe.mjs` bez regresji fableCollect.
+
+**v56** (2026-07-07): **PRODUKT = USA-first; CRAFT = SERCE (nie 1 z 7 równych).** WS1A craft-as-core: **baner
+„Your craft" przeniesiony NAD scenę** (pierwsza interaktywna powierzchnia po powitaniu; `#craftSlot` teraz między
+`welcomeSlot` a `scene-stage`), eyebrow „THE HEART OF YOUR GARDEN" (`.ci-eyebrow`), copy banera wprost = protagonista
+(„The heart of your garden…"), a nagłówek kart przeramowany: hint = „the ground your craft grows from" gdy craft
+ustawiony (tylko copy — care nadal RÓWNE per kontrakt; ustawiane w `renderCards()` przez `#cardsHeadHint`). **BEZ zmian
+IA/nawigacji** (rozważony osobny tab craftu → ODRZUCONY: ryzyko „career-tracker", psuje spokój; konstelacja dalej
+1-tap z banera+karty). WS1B linie kryzysowe → **US-first hardcoded**: 988 (call+text 988), Crisis Text Line (text HOME
+to 741741), findahelpline = „Outside the US". USUNIĘTE: EU 112, PL 116123/116111/800702222, cały `orderSafeLines()`
++ reorder wg `navigator.language`. WS1C perf: `reduceMotion()` cache'uje MediaQueryList (było `matchMedia()` co ramkę)
+i ruszony ZA throttle 33ms; ref SVG sceny cache'owany (`_fableSvg`, self-heal na rebuild przez `.isConnected`) zamiast
+`getElementById`+`querySelector` co ramkę; `phaseBlendKey` kwant `*8`→`*3` (9→4 rebuildy/okno świt-zmierzch).
+Zweryf. DSF2 `shoot_meadow2.mjs`/`shoot_v56.mjs`, `motion_probe.mjs` bez regresji.
+
+**v57** (2026-07-07): **RETENCJA on-ethos (3 funkcje, wszystkie w Look back; każda = zaproszenie, 0 presji/liczników,
+nic nie opuszcza urządzenia).** (1) **Printable keepsake** — ciepła, oprawialna strona (winieta ogrodu +
+kilka własnych „returns" + „the heart of it — {craft}") przez `window.print()` + arkusz `@media print`; kontener
+`#printKeepsake` budowany na żądanie (`buildKeepsake`/`printKeepsake`), gradienty winiety remap `lbtn-`→`pktn-` (brak
+kolizji z winietą Look back), `print-color-adjust:exact`. (2) **Letter to your future self** — prywatny list
+zapieczętowany w `localStorage` `meadowlark.letters`, otwiera się w wybrany dzień (In a season / Next spring / A year
+from now; `nextSpringYMD`/`addDaysYMD`), wypływa łagodnie w Look back gdy nadejdzie jego dzień (zaproszenie, BEZ
+nagów/badge/notyfikacji); `renderLetters`/`showLetterCompose`/`openLetter`. (3) **„The garden noticed…"** — 1 ciepła
+obserwacja tygodniowa (rotacja `isoWeek`) TYLKO z istniejących danych — stadia = SŁOWA, ZERO liczb care, zero oceny;
+`renderNoticed`. Sloty `#lbNoticed`/`#lbLetters`/`#lbKeepsake` w view-path, podpięte w `renderPath()`. Zweryf. DSF2
+`shoot_v57.mjs` (look-back, open list, compose+seal, keepsake w print-media), 0 błędów konsoli (`console_check.mjs`),
+`motion_probe.mjs` bez regresji. CACHE `sw.js` `v57` (ASSETS bez zmian — wszystko inline w index.html).
