@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v54 (2026-07-07) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v55 (2026-07-07) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -144,3 +144,28 @@ klik omija tend-sheet). (c) **`general` nigdy nie jest ślepą uliczką**: `open
 `go()` guarduje zły view-id (no-op zamiast blank) + ustawia `aria-current="page"`; `esc()` escapuje też `'`→`&#39;`;
 usunięty martwy `foregroundFlora()`. Zweryfikowane DSF2: `shoot_ws1.mjs` (baner set/general, picker, droga set,
 `general`→picker), `shoot_ws2.mjs` (320px bez overflow, aria-current, go-guard, esc), motion-probe bez regresji.
+
+**v55** (2026-07-07): **AUDYT HARTOWANIA — prywatność + iOS + a11y + linie kryzysowe EU/PL.**
+- **WS1 Prywatność „nic nie opuszcza urządzenia" = teraz PRAWDA.** (a) **Fonty self-hosted**: usunięte 3 `<link>` do
+  fonts.googleapis/gstatic (head), pobrane 20 `.woff2` (Figtree 400/500/600/700, Hanken Grotesk 400/500/600/700,
+  Space Grotesk 500/600 — subsety **latin + latin-ext**, więc polskie znaki działają) do `garden/fonts/`, lokalne
+  `@font-face` w `<style>` w head. **Zero requestów cross-origin przy starcie** (zweryfikowane `performance.getEntriesByType('resource')`→[]),
+  działa offline. (b) **Supabase (`fetchStageTasks`) ZOSTAJE** — bundlowanie kroków dla 860+ SOC lokalnie jest niepraktyczne
+  (dziesiątki tys. wierszy); fetch jest publiczny, read-only, tylko dla JEDNEGO wybranego craftu z katalogu, cache offline
+  po 1. użyciu. Zamiast tego **copy jest UCZCIWE**: promise-line „…The only thing that ever leaves is a one-time lookup of a
+  craft's public steps, and only when you open one." (7 ręcznych zawodów NIE fetchuje).
+- **WS2 iOS instalowalność**: zrasteryzowane `icon.svg`/`icon-maskable.svg` → PNG w `garden/icons/`
+  (`apple-touch-icon-180.png` z maskable=pełne tło, iOS-safe; `icon-192.png`/`icon-512.png` „any"; `icon-maskable-512.png`).
+  `<link rel="apple-touch-icon" sizes="180x180" href="icons/…png">`; manifest.json dostał wpisy PNG (192/512/512-maskable)
+  przed SVG. **Splash (apple-touch-startup-image) POMINIĘTY** (wymaga zestawu PNG per-urządzenie z media-query; nie „łatwe").
+- **WS3 A11y**: (a) **wspólny menedżer modali** `openModal/closeModal/modalTrap` (zastąpił bespoke `trapTab`+ręczne
+  `aria-hidden` tend-sheeta) — teraz `#sheet` ORAZ `#craftPick` ORAZ `#craftSheet` mają: `#app aria-hidden` na czas otwarcia,
+  fokus wchodzi do arkusza, Tab uwięziony (owija w obie strony), fokus wraca do opener przy zamknięciu (zweryfikowane).
+  (b) `aria-live="polite"` na `#cairnCap`. (c) `aria-pressed` na `.cr-item` i `.stage-chip` (render + toggle). (d) touch-targety:
+  `.seg button` i `.stage-chip` ≥44px na mobile (`@media(hover:none),(max-width:560px)`).
+- **WS4 Linie kryzysowe EU/PL**: dodane **112** (EU) + **116 123** (dorośli), **116 111** (młodzież), **800 70 2222**
+  (Centrum Wsparcia) dla Polski; US 988 / UK 116 123 / findahelpline zostają. `orderSafeLines()` (init) sortuje linie
+  wg `navigator.language`+timezone (PL→Polska+Europa na górze), findahelpline ZAWSZE ostatni. tel:/sms: klikalne.
+- Assety w `sw.js` ASSETS (24 ścieżki: 4 ikony + 20 fontów), CACHE `v55`. Zweryfikowane headless DSF2:
+  `verify_ws.mjs` (0 błędów konsoli, 0 external req, focus-trap Tab-wrap, Escape+restore, aria-*), `verify_ws2.mjs`
+  (PL-first order, focus wraca do `craftOccBtn`, tel-linki), `motion_probe.mjs` bez regresji fableCollect.

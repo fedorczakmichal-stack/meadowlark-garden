@@ -11,10 +11,30 @@
 <meta name="apple-mobile-web-app-title" content="Meadowlark">
 <!-- manifest is injected by script only when served over http(s); a file:// manifest link logs a harmless CORS error -->
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png">
+<!-- Fonts are self-hosted below: nothing loads cross-origin, nothing leaves the device, and they work fully offline. -->
+<style>
+@font-face{font-family:'Figtree';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/figtree-400-latinext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Figtree';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/figtree-400-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Figtree';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/figtree-500-latinext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Figtree';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/figtree-500-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Figtree';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/figtree-600-latinext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Figtree';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/figtree-600-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Figtree';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/figtree-700-latinext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Figtree';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/figtree-700-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/hankengrotesk-400-latinext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/hankengrotesk-400-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/hankengrotesk-500-latinext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/hankengrotesk-500-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/hankengrotesk-600-latinext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/hankengrotesk-600-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/hankengrotesk-700-latinext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/hankengrotesk-700-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/spacegrotesk-500-latinext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/spacegrotesk-500-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/spacegrotesk-600-latinext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/spacegrotesk-600-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+</style>
 <style>
   :root{
     --cream:#FBF7F2; --bg-2:#F6EEE2; --surface:#FFFFFF;
@@ -323,6 +343,11 @@
   .seg{display:inline-flex;background:var(--bg-2);border:1px solid var(--hairline);border-radius:999px;padding:3px;gap:2px}
   .seg button{background:none;border:0;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--muted);min-height:34px}
   .seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 2px 8px -4px rgba(58,52,80,.3)}
+  /* comfortable touch targets on phones: seg buttons and stage chips reach the 44px minimum */
+  @media(hover:none),(max-width:560px){
+    .seg button{min-height:44px}
+    .stage-chip{min-height:44px;display:inline-flex;align-items:center}
+  }
   /* tiny screens (iPhone SE / small Android): let the segmented control drop to its own line and wrap
      instead of overflowing the settings row */
   @media(max-width:360px){
@@ -706,7 +731,7 @@
         <div id="lbChapters"></div>
       </div>
       <div class="path-wrap" id="pathWrap"></div>
-      <p class="cairn-cap" id="cairnCap">Tap a light to return to that day.</p>
+      <p class="cairn-cap" id="cairnCap" aria-live="polite">Tap a light to return to that day.</p>
       <div style="height:24px"></div>
     </section>
 
@@ -738,16 +763,18 @@
         <div class="panel">
           <div class="promise-line"><svg class="pl-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4-4 7-7 7-12a7 7 0 0 0-14 0c0 5 3 8 7 12z"/><path d="M12 11v8"/></svg><p>Rest is part of growing. Winter isn't falling behind, and a quiet week isn't a gap to close.</p></div>
           <div class="promise-line"><svg class="pl-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16"/><path d="M14 6l6 6-6 6"/></svg><p>Connection and Future are invitations, never obligations — a step on the days you have it in you, nothing owed on the days you don't.</p></div>
-          <div class="promise-line"><svg class="pl-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg><p>Everything you tend stays on this device. Nothing leaves it, and there's no account to make.</p></div>
+          <div class="promise-line"><svg class="pl-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg><p>Everything you tend stays on this device — no account, nothing to sign up for. The only thing that ever leaves is a one-time lookup of a craft's public steps, and only when you open one.</p></div>
         </div>
 
         <div class="eyebrow" style="margin-top:26px">If today is heavy</div>
         <h2 class="lead-h" id="safety" style="font-size:22px">A calm garden — not medical care</h2>
         <p class="sub">Meadowlark isn't therapy, treatment, or a substitute for talking to someone — and it will never claim to be. If you're struggling and need someone now, please reach out. These lines are free, any time.</p>
-        <div class="safe-lines">
-          <div class="safe-line"><span class="reg">US &amp; Canada</span><span><a href="tel:988" class="safe-tel">Call 988</a> or <a href="sms:988" class="safe-tel">text 988</a> — Suicide &amp; Crisis Lifeline</span></div>
-          <div class="safe-line"><span class="reg">UK &amp; Ireland</span><span>Samaritans — <a href="tel:116123" class="safe-tel">call 116 123</a></span></div>
-          <div class="safe-line"><span class="reg">Anywhere</span><span>Find a line near you at <a href="https://findahelpline.com" target="_blank" rel="noopener">findahelpline.com</a></span></div>
+        <div class="safe-lines" id="safeLines">
+          <div class="safe-line" data-reg="pl"><span class="reg">Poland</span><span><a href="tel:116123" class="safe-tel">116 123</a> for adults · <a href="tel:116111" class="safe-tel">116 111</a> for youth · <a href="tel:800702222" class="safe-tel">800 70 2222</a> — Centrum Wsparcia, any hour</span></div>
+          <div class="safe-line" data-reg="eu"><span class="reg">Europe</span><span>Emergency, anywhere in the EU — <a href="tel:112" class="safe-tel">call 112</a></span></div>
+          <div class="safe-line" data-reg="us"><span class="reg">US &amp; Canada</span><span><a href="tel:988" class="safe-tel">Call 988</a> or <a href="sms:988" class="safe-tel">text 988</a> — Suicide &amp; Crisis Lifeline</span></div>
+          <div class="safe-line" data-reg="uk"><span class="reg">UK &amp; Ireland</span><span>Samaritans — <a href="tel:116123" class="safe-tel">call 116 123</a></span></div>
+          <div class="safe-line" data-reg="any"><span class="reg">Anywhere</span><span>Find a line near you at <a href="https://findahelpline.com" target="_blank" rel="noopener">findahelpline.com</a></span></div>
         </div>
         <p class="sub" style="font-size:13px">Crisis help is always free — never behind a paywall or a sign-up. In an emergency, contact your local emergency services.</p>
 
@@ -1591,11 +1618,16 @@ function openCraftPath(){
     `<div class="cp-stage${i===me?' me':''}"><b>${s.name}</b><span class="span">${s.span}</span>${i===me?'<span class="span" style="color:#C1663B">· you are here</span>':''}<p>${s.what}</p></div>`).join('')+`</div>`;
   el.innerHTML=h;
   document.getElementById('scrim').classList.add('show');
-  document.getElementById('craftSheet').classList.add('show');
+  const cs=document.getElementById('craftSheet');
+  cs.classList.add('show');
+  openModal(cs, document.getElementById('craftPathClose'));
 }
 function closeCraftPath(){
-  document.getElementById('craftSheet').classList.remove('show');
+  const cs=document.getElementById('craftSheet');
+  const wasOpen=cs.classList.contains('show');
+  cs.classList.remove('show');
   if(!sheetArea) document.getElementById('scrim').classList.remove('show');
+  if(wasOpen) closeModal(cs);
 }
 // today's quick options = THIS WEEK'S THREAD for your craft and stage (steady within the week)
 function craftQuick(){ return craftThread().steps.slice(0,5); }
@@ -3521,11 +3553,42 @@ function renderPath(){
   });
 }
 
+/* ===================== MODAL ACCESSIBILITY (shared) ======================= */
+/* One reusable helper for every bottom sheet (tend + craft picker + craft path):
+   on open it makes the rest of the app inert to assistive tech (#app aria-hidden),
+   moves focus into the sheet, and traps Tab inside it; on close it restores focus
+   to whatever opened it. Sheets never truly stack, so a single active target is enough. */
+let activeModal=null, modalReturnFocus=null;
+function modalFocusables(el){
+  return [...el.querySelectorAll('button, textarea, input, select, a[href], [tabindex]')]
+    .filter(x=>x.offsetParent!==null && !x.disabled && x.getAttribute('tabindex')!=='-1');
+}
+function openModal(el, focusEl){
+  modalReturnFocus=document.activeElement;
+  activeModal=el;
+  document.getElementById('app').setAttribute('aria-hidden','true');
+  setTimeout(()=>{ const f=focusEl||modalFocusables(el)[0]||el; if(f&&f.focus){ try{ f.focus(); }catch(_){} } },60);
+}
+function closeModal(el){
+  if(el&&activeModal&&activeModal!==el) return;   // a newer sheet already owns focus
+  activeModal=null;
+  document.getElementById('app').removeAttribute('aria-hidden');
+  const r=modalReturnFocus; modalReturnFocus=null;
+  if(r&&r.focus){ try{ r.focus(); }catch(_){} }
+}
+function modalTrap(e){
+  if(e.key!=='Tab'||!activeModal) return;
+  const f=modalFocusables(activeModal); if(!f.length) return;
+  const first=f[0], last=f[f.length-1];
+  if(!activeModal.contains(document.activeElement)){ e.preventDefault(); first.focus(); return; }
+  if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+}
+
 /* ============================== TEND SHEET ================================ */
-let sheetArea=null, sheetSel=null, lastFocusedEl=null;
+let sheetArea=null, sheetSel=null;
 function openTend(areaId){
   const a=AREA[areaId]; if(!a||!store.areas[areaId]) return;
-  lastFocusedEl=document.activeElement;
   sheetArea=areaId; sheetSel=null;
   const st=stageOf(store.areas[areaId].care);
   document.documentElement.style.setProperty('--accent',a.accent);
@@ -3555,25 +3618,14 @@ function openTend(areaId){
   if(cpb) cpb.addEventListener('click',()=>{ closeTend(); openCraftPath(); });
   document.getElementById('scrim').classList.add('show');
   sheet.classList.add('show');
-  document.getElementById('app').setAttribute('aria-hidden','true');
-  setTimeout(()=>document.getElementById('tendBtn').focus(),80);
+  openModal(sheet, document.getElementById('tendBtn'));
 }
 function closeTend(){
+  const wasOpen=!!sheetArea;
   document.getElementById('scrim').classList.remove('show');
   document.getElementById('sheet').classList.remove('show');
-  document.getElementById('app').removeAttribute('aria-hidden');
   sheetArea=null; sheetSel=null;
-  if(lastFocusedEl&&lastFocusedEl.focus){ try{ lastFocusedEl.focus(); }catch(_){} }
-  lastFocusedEl=null;
-}
-// keep Tab within the open sheet (focus trap)
-function trapTab(e){
-  if(e.key!=='Tab'||!sheetArea) return;
-  const f=[...document.querySelectorAll('#sheet button, #sheet textarea, #sheet [tabindex]')].filter(el=>el.offsetParent!==null);
-  if(!f.length) return;
-  const first=f[0], last=f[f.length-1];
-  if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
-  else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+  if(wasOpen) closeModal(document.getElementById('sheet'));
 }
 function doTend(){
   if(!sheetArea) return;
@@ -3674,7 +3726,7 @@ function stageChipsFor(occKey){
   const S=CRAFT_STAGES[occKey];
   return CRAFT_STAGE_IDS.map(id=>{
     const lab=S?(S.stages.find(s=>s.id===id)||{}).label||CRAFT_STAGE_GENERIC[id][0]:CRAFT_STAGE_GENERIC[id][0];
-    return `<button class="stage-chip${pickStage===id?' sel':''}" data-st="${id}">${lab}</button>`;
+    return `<button class="stage-chip${pickStage===id?' sel':''}" data-st="${id}" aria-pressed="${pickStage===id?'true':'false'}">${lab}</button>`;
   }).join('');
 }
 function renderCraftResults(q){
@@ -3697,11 +3749,11 @@ function renderCraftResults(q){
       if(r[1].toLowerCase().includes(q)) out.push({key:'soc:'+r[0],title:r[1],wage:'',star:false});   // no wage — a craft is not a salary; measuring pace against money is exactly what this app refuses
     }
   }
-  box.innerHTML=out.map(o=>`<button class="cr-item${pickOcc===o.key?' sel':''}" data-k="${o.key}" data-t="${esc(o.title)}">
+  box.innerHTML=out.map(o=>`<button class="cr-item${pickOcc===o.key?' sel':''}" data-k="${o.key}" data-t="${esc(o.title)}" aria-pressed="${pickOcc===o.key?'true':'false'}">
     <span>${o.star?'<span class="star">✿</span> ':''}${esc(o.title)}</span><span class="wage">${o.wage}</span></button>`).join('');
   box.querySelectorAll('.cr-item').forEach(b=>b.addEventListener('click',()=>{
     pickOcc=b.dataset.k; pickTitle=b.dataset.t;
-    box.querySelectorAll('.cr-item').forEach(x=>x.classList.toggle('sel',x===b));
+    box.querySelectorAll('.cr-item').forEach(x=>{ const on=x===b; x.classList.toggle('sel',on); x.setAttribute('aria-pressed',on?'true':'false'); });
     document.getElementById('stageChips').innerHTML=stageChipsFor(pickOcc);
     wireStageChips();
     if(/^soc:/.test(pickOcc)) fetchStageTasks(pickOcc.slice(4));   // warm the pool + cache while they choose
@@ -3710,7 +3762,7 @@ function renderCraftResults(q){
 function wireStageChips(){
   document.querySelectorAll('#stageChips .stage-chip').forEach(b=>b.addEventListener('click',()=>{
     pickStage=b.dataset.st;
-    document.querySelectorAll('#stageChips .stage-chip').forEach(x=>x.classList.toggle('sel',x===b));
+    document.querySelectorAll('#stageChips .stage-chip').forEach(x=>{ const on=x===b; x.classList.toggle('sel',on); x.setAttribute('aria-pressed',on?'true':'false'); });
   }));
 }
 function openCraftPick(){
@@ -3721,11 +3773,16 @@ function openCraftPick(){
   document.getElementById('stageChips').innerHTML=stageChipsFor(pickOcc);
   wireStageChips();
   document.getElementById('scrim').classList.add('show');
-  document.getElementById('craftPick').classList.add('show');
+  const cp=document.getElementById('craftPick');
+  cp.classList.add('show');
+  openModal(cp, document.getElementById('craftSearch'));
 }
 function closeCraftPick(){
-  document.getElementById('craftPick').classList.remove('show');
+  const cp=document.getElementById('craftPick');
+  const wasOpen=cp.classList.contains('show');
+  cp.classList.remove('show');
   if(!sheetArea) document.getElementById('scrim').classList.remove('show');
+  if(wasOpen) closeModal(cp);
 }
 function wireCraftPick(){
   document.getElementById('craftSearch').addEventListener('input',e=>{ loadCraftIndex().then(()=>renderCraftResults(e.target.value)); });
@@ -3790,6 +3847,26 @@ function tick(){
 function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ============================== BOOT ===================================== */
+/* Float the crisis line closest to the reader to the top (by locale + timezone),
+   but always keep findahelpline.com last as the universal fallback. Just reorders
+   what's already in the DOM — every line stays present for everyone. */
+function orderSafeLines(){
+  const box=document.getElementById('safeLines'); if(!box) return;
+  const lang=(navigator.language||'').toLowerCase();
+  let tz=''; try{ tz=Intl.DateTimeFormat().resolvedOptions().timeZone||''; }catch(_){}
+  const isEU=/^(Europe|Atlantic\/(Canary|Madeira|Azores|Faroe|Reykjavik))/.test(tz);
+  const score=r=>{
+    if(r==='any') return 100;                       // universal fallback — always last
+    if(r==='pl'){ if(lang.startsWith('pl')) return 0; if(tz==='Europe/Warsaw') return 1; return isEU?20:50; }
+    if(r==='eu'){ if(lang.startsWith('pl')) return 2; return isEU?10:40; }
+    if(r==='uk'){ if(tz==='Europe/London'||tz==='Europe/Dublin') return 0; if(/en-gb|en-ie/.test(lang)) return 4; return isEU?25:30; }
+    if(r==='us'){ if(/^(America|US|Pacific\/Honolulu)/.test(tz)) return 0; if(/^en(-us)?$/.test(lang)||lang.endsWith('-us')) return 5; return 35; }
+    return 60;
+  };
+  [...box.querySelectorAll('.safe-line')]
+    .sort((a,b)=>score(a.dataset.reg)-score(b.dataset.reg))
+    .forEach(l=>box.appendChild(l));
+}
 function init(){
   loadStore();
   applySettings();
@@ -3809,7 +3886,8 @@ function init(){
   wireCraftPick();
   document.getElementById('tendBtn').addEventListener('click',doTend);
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeTend(); closeCraftPick(); closeCraftPath(); } });
-  document.getElementById('sheet').addEventListener('keydown',trapTab);
+  document.addEventListener('keydown',modalTrap);   // keep Tab inside whichever sheet is open
+  orderSafeLines();
   const ot=document.getElementById('ownText');
   ot.addEventListener('input',()=>{ document.getElementById('ownCount').textContent=String(120-ot.value.length); if(ot.value){ document.querySelectorAll('#quick button').forEach(x=>x.classList.remove('sel')); sheetSel=null; } });
   document.getElementById('exportBtn').addEventListener('click',exportGarden);

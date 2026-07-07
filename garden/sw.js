@@ -1,6 +1,12 @@
 /* Meadowlark service worker — offline-first, cache the shell. No push, no notifications, ever. */
-const CACHE = 'meadowlark-garden-v54';
-const ASSETS = ['.', 'index.html', 'manifest.json', 'icon.svg', 'icon-maskable.svg', 'craft-index.json', 'fable-animals.js'];
+const CACHE = 'meadowlark-garden-v55';
+const ASSETS = ['.', 'index.html', 'manifest.json', 'icon.svg', 'icon-maskable.svg', 'craft-index.json', 'fable-animals.js',
+  'icons/apple-touch-icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png',
+  'fonts/figtree-400-latin.woff2', 'fonts/figtree-400-latinext.woff2', 'fonts/figtree-500-latin.woff2', 'fonts/figtree-500-latinext.woff2',
+  'fonts/figtree-600-latin.woff2', 'fonts/figtree-600-latinext.woff2', 'fonts/figtree-700-latin.woff2', 'fonts/figtree-700-latinext.woff2',
+  'fonts/hankengrotesk-400-latin.woff2', 'fonts/hankengrotesk-400-latinext.woff2', 'fonts/hankengrotesk-500-latin.woff2', 'fonts/hankengrotesk-500-latinext.woff2',
+  'fonts/hankengrotesk-600-latin.woff2', 'fonts/hankengrotesk-600-latinext.woff2', 'fonts/hankengrotesk-700-latin.woff2', 'fonts/hankengrotesk-700-latinext.woff2',
+  'fonts/spacegrotesk-500-latin.woff2', 'fonts/spacegrotesk-500-latinext.woff2', 'fonts/spacegrotesk-600-latin.woff2', 'fonts/spacegrotesk-600-latinext.woff2'];
 
 self.addEventListener('install', e => {
   self.skipWaiting();
