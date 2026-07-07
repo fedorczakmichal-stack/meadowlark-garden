@@ -1380,42 +1380,59 @@ function craftUserPathStage(p){
   return Math.min({curious:0,learning:1,exams:1,early:2,seasoned:3}[st]||0, p.stages.length-1);
 }
 // the road, drawn: a winding way from the valley to the sunrise, one waymark per stage, yours aglow
-/* renderTrail — a calm storybook "craft road": a tapering ribbon path recedes from the
-   foreground to a low sun on the horizon; milestone lanterns (the current one lit in the
-   accent) mark the stages; full-name labels sit in tidy per-side stacks with leaders.
-   Universal for any craft (3–6 stages), deterministic. viewBox 680x340. Shared verbatim
-   with the /comeback/ landing (there it runs interactive=true). */
+/* renderTrail — a calm storybook "craft road": a gentle switchback path climbs from the
+   foreground toward a low sunrise; milestone lanterns (the current one lit in the accent) mark
+   the stages, alternating left/right up the slope so every stage — and its full-name label —
+   gets breathing room instead of crowding the horizon. Universal for any craft (3–6 stages),
+   deterministic. viewBox 680x360. Shared with the /comeback/ landing (there: interactive=true). */
 var __trailSeq = 0;
 function renderTrail(stages, currentIndex, accent, interactive, lblScale){
   var esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  var clmp = function(v,a,b){ return v<a?a:(v>b?b:v); };
   lblScale = lblScale || 1;
   accent = (typeof accent==='string' && /^#[0-9a-fA-F]{3,8}$/.test(accent)) ? accent : '#C1663B';
   var n = Math.max(3, Math.min(6, (stages||[]).length));
   stages = (stages||[]).slice(0, n);
   currentIndex = Math.max(0, Math.min(n-1, currentIndex|0));
   var P = 'qm' + (++__trailSeq);
-  var W = 680, H = 340, HZ = 140;               // horizon ~41% down
-  var vpX = 344, vpY = HZ + 2;                   // vanishing point at the sun
-  function cubic(t,a,b,c,d){ var u=1-t; return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d; }
-  function pathPoint(f){                          // f:0 foreground(bottom) -> 1 horizon(sun); y strictly decreases
-    if(f<=0.5){ var t=f/0.5; return { x:cubic(t,206,150,476,486), y:cubic(t,332,268,244,206) }; }
-    var t2=(f-0.5)/0.5;    return { x:cubic(t2,486,498,vpX+34,vpX), y:cubic(t2,206,172,vpY+22,vpY) };
+  var W = 680, H = 360, HZ = 132, cx = 344, sunY = HZ - 6;
+
+  // ── switchback anchors: stages climb toward the sunrise, alternating sides; the upper ones
+  //    funnel gently back toward the light so the road reads as one journey, not a zigzag ──
+  var yBot = 322, yTop = 178, anchors = [];
+  for(var k=0;k<n;k++){
+    var t = n===1 ? 0 : k/(n-1);
+    var yy = yBot + (yTop-yBot)*(0.78*t + 0.22*t*t);      // slight ease — the far stages tuck up a touch
+    var amp = 96*(1-0.24*t);                               // the weave narrows with distance
+    var pull = Math.max(0,(t-0.5)/0.5);                    // upper half drifts toward the sun
+    var dir = (k%2===0) ? -1 : 1;
+    var xx = cx + dir*amp*(1-0.5*pull);
+    anchors.push({x:xx, y:yy, t:t, i:k, s:0.56+0.5*(1-t)});
   }
-  function widthAt(f){ return 46*(1-f)*(1-f) + 4; }
-  var Ns=64, left=[], right=[], cen=[];
-  for(var i=0;i<=Ns;i++){
-    var f=i/Ns, p=pathPoint(f), w=widthAt(f)/2;
-    var q=pathPoint(Math.min(1,f+0.01)), dx=q.x-p.x, dy=q.y-p.y, L=Math.hypot(dx,dy)||1;
-    var nx=-dy/L, ny=dx/L;
-    left.push([p.x+nx*w,p.y+ny*w]); right.push([p.x-nx*w,p.y-ny*w]); cen.push(p);
+  // smooth centreline (Catmull-Rom) through a foreground entry point + the anchors
+  var ctrl = [{x:anchors[0].x-22, y:H+16}];
+  for(var a1=0;a1<anchors.length;a1++) ctrl.push({x:anchors[a1].x, y:anchors[a1].y});
+  function cr(p0,p1,p2,p3,u){ var u2=u*u,u3=u2*u; return {
+    x:0.5*((2*p1.x)+(-p0.x+p2.x)*u+(2*p0.x-5*p1.x+4*p2.x-p3.x)*u2+(-p0.x+3*p1.x-3*p2.x+p3.x)*u3),
+    y:0.5*((2*p1.y)+(-p0.y+p2.y)*u+(2*p0.y-5*p1.y+4*p2.y-p3.y)*u2+(-p0.y+3*p1.y-3*p2.y+p3.y)*u3) }; }
+  var cen=[];
+  for(var i=0;i<ctrl.length-1;i++){
+    var p0=ctrl[Math.max(0,i-1)], p1=ctrl[i], p2=ctrl[i+1], p3=ctrl[Math.min(ctrl.length-1,i+2)];
+    var steps = i===0 ? 10 : 16;
+    for(var j=0;j<steps;j++) cen.push(cr(p0,p1,p2,p3,j/steps));
   }
-  var ribbon='M'+left.map(function(a){return a[0].toFixed(1)+' '+a[1].toFixed(1);}).join(' L ')
-    +' L '+right.slice().reverse().map(function(a){return a[0].toFixed(1)+' '+a[1].toFixed(1);}).join(' L ')+' Z';
+  cen.push(ctrl[ctrl.length-1]);
+  function wHalf(y){ var f=clmp((y-yTop)/(yBot-yTop),0,1); return 2.6+15.5*Math.pow(f,1.14); }   // a slim trail — wider near the viewer, never a blobby road
+  var left=[], right=[];
+  for(var c=0;c<cen.length;c++){
+    var pa=cen[c], pb=cen[Math.min(cen.length-1,c+1)], dx=pb.x-pa.x, dy=pb.y-pa.y, L=Math.hypot(dx,dy)||1;
+    var nx=-dy/L, ny=dx/L, w=wHalf(pa.y);
+    left.push([pa.x+nx*w, pa.y+ny*w]); right.push([pa.x-nx*w, pa.y-ny*w]);
+  }
+  function fmt(pt){ return pt[0].toFixed(1)+' '+pt[1].toFixed(1); }
+  var ribbon='M'+left.map(fmt).join(' L ')+' L '+right.slice().reverse().map(fmt).join(' L ')+' Z';
   var centerLine='M '+cen.map(function(p){return p.x.toFixed(1)+' '+p.y.toFixed(1);}).join(' L ');
-  var markers=[];
-  for(var k=0;k<n;k++){ var fr=0.10+(n===1?0:(k/(n-1)))*0.80; var pp=pathPoint(fr);
-    markers.push({x:pp.x,y:pp.y,s:1-fr*0.62,frac:fr,i:k}); }
   function hill(topY,curve,fill){
     return '<path d="M0 '+topY+' Q170 '+(topY-curve)+' 340 '+topY+' T680 '+topY+' V'+H+' H0 Z" fill="'+fill+'"/>';
   }
@@ -1437,65 +1454,71 @@ function renderTrail(stages, currentIndex, accent, interactive, lblScale){
   o.push('<radialGradient id="'+P+'glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="'+accent+'" stop-opacity="0.5"/><stop offset="1" stop-color="'+accent+'" stop-opacity="0"/></radialGradient>');
   o.push('</defs>');
   o.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="url(#'+P+'sky)"/>');
-  o.push('<circle cx="'+vpX+'" cy="'+(HZ-2)+'" r="165" fill="url(#'+P+'sun)"/>');
-  o.push('<circle cx="'+vpX+'" cy="'+(HZ-4)+'" r="30" fill="#FFF6DE" opacity="0.9"/>');
+  o.push('<circle cx="'+cx+'" cy="'+(HZ-2)+'" r="168" fill="url(#'+P+'sun)"/>');
+  o.push('<circle cx="'+cx+'" cy="'+(sunY).toFixed(1)+'" r="31" fill="#FFF6DE" opacity="0.92"/>');
   o.push('<path d="M0 '+(HZ-2)+' Q150 '+(HZ-20)+' 320 '+(HZ-8)+' T680 '+(HZ-13)+' V'+(HZ+40)+' H0 Z" fill="#CDBBD6" opacity="0.45"/>');
-  o.push(hill(HZ+6,10,'#E6EEDB')); o.push(hill(HZ+42,22,'#DCE8CD')); o.push(hill(HZ+92,32,'#CFE0BC')); o.push(hill(HZ+152,42,'#BFD8A8'));
-  [[0.16,-1,42],[0.30,1,54],[0.13,1,30],[0.44,-1,66],[0.58,1,58],[0.72,-1,40]].forEach(function(t){
-    var p=pathPoint(t[0]); var s=(1-t[0]*0.6)*0.9; var off=(widthAt(t[0])/2 + t[2]*s)*t[1];
-    o.push(tuft(p.x+off, p.y+6*s, s, accent));
+  o.push(hill(HZ+6,10,'#E6EEDB')); o.push(hill(HZ+42,22,'#DCE8CD')); o.push(hill(HZ+96,32,'#CFE0BC')); o.push(hill(HZ+160,44,'#BFD8A8'));
+  // a few grassy tufts scattered off the road, deterministic, kept clear of the ribbon
+  [[0.20,-1,58],[0.35,1,66],[0.52,-1,74],[0.66,1,60],[0.80,-1,44],[0.90,1,36]].forEach(function(tt){
+    var idx=Math.min(anchors.length-1, Math.round(tt[0]*(anchors.length-1)));
+    var an=anchors[idx]; var s=(0.5+0.5*(1-an.t)); var off=(wHalf(an.y)+tt[2]*s)*tt[1];
+    o.push(tuft(clmp(an.x+off,20,W-20), an.y+8*s, s, accent));
   });
   o.push('<path d="'+ribbon+'" fill="#000000" opacity="0.06" transform="translate(0,4)"/>');
   o.push('<path d="'+ribbon+'" fill="url(#'+P+'rib)" stroke="#C8B183" stroke-width="1"/>');
-  o.push('<path d="'+centerLine+'" fill="none" stroke="#F5E5C6" stroke-width="6.5" stroke-linecap="round" opacity="0.5"/>');
-  o.push('<path d="'+centerLine+'" fill="none" stroke="#F5E5C6" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="7 9" opacity="0.9"/>');
+  o.push('<path d="'+centerLine+'" fill="none" stroke="#F5E5C6" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="6 11" opacity="0.85"/>');
   function lantern(m){
     var s=m.s, x=m.x, y=m.y, isCur=m.i===currentIndex, isPast=m.i<currentIndex;
-    var ph=34*s, lw=9*s, lh=12*s, topY=y-ph;
+    var ph=40*s, lw=12*s, lh=15*s, topY=y-ph;
     var lightFill=isCur?accent:(isPast?'#FBD9A0':'#F1EAE0');
     var lightStroke=isCur?accent:'#C9A96A';
-    var op=isCur?1:(isPast?0.98:0.8);
-    var hit=Math.max(15, 22*s);
+    var op=isCur?1:(isPast?0.98:0.82);
+    var hit=Math.max(17, 24*s);
     var iattr = interactive ? ' style="cursor:pointer" tabindex="0" role="button" aria-label="Stand at: '+esc(stages[m.i])+'"' : '';
     var g=['<g class="trail-stage" data-i="'+m.i+'" opacity="'+op.toFixed(2)+'"'+iattr+'>'];
     if(interactive) g.push('<circle cx="'+x.toFixed(1)+'" cy="'+(y-ph*0.5).toFixed(1)+'" r="'+hit.toFixed(1)+'" fill="#000" opacity="0" pointer-events="all"/>');
-    if(isCur) g.push('<circle cx="'+x.toFixed(1)+'" cy="'+(topY-lh*0.4).toFixed(1)+'" r="'+(28*s).toFixed(1)+'" fill="url(#'+P+'glow)"/>');
-    g.push('<ellipse cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" rx="'+(5*s).toFixed(1)+'" ry="'+(2*s).toFixed(1)+'" fill="#7A6A57" opacity="0.35"/>');
-    g.push('<line x1="'+x.toFixed(1)+'" y1="'+y.toFixed(1)+'" x2="'+x.toFixed(1)+'" y2="'+topY.toFixed(1)+'" stroke="#8A6A4A" stroke-width="'+(2.6*s).toFixed(1)+'" stroke-linecap="round"/>');
-    g.push('<line x1="'+(x-6*s).toFixed(1)+'" y1="'+topY.toFixed(1)+'" x2="'+(x+6*s).toFixed(1)+'" y2="'+topY.toFixed(1)+'" stroke="#8A6A4A" stroke-width="'+(2*s).toFixed(1)+'" stroke-linecap="round"/>');
-    g.push('<rect x="'+(x-lw/2).toFixed(1)+'" y="'+(topY-lh).toFixed(1)+'" width="'+lw.toFixed(1)+'" height="'+lh.toFixed(1)+'" rx="'+(3*s).toFixed(1)+'" fill="'+lightFill+'" stroke="'+lightStroke+'" stroke-width="'+(1.1*s).toFixed(1)+'"/>');
-    g.push('<circle cx="'+x.toFixed(1)+'" cy="'+(topY-lh*0.5).toFixed(1)+'" r="'+(2.4*s).toFixed(1)+'" fill="#FFF6DE" opacity="'+(isCur?0.95:0.6)+'"/>');
-    g.push('<rect x="'+(x-lw*0.62).toFixed(1)+'" y="'+(topY-lh-2.6*s).toFixed(1)+'" width="'+(lw*1.24).toFixed(1)+'" height="'+(2.6*s).toFixed(1)+'" rx="'+(1.2*s).toFixed(1)+'" fill="#8A6A4A"/>');
-    if(isCur){ g.push('<circle cx="'+(x+8.5*s).toFixed(1)+'" cy="'+(y-3*s).toFixed(1)+'" r="'+(3.4*s).toFixed(1)+'" fill="'+accent+'" stroke="#FBF7F2" stroke-width="1.2"/>'); }
+    if(isCur){ g.push('<circle cx="'+x.toFixed(1)+'" cy="'+(topY-lh*0.4).toFixed(1)+'" r="'+(34*s).toFixed(1)+'" fill="url(#'+P+'glow)"/>'); }
+    g.push('<ellipse cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" rx="'+(6*s).toFixed(1)+'" ry="'+(2.4*s).toFixed(1)+'" fill="#7A6A57" opacity="0.32"/>');
+    g.push('<line x1="'+x.toFixed(1)+'" y1="'+y.toFixed(1)+'" x2="'+x.toFixed(1)+'" y2="'+topY.toFixed(1)+'" stroke="#8A6A4A" stroke-width="'+(3*s).toFixed(1)+'" stroke-linecap="round"/>');
+    g.push('<line x1="'+(x-7*s).toFixed(1)+'" y1="'+topY.toFixed(1)+'" x2="'+(x+7*s).toFixed(1)+'" y2="'+topY.toFixed(1)+'" stroke="#8A6A4A" stroke-width="'+(2.2*s).toFixed(1)+'" stroke-linecap="round"/>');
+    // hanging loop + the lantern body, with a warm glass panel
+    g.push('<line x1="'+(x-4.4*s).toFixed(1)+'" y1="'+topY.toFixed(1)+'" x2="'+(x-lw*0.5).toFixed(1)+'" y2="'+(topY-lh-2*s).toFixed(1)+'" stroke="#8A6A4A" stroke-width="'+(1.2*s).toFixed(1)+'" opacity="0.7"/>');
+    g.push('<rect x="'+(x-lw*0.62).toFixed(1)+'" y="'+(topY-lh-3*s).toFixed(1)+'" width="'+(lw*1.24).toFixed(1)+'" height="'+(3*s).toFixed(1)+'" rx="'+(1.3*s).toFixed(1)+'" fill="#8A6A4A"/>');
+    g.push('<rect x="'+(x-lw/2).toFixed(1)+'" y="'+(topY-lh).toFixed(1)+'" width="'+lw.toFixed(1)+'" height="'+lh.toFixed(1)+'" rx="'+(3.2*s).toFixed(1)+'" fill="'+lightFill+'" stroke="'+lightStroke+'" stroke-width="'+(1.2*s).toFixed(1)+'"/>');
+    g.push('<circle cx="'+x.toFixed(1)+'" cy="'+(topY-lh*0.5).toFixed(1)+'" r="'+(3*s).toFixed(1)+'" fill="#FFF9E8" opacity="'+(isCur?0.98:(isPast?0.8:0.55))+'"/>');
+    if(isCur){ g.push('<circle cx="'+(x+10*s).toFixed(1)+'" cy="'+(y-4*s).toFixed(1)+'" r="'+(3.8*s).toFixed(1)+'" fill="'+accent+'" stroke="#FBF7F2" stroke-width="1.3"/>'); }
     g.push('</g>');
     return g.join('');
   }
-  markers.slice().sort(function(a,b){return a.frac-b.frac;}).forEach(function(m){ o.push(lantern(m)); });
-  var lampTopOf=function(m){ return m.y - 34*m.s - 12; };
-  var near=[], farL=[], farR=[];
-  markers.forEach(function(m){ if(m.frac<=0.40){ near.push(m); } else if(m.x<=vpX){ farL.push(m); } else { farR.push(m); } });
-  function emitLabel(m, lx, ly, anchor, tieToTop){
+  // draw far→near so nearer lanterns overlap the ones behind them
+  anchors.slice().sort(function(a,b){return a.y-b.y;}).forEach(function(m){ o.push(lantern(m)); });
+
+  // ── labels: each hugs the OUTER side of its switchback, stacked per side so none collide ──
+  var lampTopOf=function(m){ return m.y - 40*m.s - 8; };
+  function labelW(str,fs){ return fs*0.54*String(str).length; }
+  function emitLabel(m, lx, ly, anchor){
     var isCur=m.i===currentIndex;
-    var fs=(m.frac<=0.40?15.5:13.5)*lblScale;
+    var fs=(13.6 - m.t*1.4)*lblScale;
     var col=isCur?accent:'#8A8194';
-    var tieY = tieToTop ? lampTopOf(m) : (m.y+3);
-    o.push('<line x1="'+m.x.toFixed(1)+'" y1="'+tieY.toFixed(1)+'" x2="'+lx.toFixed(1)+'" y2="'+(ly-4).toFixed(1)+'" stroke="'+col+'" stroke-width="'+(isCur?1.4:0.9)+'" opacity="0.45"/>');
-    o.push('<circle cx="'+m.x.toFixed(1)+'" cy="'+tieY.toFixed(1)+'" r="2" fill="'+col+'"/>');
-    o.push('<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" font-size="'+fs.toFixed(1)+'" text-anchor="'+anchor+'" fill="'+(isCur?accent:'#3A3450')+'" font-weight="'+(isCur?'700':'600')+'">'+esc(stages[m.i])+'</text>');
+    var tieX = anchor==='end' ? lx+3 : lx-3;
+    o.push('<line x1="'+m.x.toFixed(1)+'" y1="'+lampTopOf(m).toFixed(1)+'" x2="'+tieX.toFixed(1)+'" y2="'+(ly-4).toFixed(1)+'" stroke="'+col+'" stroke-width="'+(isCur?1.5:0.9)+'" opacity="0.5"/>');
+    o.push('<circle cx="'+tieX.toFixed(1)+'" cy="'+(ly-4).toFixed(1)+'" r="1.9" fill="'+col+'"/>');
+    o.push('<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" font-size="'+fs.toFixed(1)+'" text-anchor="'+anchor+'" fill="'+(isCur?accent:'#3A3450')+'" font-weight="'+(isCur?'700':'600')+'" paint-order="stroke" stroke="#FBF7F2" stroke-width="'+(2.6*lblScale).toFixed(1)+'" stroke-linejoin="round">'+esc(stages[m.i])+'</text>');
   }
-  near.forEach(function(m){ var lx=Math.max(60, Math.min(W-60, m.x)); emitLabel(m, lx, m.y+20, 'middle', false); });
-  function labelW(str){ return 13.5*lblScale*0.54*String(str).length; }
-  function stackSide(arr, side){
-    if(!arr.length) return;
-    var maxW=0; arr.forEach(function(m){ maxW=Math.max(maxW, labelW(stages[m.i])); });
-    var anchor = side==='R' ? 'start' : 'end';
-    var edgeX  = side==='R' ? Math.max(vpX+12, W-6-maxW) : Math.min(vpX-12, 6+maxW);
-    var gap = 21*lblScale;
-    arr.sort(function(a,b){ return b.y-a.y; });
-    var prevY=1e9;
-    arr.forEach(function(m){ var ly=Math.min(lampTopOf(m)-2, prevY-gap); ly=Math.max(16, ly); prevY=ly; emitLabel(m, edgeX, ly, anchor, true); });
+  var Ls=[], Rs=[];
+  anchors.forEach(function(m){ (m.x<=cx?Ls:Rs).push(m); });
+  function placeSide(arr, side){
+    arr.sort(function(a,b){ return a.y-b.y; });   // top of the slope first
+    var gap=20*lblScale, prevY=-1e9;
+    arr.forEach(function(m){
+      var fs=(13.6 - m.t*1.4)*lblScale, w=labelW(stages[m.i], fs);
+      var lx = side==='L' ? clmp(m.x-(14*m.s+10), 6+w, cx-8) : clmp(m.x+(14*m.s+10), cx+8, W-6-w);
+      var ly = Math.max(prevY+gap, lampTopOf(m)+4);
+      ly = clmp(ly, 20, H-14); prevY = ly;
+      emitLabel(m, side==='L'?lx:lx, ly, side==='L'?'end':'start');
+    });
   }
-  stackSide(farL, 'L'); stackSide(farR, 'R');
+  placeSide(Ls,'L'); placeSide(Rs,'R');
   o.push('</svg>');
   return o.join('');
 }
@@ -2597,6 +2620,11 @@ function fableRender(A,mid,t,roam){
 function fableDur(A,mid){ const mo=A&&A.motions&&A.motions.find(m=>m.id===mid); return (mo&&mo.dur)||1; }
 function fableCollect(){
   const REG=window.__FABLE_ANIMALS||{};
+  // A scene rebuild (sky cross-fade, season, a tended tree) must NOT teleport the walkers back to their
+  // start scatter — that reset read as 'broken movement', worst in the small ponds where it flung a duck
+  // or stork clear across the water. Snapshot each walker's live state and resume it on the fresh element.
+  const prevWalk={};
+  if(fableEls) fableEls.forEach(p=>{ if(p&&!p.isFloat) prevWalk[p.id+'|'+(p.el&&p.el.dataset.x)+'|'+(p.el&&p.el.dataset.off)]=p; });
   fableEls=[...document.querySelectorAll('#sceneWrap g.fable')].map(el=>{
     const id=el.dataset.id, A=REG[id]||null, B=FABLE_BEHAV[id]||{};
     const isFloat=el.dataset.flt==='1', art=!!B.art;
@@ -2624,6 +2652,14 @@ function fableCollect(){
     f.ox=f.lo+(R(1))*(f.hi-f.lo)*0.9+(f.hi-f.lo)*0.05; f.oy=(R(2)-0.5)*2*f.yd;
     f.dir=R(3)>0.5?1:-1;
     f.until=R(4)*2.5;
+    // resume from the pre-rebuild position/state if this exact walker was alive a moment ago (clamped to
+    // the — unchanged — home range, so a restore can never place it out of bounds). The rAF clock is
+    // continuous across a rebuild, so the absolute `until` timestamp stays valid and the wander continues.
+    const _p=prevWalk[f.id+'|'+el.dataset.x+'|'+el.dataset.off];
+    if(_p){ f.ox=Math.max(f.lo,Math.min(f.hi,_p.ox)); f.oy=_p.oy; f.dir=_p.dir||1; f.mode=_p.mode||'idle';
+      f.tgt=Math.max(f.lo,Math.min(f.hi,_p.tgt||0)); f.tgtY=_p.tgtY||0; f.spdCur=_p.spdCur||0;
+      f.until=_p.until||f.until; f.ph=_p.ph||0; f.midCur=_p.midCur||null; f.chainTo=_p.chainTo||null; f.rnd=_p.rnd||0;
+      if(f.midCur&&A) f.durCur=fableDur(A,f.midCur); }
     const firstMid=(B.go&&B.go!=='art')?B.go:((B.idles&&B.idles[0]&&B.idles[0][0])||null);
     if(A&&firstMid){ try{ f.fin.innerHTML=fableRender(A,firstMid,0.32,f.amp>0); }catch(_){} }
     if(f.mover) f.mover.setAttribute('transform',`translate(${f.ox.toFixed(1)} ${f.oy.toFixed(1)}) scale(${f.dir*(f.fl?-1:1)},1)`);
@@ -3379,7 +3415,7 @@ function renderPath(){
   const cps=[{x:618,y:HOR+4,w:6}];
   const steps=Math.max(4, Math.ceil(N*0.9)+2);
   for(let k=1;k<=steps;k++){ const t=k/steps;
-    cps.push({ x:500+Math.sin(k*1.85+0.6)*(105+95*t), y:HOR+18+(H-64-(HOR+18))*t, w:6+44*t }); }
+    cps.push({ x:(608-140*t)+Math.sin(k*1.02+0.5)*(40+42*t), y:HOR+18+(H-64-(HOR+18))*t, w:6+44*t }); }   // a calm, gentle wind — not a restless zigzag
   const segs=cps.length-1;
   const trailPt=u=>{ u=clamp(u,0,1); const f=u*segs, j=Math.min(segs-1,Math.floor(f)), t=f-j;
     const a=cps[j], b=cps[j+1], my=(a.y+b.y)/2, m=1-t;
@@ -3443,11 +3479,11 @@ function renderPath(){
     placed.push({x:nx,y,ext}); return nx;
   };
   // woodland margins running down BOTH edges — jittered rhythm and varied recipes so they read as organic copses
-  const edgeStep=Math.max(132,(H-244)/26);   // however long the path grows, at most ~26 rows per side
+  const edgeStep=Math.max(180,(H-244)/15);   // sparser rows — the meadow should breathe, not be wallpapered in trees
   for(let y=HOR+64, j=0; y<H-30; y+=edgeStep*(0.7+0.7*rnd01(j*23+9)), j++){
     const depth=(y-HOR)/(H-HOR), escl=0.5+1.15*depth;
     [[26+rnd01(j*11+2)*66+rnd01(j*5+8)*96, j*2], [W-26-rnd01(j*19+4)*66-rnd01(j*9+6)*96, j*2+1]].forEach(([exc,ei])=>{
-      if(rnd01(ei*17+1)>0.86) return;   // let the margin breathe
+      if(rnd01(ei*17+1)>0.62) return;   // let the margin breathe — skip more often than not
       const ex=placeClear(exc, y, 42*escl); if(ex===null) return;
       const r=rnd01(ei*13+7), spread=0.78+0.5*rnd01(ei*29+3);
       if(r<0.28){ veg+=dtree(ex, y+10, escl*spread, ei); }
@@ -3457,7 +3493,7 @@ function renderPath(){
     });
   }
   // clusters strung along the trail itself
-  const bands=Math.min(48, Math.max(12, N+8));
+  const bands=Math.min(20, Math.max(6, Math.ceil(N/2)+3));   // far fewer trail-hugging clusters — keep the stones company, don't bury them
   for(let i=0;i<bands;i++){
     const u=0.04+0.94*(i/(bands-1)); const p=trailPt(u); const depth=(p.y-HOR)/(H-HOR);
     const side=(i%2?1:-1)*(rnd01(i*7+3)>0.82?-1:1);   // mostly alternating, occasionally doubling up a side
@@ -3467,16 +3503,16 @@ function renderPath(){
     const ext=[44,26,30,20][kind]*sc;
     const x=placeClear(clamp(p.x+side*off, 26, W-26), y, ext); if(x===null) continue;
     if(kind===0){ veg+=dtree(x-12*sc,y,sc*0.92,i)+dtree(x+14*sc,y+7,sc,i+1)+dbush(x+30*sc,y+9,sc*0.8,i); }
-    else if(kind===1){ veg+=dtree(x,y,sc,i)+drift(x+26*sc,y+8,sc*0.9,i); }
-    else if(kind===2){ veg+=dbush(x,y,sc,i)+drift(x-24*sc,y+6,sc,i+2); }
-    else { veg+=`<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${sc.toFixed(2)})">${grassClump(0,0,null,true)}</g>`+drift(x+8,y+4,sc,i+1); }
-    // now and then a lone copse drifts halfway toward the edge, so the mid-field isn't empty
-    if(rnd01(i*43+5)>0.78){ const mx=placeClear(clamp(p.x+side*off*2.6, 60, W-60), y+12, 32*sc);
+    else if(kind===1){ veg+=dtree(x,y,sc,i)+dbush(x+26*sc,y+11,sc*0.78,i); }
+    else if(kind===2){ veg+=dbush(x,y,sc,i)+dbush(x-22*sc,y+6,sc*0.7,i+2); }
+    else { veg+=`<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${sc.toFixed(2)})">${grassClump(0,0,null,true)}</g>`; }
+    // just occasionally a lone copse drifts halfway toward the edge, so the mid-field isn't wholly empty
+    if(rnd01(i*43+5)>0.9){ const mx=placeClear(clamp(p.x+side*off*2.6, 60, W-60), y+12, 32*sc);
       if(mx!==null) veg+=dtree(mx, y+12, sc*0.82, i+3)+dbush(mx+22*sc, y+18, sc*0.6, i+1); }
   }
   // loose field flowers dotted across the open meadow (kept clear of the trail corridor)
   let dots='';
-  for(let i=0;i<Math.min(70, 26+N*2);i++){
+  for(let i=0;i<Math.min(30, 12+N);i++){
     const y=HOR+46+rnd01(i*17+5)*(H-HOR-110); const x=26+rnd01(i*29+11)*(W-52);
     const depth=(y-HOR)/(H-HOR);
     if(Math.abs(x-roadXat(y))<wAt(y)/2+70) continue;
@@ -3492,13 +3528,8 @@ function renderPath(){
   s+=`<path d="${ribbon(road.map(p=>({x:p.x,y:p.y,w:p.w+4})))}" fill="#C8B183" opacity=".5"/>`;
   s+=`<path d="${ribbon(road)}" fill="#E7CDA0"/>`;
   s+=`<path d="${ribbon(road.map(p=>({x:p.x,y:p.y,w:Math.max(2,p.w*0.45)})))}" fill="#F5E5C6" opacity=".75"/>`;
-  // roadside blooms hugging the trail (more of them as the returns add up)
-  const nBloom=clamp(4+Math.floor(totalReturns/2),4,16);
-  for(let i=0;i<nBloom;i++){ const u=0.16+0.78*(i/Math.max(1,nBloom-1)); const bp=trailPt(u);
-    const bd=(bp.y-HOR)/(H-HOR), side=(i%2?1:-1)*(wAt(bp.y)/2+30+24*bd), a=AREAS[i%AREAS.length];
-    let bx=bp.x+side; const brx=roadXat(bp.y+6), bmn=wAt(bp.y+6)/2+12;   // the road curves between anchors — keep blooms off it
-    if(Math.abs(bx-brx)<bmn) bx=(bx<brx?brx-bmn:brx+bmn);
-    s+=`<g class="sway" style="animation-duration:${7+(i%3)}s;animation-delay:${-i}s"><g transform="translate(${bx.toFixed(0)} ${(bp.y+6).toFixed(0)}) scale(${(0.10+0.17*bd).toFixed(2)})" color="${a.accent}"><use href="#flower6" x="-50" y="-50" width="100" height="100"/></g></g>`; }
+  // (No loose roadside blooms — each stone already carries its own day's-colour flower, so the trail
+  //  stays about the stones. A few field dots and the framing woods give the meadow its quiet life.)
   // companion copses — a hazy one by the horizon, a full one in the near corner, in the trail scene's own flat style
   // (corner pulled left so even a road exiting at its leftmost never runs under the trees)
   s+=`<g opacity=".9">${dtree(866,HOR+46,0.55,1)+dtree(896,HOR+52,0.62,2)+dbush(922,HOR+56,0.48,0)}</g>`;
@@ -3509,8 +3540,8 @@ function renderPath(){
   // stones — drawn far→near so closer ones overlap; warm sandstone, a bloom in that day's colour, the newest glows
   const pts=nodes.map((n,i)=>{ const u = N===1 ? 0.86 : 0.10+(0.94-0.10)*(i/(N-1)); const p=trailPt(u);
     const q=trailPt(Math.min(1,u+0.012)); let tx=q.x-p.x, ty=q.y-p.y; const L=Math.hypot(tx,ty)||1; tx/=L; ty/=L;
-    const depth=(p.y-HOR)/(H-HOR), off=(wAt(p.y)/2+13+9*depth)*(i%2?1:-1);   // waymarks stand BESIDE the road, alternating sides
-    return {x:p.x-ty*off, y:p.y+tx*off, n, sc:0.5+0.62*depth, latest:i===N-1}; });
+    const depth=(p.y-HOR)/(H-HOR), off=(wAt(p.y)/2+15+11*depth)*(i%2?1:-1);   // waymarks stand BESIDE the road, alternating sides
+    return {x:p.x-ty*off, y:p.y+tx*off, n, sc:0.74+0.66*depth, latest:i===N-1}; });
   pts.forEach(p=>{
     const n=p.n, cnt=n.first?1:(n.count||1), extra=n.first?0:clamp(cnt-1,0,2);
     const accent=n.first?'#E8943E':AREA[n.areas[0]].accent;
@@ -3518,8 +3549,10 @@ function renderPath(){
       ? "Where the path begins — one small thing was all it took."
       : `${niceDay(n.ymd,{weekday:'short',day:'numeric',month:'short'})} — ${n.areas.map(a=>AREA[a].label).join(' · ')} · ${cnt===1?'one small return':cnt+' small returns'}${p.latest?" · you're here":''}`;
     let cg='';
-    if(p.latest&&!n.first) cg+=`<circle cx="0" cy="-8" r="34" fill="${accent}" opacity=".13"/><circle cx="0" cy="-8" r="20" fill="${accent}" opacity=".12"/>`;
-    cg+=`<ellipse cx="1" cy="11" rx="${19+extra*2}" ry="5" fill="rgba(70,48,22,.18)"/>`;
+    // a soft breath of light lifts each stone off the busy meadow; the newest one truly glows in its day's colour
+    cg+=`<ellipse cx="0" cy="-4" rx="21" ry="16" fill="#FCF8F0" opacity="${p.latest?.5:.22}" filter="url(#glDof)"/>`;
+    if(p.latest&&!n.first) cg+=`<circle cx="0" cy="-7" r="31" fill="${accent}" opacity=".2"/><circle cx="0" cy="-7" r="17" fill="${accent}" opacity=".18"/>`;
+    cg+=`<ellipse cx="1" cy="11" rx="${19+extra*2}" ry="5" fill="rgba(70,48,22,.2)"/>`;
     cg+=`<path d="M-14 10 C -15.5 1 -8 -4.5 0 -4.5 C 8 -4.5 15.5 1 14 10 Z" fill="#C6B18E"/>`;
     cg+=`<path d="M-13 10 C -13 4 -9 0 -4 -2 C -8.5 2 -10.5 5.5 -11 10 Z" fill="#B29D79" opacity=".55"/>`;
     cg+=`<path d="M-9.5 -3 C -9.5 -9.5 -4 -12.5 1 -12.5 C 6.5 -12.5 10.5 -9 10 -3 C 4.5 0 -4.5 0 -9.5 -3 Z" fill="#D8C9A8"/>`;
@@ -3527,7 +3560,7 @@ function renderPath(){
     let topY=-14.5;
     for(let k=0;k<extra;k++){ topY-=7.5; cg+=`<ellipse cx="${k%2?-2:2}" cy="${topY.toFixed(1)}" rx="${(5.4-k).toFixed(1)}" ry="${(3.9-k*0.5).toFixed(1)}" fill="${k%2?'#F0E7D3':'#E0D3B6'}"/>`; }
     cg+=`<ellipse cx="-3.4" cy="-8.8" rx="2.6" ry="1.4" fill="#FFFDF6" opacity=".5"/>`;
-    cg+=`<g transform="translate(0 ${(topY-7).toFixed(1)}) scale(.13)" color="${accent}"><use href="#flower6" x="-50" y="-50" width="100" height="100"/></g>`;
+    cg+=`<g transform="translate(0 ${(topY-8).toFixed(1)}) scale(.17)" color="${accent}"><use href="#flower6" x="-50" y="-50" width="100" height="100"/></g>`;
     s+=`<g class="cairnTap" data-cap="${esc(cap)}" transform="translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) scale(${p.sc.toFixed(2)})" style="cursor:pointer" role="button" tabindex="0" aria-label="${esc(n.first?'Where the path begins':niceDay(n.ymd,{weekday:'long',day:'numeric',month:'long'})+', a day you came back')}">${cg}</g>`;
   });
   _phase=keepPhase;
