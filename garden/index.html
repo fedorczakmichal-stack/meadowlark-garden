@@ -185,6 +185,30 @@
   .card .c-spark svg{width:100%;height:100%;display:block}
   .card.fresh .c-spark{opacity:.95}
   .card .invite-tag{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  /* craft = the product's quiet heart → gently the most surfaced of the seven */
+  .card.craft-lead{border-color:color-mix(in srgb,var(--accent) 48%,var(--hairline));box-shadow:0 18px 40px -30px color-mix(in srgb,var(--accent) 60%,rgba(120,92,150,.5)),0 0 0 1px color-mix(in srgb,var(--accent) 22%,transparent)}
+  .card.craft-lead::before{opacity:.09}
+  .card .c-road{display:inline-flex;align-items:center;gap:4px;align-self:flex-start;margin-top:2px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--accent) 72%,#3A3450);background:color-mix(in srgb,var(--accent) 13%,transparent);border-radius:999px;padding:5px 10px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s var(--ease)}
+  .card .c-road:hover{background:color-mix(in srgb,var(--accent) 20%,transparent)}
+  /* craft invitation band — the one hero card no other area gets; opens the constellation, no tend sheet first */
+  .craft-slot{padding:12px 18px 0}
+  .craft-slot:empty{padding:0}
+  .craft-invite{
+    display:flex;align-items:center;gap:13px;width:100%;box-sizing:border-box;text-align:left;cursor:pointer;
+    background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 13%,var(--surface)),var(--surface) 70%);
+    border:1px solid color-mix(in srgb,var(--accent) 40%,var(--hairline));border-radius:18px;padding:14px 16px;
+    box-shadow:0 20px 42px -32px color-mix(in srgb,var(--accent) 55%,rgba(120,92,150,.5));
+    transition:transform .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease);
+  }
+  .craft-invite:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent) 55%,var(--hairline))}
+  .craft-invite:active{transform:scale(.99)}
+  .craft-invite .ci-ico{flex:none;width:40px;height:40px;color:var(--accent)}
+  .craft-invite .ci-ico svg{width:100%;height:100%;display:block}
+  .craft-invite .ci-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+  .craft-invite .ci-title{font-family:var(--ff-brand);font-weight:600;font-size:16.5px;letter-spacing:-.01em;color:var(--ink);line-height:1.2}
+  .craft-invite .ci-sub{font-size:12.5px;color:var(--muted);line-height:1.4}
+  .craft-invite .ci-arrow{flex:none;width:22px;height:22px;color:var(--accent);display:grid;place-items:center}
+  .craft-invite .ci-arrow svg{width:18px;height:18px;display:block}
 
   /* ── generic blocks / typography for views ── */
   .lead-h{font-family:var(--ff-brand);font-weight:500;font-size:clamp(23px,6vw,28px);letter-spacing:-.02em;line-height:1.14;margin:4px 0 0}
@@ -299,6 +323,14 @@
   .seg{display:inline-flex;background:var(--bg-2);border:1px solid var(--hairline);border-radius:999px;padding:3px;gap:2px}
   .seg button{background:none;border:0;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--muted);min-height:34px}
   .seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 2px 8px -4px rgba(58,52,80,.3)}
+  /* tiny screens (iPhone SE / small Android): let the segmented control drop to its own line and wrap
+     instead of overflowing the settings row */
+  @media(max-width:360px){
+    .set-row{flex-wrap:wrap}
+    .set-row>div:first-child{flex:1 1 100%;min-width:0}
+    .set-row .seg{flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
+    .set-row .btn-quiet{margin-left:auto}
+  }
 
   /* ── tend bottom sheet ── */
   .scrim{position:fixed;inset:0;z-index:60;background:rgba(58,52,80,.34);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .3s var(--ease)}
@@ -639,6 +671,7 @@
       <div class="scene-cap" id="sceneCap"></div>
       <div id="habDots" aria-label="Wander to a habitat"></div>
       <div class="scene-hint">← swipe to wander · tap a place to tend →</div>
+      <div id="craftSlot" class="craft-slot"></div>
       <div class="cards-head">
         <h2>Tend one small thing</h2>
         <span class="hint">or just sit here</span>
@@ -1532,7 +1565,7 @@ function craftRoadSVG(p,userIdx){
 const CAREER_PATHS={"physician-anesthesiologist":{"id":"anesthesiologist-29-1211","label":"Anesthesiologist","pay":{"entry":"$101,000","median":"$391,000","top":"$557,000","source":"BLS OEWS, May 2025"},"time":{"fromZero":"~12–14 years","note":"A fellowship or a gap year adds a year or two and a combined BS/MD program can trim one — and from residency onward, you are paid to learn."},"outlook":"Growing about as fast as average — around 3% through 2034 (BLS)","routes":[{"from":"High school","path":"Four years of college — any major — with the premed science courses, some real patient contact, and the MCAT along the way.","span":"~4 years"},{"from":"Another career or degree","path":"A post-baccalaureate program fills in the premed sciences; your years of work become part of your story, not lost time.","span":"~1–2 years"},{"from":"Adjacent healthcare work","path":"Nurses, paramedics, and anesthesia techs already have clinical hours — finish the missing science courses part-time, then take the MCAT.","span":"~2–3 years"}],"stages":[{"name":"Foundation","span":"~4 years","what":"College with premed sciences, real patient contact, and the MCAT. Any major works — the chemistry and biology courses are what count."},{"name":"Medical school","span":"4 years","what":"Two years of classroom science, two of hospital rotations. USMLE Step 1 and 2 happen along the way — big exams, but everyone takes them."},{"name":"Residency","span":"4 years","what":"Paid, hands-on training: one year of general medicine, then three in the OR learning anesthesia case by case. You get there via the Match."},{"name":"License & boards","span":"~1–2 years","what":"Step 3 and your state medical license come early in residency; the American Board of Anesthesiology exams follow soon after you finish."},{"name":"First years","span":"1–3 years","what":"Your own cases, a full salary, and time to find a sustainable pace. An optional fellowship — pain, ICU, pediatrics — adds a year."},{"name":"Growing further","span":"ongoing","what":"Deepen a niche, teach, lead a department, or simply be the steady presence in the room. Recertification keeps skills fresh, gently."}]},"registered-nurse":{"id":"rn-29-1141","label":"Nurse (RN)","pay":{"entry":"$66,030","median":"$93,600","top":"$135,320","source":"BLS OOH, May 2024"},"time":{"fromZero":"~2–4 years","note":"An ADN gets you nursing in about two years, a BSN in four — and if you already hold any bachelor's degree, accelerated programs run 12–18 months."},"outlook":"Faster than average — about 5% growth from 2024 to 2034 (BLS)","routes":[{"from":"High school","path":"Go straight into a 2-year ADN at a community college or a 4-year BSN at a university, then take the NCLEX-RN.","span":"~2–4 years"},{"from":"Another career or degree","path":"An accelerated BSN builds on the bachelor's you already have — intense but short — then the same NCLEX and license as everyone else.","span":"~1–2 years"},{"from":"An adjacent care role","path":"CNAs, LPNs, paramedics and medics can join bridge programs that credit what they already know, often part-time while working.","span":"~1–3 years"},{"from":"Working adult, no degree","path":"Evening and part-time ADN programs are built for people with jobs and families — slower, but the same RN at the end.","span":"~3–4 years"}],"stages":[{"name":"Foundation","span":"0–12 months","what":"Prerequisites — anatomy, chemistry, psychology — and choosing your door: 2-year ADN or 4-year BSN. BSN programs fold these courses into the degree; ADN students often take them a semester or two ahead. Both lead to the same license."},{"name":"Nursing school","span":"2–4 years","what":"ADN at a community college or BSN at a university. Classes plus supervised clinical shifts — you learn on real units, with backup."},{"name":"NCLEX-RN exam","span":"1–3 months","what":"One national exam after graduation. Most people prep for a few weeks; most first-timers pass, and a retake is allowed if not."},{"name":"State license","span":"4–8 weeks","what":"Apply to your state's board of nursing — paperwork and a background check. Compact states let one license work across many."},{"name":"First years","span":"1–2 years","what":"Many hospitals run new-grad residencies with mentors at your side. The first year is the steepest; it settles with every shift."},{"name":"Growing further","span":"ongoing","what":"Specialty certs (ICU, ER, peds), RN-to-BSN if you started with an ADN, or grad school toward NP — all optional, all in your time."}]},"electrician":{"id":"electrician-47-2111","label":"Electrician","pay":{"entry":"$39,000","median":"$62,000","top":"$106,000","source":"BLS OOH, May 2024"},"time":{"fromZero":"~4–6 years","note":"The apprenticeship pays a wage from day one, so this is time spent earning, not waiting — trade school first can add a year."},"outlook":"Much faster than average — BLS projects 9% growth through 2034","routes":[{"from":"From high school","path":"Apply straight into a paid apprenticeship (union IBEW/NECA or open-shop IEC/ABC) — no degree needed, just the aptitude test and paperwork.","span":"~4–5 years"},{"from":"From another career or degree","path":"Keep your current job while you apply; an evening trade-school year can strengthen the application and usually counts toward apprenticeship credit.","span":"~4–6 years"},{"from":"From an adjacent role","path":"Helper, maintenance, or military electrical work — documented hours can count toward your state's requirements and shorten the apprenticeship.","span":"~3–5 years"}],"stages":[{"name":"Foundation","span":"3–12 months","what":"Try the trade math, visit a job site, pick your door — union or open-shop — and get the application in. No degree needed."},{"name":"Apprenticeship (paid)","span":"4–5 years","what":"You earn a wage from day one. Around 8,000 supervised hours plus classroom evenings: wiring, safety, and the electrical Code."},{"name":"Journeyman exam","span":"a few months","what":"Most states require a license exam — usually open-book on the Code. Finding answers fast matters more than memorizing them."},{"name":"First licensed years","span":"1–2 years","what":"Work on your own license and settle into residential, commercial, or industrial work. Pay rises as your specialty deepens."},{"name":"Master electrician","span":"2–4 years","what":"After a few years as a journeyman you can test for master, supervise others, or open your own contracting business. Optional, not required."}]},"software-developer":{"id":"15-1252","label":"Software developer","pay":{"entry":"$80,000","median":"$133,000","top":"$211,000","source":"BLS OOH, May 2024"},"time":{"fromZero":"~4–5 years","note":"A bootcamp or self-taught portfolio can shorten this to 1–2 years — there is no license or exam, so the door opens when your work is good enough to show."},"outlook":"Much faster than average — about 15% growth from 2024 to 2034 (BLS)","routes":[{"from":"High school","path":"A four-year degree in computer science or a related field, with internships along the way — still the most common front door.","span":"~4 years"},{"from":"Another career or degree","path":"A focused bootcamp (3–9 months full-time) plus a small portfolio and a patient job hunt; your old field often becomes your niche.","span":"~1–2 years"},{"from":"Self-taught while working","path":"Free courses and real projects in the evenings, gathered into a public portfolio at whatever pace your life allows.","span":"~2–3 years"},{"from":"An adjacent tech role","path":"From QA, IT support, or data work: automate parts of your own job, contribute small fixes, and move over internally.","span":"~1–2 years"}],"stages":[{"name":"First lines of code","span":"3–6 months","what":"Pick one language (Python or JavaScript) and write small things that run. Free courses are fine. You are checking whether this feels good."},{"name":"Learning the craft","span":"1–4 years","what":"A CS degree, a bootcamp, or steady self-study — all three work. What matters: data structures, debugging, Git, and finishing things."},{"name":"Proof you can build","span":"6–12 months","what":"Two or three real projects, code visible on GitHub, an internship if you can get one. Employers hire proof, not promises."},{"name":"First dev job","span":"years 1–2","what":"A junior role. Expect to feel slow — everyone does. Reading others' code, asking questions, and code review are the actual job."},{"name":"Finding your depth","span":"years 3–5","what":"Pick a lane — web, mobile, data, infrastructure. Depth in one area is what moves you from junior to mid-level."},{"name":"Senior and beyond","span":"year 5+","what":"Senior developer, tech lead, or architect. New tools keep arriving; the habit of learning matters more than any one framework."}]},"teacher":{"id":"teacher-25-2021","label":"Teacher","pay":{"entry":"$46,440","median":"$62,340","top":"$102,010","source":"BLS OOH, May 2024"},"time":{"fromZero":"~4–5 years","note":"If you already hold a bachelor's degree, alternative certification can put you in a paid classroom within a year or two."},"outlook":"Declining slightly (−2%, 2024–2034), yet about 103,800 openings a year as teachers retire or move on","routes":[{"from":"From high school","path":"A bachelor's degree with a built-in teacher-prep program carries you from freshman year to a licensed classroom in one steady run.","span":"~4–5 years"},{"from":"From another degree or career","path":"Alternative certification lets you teach — often paid — while you finish the education coursework your first degree didn't cover.","span":"~1–2 years"},{"from":"From a school job","path":"Aides, paraprofessionals, and substitutes can finish a degree or certification part-time; many districts help cover the cost.","span":"~2–4 years"}],"stages":[{"name":"Foundation","span":"6–12 months","what":"Notice whether you enjoy explaining things. Tutoring, camp counseling, or helping at a library all count as real evidence — and this can overlap with school or work you're already doing."},{"name":"Bachelor's + prep","span":"~4 years","what":"A 4-year degree with an approved teacher-prep program: child development, teaching methods, and regular time observing real classrooms."},{"name":"Student teaching","span":"~1 semester","what":"A supervised semester in a real classroom beside a mentor teacher — usually the final stretch of your degree program. Unpaid and tiring, and where it all starts to click."},{"name":"State certification","span":"a few months","what":"Pass your state's exams (often Praxis), clear a background check, and file for your license. It's paperwork, not a mountain."},{"name":"First classroom","span":"years 1–3","what":"Your own class at last. Most states pair new teachers with a mentor. The first year is the hardest one; it gets lighter."},{"name":"Growing further","span":"ongoing","what":"An optional master's (raises pay in many states), mentoring newer teachers, or a specialty like reading or ESL. No rush."}]},"accountant":{"id":"accountant-13-2011-us","label":"Accountant","outlook":"Faster than average — 5% growth projected from 2024 to 2034 (BLS)","pay":{"entry":"$53,000","median":"$82,000","top":"$141,000","source":"BLS OOH, May 2024"},"time":{"fromZero":"~4–6 years","note":"Four years of college gets you working; the optional CPA adds about a year of extra credits, an exam, and supervised time — many earn it on the job."},"routes":[{"from":"High school","path":"A bachelor's in accounting or business — a state school or a community-college transfer both get you there.","span":"~4 years"},{"from":"Another degree or career","path":"Your existing bachelor's counts; add accounting coursework or a one-year master's, then step into an entry-level role.","span":"~1–2 years"},{"from":"Bookkeeping or office work","path":"Employers often promote experienced bookkeepers into junior accounting roles while you finish a degree part-time.","span":"~2–4 years"},{"from":"Community college","path":"Start with an associate's in accounting, work as a clerk, and transfer credits toward the bachelor's at your own pace.","span":"~4–6 years"}],"stages":[{"name":"Foundation","span":"6–12 months","what":"Get comfortable with numbers and spreadsheets. One intro bookkeeping or accounting class — free ones count — tells you if this fits."},{"name":"Bachelor's degree","span":"4 years","what":"Accounting or business, at your pace. An internship during one busy season teaches more than any lecture."},{"name":"First job","span":"1–2 years","what":"Staff accountant, tax preparer, or junior auditor. Year one is learning the rhythm — closes, deadlines, tax season. It gets easier."},{"name":"CPA (optional)","span":"1–2 years","what":"150 college credits, a four-part exam, about a year of supervised work. Employers often help pay. Opens doors, but isn't required to work."},{"name":"Growing further","span":"ongoing","what":"Senior, manager, controller — or your own small practice. Accountants are needed everywhere, so you can move without starting over."}]},"chef":{"id":"chef-35-1011","label":"Chef / Head Cook","pay":{"entry":"$36,000","median":"$61,000","top":"$96,000+","source":"BLS OOH, May 2024"},"time":{"fromZero":"~6–10 years","note":"No license, no required degree — the years are earned on the line, so steady kitchen work counts more than any classroom."},"outlook":"Growing much faster than average — about 7% through 2034 (BLS)","routes":[{"from":"High school","path":"Start as a prep or line cook right away and learn every station on the job — the classic road up.","span":"~6–10 years"},{"from":"Another career or degree","path":"A 1–2 year culinary certificate or associate's program eases the switch; kitchen shifts alongside it still count most.","span":"~5–8 years"},{"from":"Adjacent kitchen role","path":"Dishwashers, prep cooks, servers, and bakers are already inside — asking for line shifts opens the ladder.","span":"~4–7 years"},{"from":"Apprenticeship","path":"Paid culinary apprenticeships (some registered with the U.S. Dept. of Labor) combine wages with structured training.","span":"~5–8 years"}],"stages":[{"name":"First kitchen job","span":"0–1 year","what":"Start as a prep or line cook. No degree needed — you learn knives, heat, and the rhythm of service by showing up."},{"name":"Training, your way","span":"1–2 years","what":"Optional: a culinary certificate or associate's degree. Most chefs mix some schooling with real shifts; either path works."},{"name":"Line cook years","span":"3–5 years","what":"Work the stations — grill, sauté, pastry. Speed and consistency come with repetition. This is where the craft settles in."},{"name":"Sous chef","span":"2–3 years","what":"Second-in-command: ordering, scheduling, teaching newer cooks. You start running services on your own."},{"name":"Chef / head cook","span":"ongoing","what":"You lead the kitchen — menu, costs, the team. Median pay is about $61,000; hotels and upscale spots pay more."},{"name":"Growing further","span":"optional","what":"Executive chef, a bigger kitchen, or a place of your own. ACF certification can help — it is never required."}]}};
 function openCraftPath(){
   if(craftIsCatalog()&&!craftIndex&&!craftIndexTried){ loadCraftIndex().then(()=>openCraftPath()); return; }
-  const p=craftPathData(); if(!p) return;
+  const p=craftPathData(); if(!p){ openCraftPick(); return; }   // never a dead end: no road yet → gently invite picking one
   const me=craftUserPathStage(p);
   const el=document.getElementById('craftPathBody');
   let h=`<div class="cp-title">${p.label} — the shape of it</div>
@@ -3151,28 +3184,6 @@ function stalk(color,h,kind){
   return g;
 }
 // the dense flowering foreground (always present), with grass tufts + depth-of-field blooms
-function foregroundFlora(){
-  const F=[ // x, baseY, height, color, kind, swayDur, delay
-    [40,470,118,'#EF9C7E','flower',7.4,-.4],[212,478,146,'#F4C24C','flower',8.2,-2.6],
-    [346,470,168,'#E8943E','flower',7.8,-4.2],[470,486,128,'#E68AB0','flower',8.6,-1.4],
-    [556,480,100,'#B98AD0','flower',7,-5.4],[690,476,150,'#5B9BD9','flower',8.4,-3],
-    [828,484,124,'#E8943E','flower',7.6,-6],[946,474,148,'#EF9C7E','flower',8,-1.8],
-    [120,488,46,null,'daisy',8,-1],[300,492,42,null,'daisy',8.8,-3.6],
-    [610,494,42,'#E68AB0','flower',8.2,-5.2],[762,492,40,null,'daisy',7.8,-2.2],
-    [510,496,62,null,'bell',8.4,-2.8],[884,494,56,null,'bell',7.7,-5.1],
-  ];
-  let g='';
-  F.forEach(f=>{ g+=`<g class="sway" style="animation-duration:${f[5]}s;animation-delay:${f[6]}s"><g transform="translate(${f[0]} ${f[1]})">${stalk(f[3],f[2],f[4])}</g></g>`; });
-  // grass tufts
-  g+=`<g stroke="#4E8B3E" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".82">`;
-  [[28,502],[198,508],[430,510],[624,510],[882,508],[330,502],[720,506]].forEach((p,i)=>{ const x=p[0],y=p[1];
-    g+=`<g class="sway" style="animation-duration:${8+(i%3)*0.5}s;animation-delay:${-i}s"><path d="M${x} ${y} C ${x-4} ${y-22} ${x-6} ${y-32} ${x-8} ${y-44} M${x} ${y} C ${x} ${y-24} ${x+1} ${y-34} ${x+2} ${y-46} M${x} ${y} C ${x+4} ${y-22} ${x+7} ${y-32} ${x+10} ${y-44}"/></g>`; });
-  g+=`</g>`;
-  // depth-of-field soft-focus blooms at the very front
-  g+=`<g filter="url(#glDof)"><g transform="translate(54 526) scale(1.55)" color="#EF9C7E"><use href="#flower6" x="-50" y="-50" width="100" height="100"/></g><g transform="translate(958 530) scale(1.5)" color="#E68AB0"><use href="#flower6" x="-50" y="-50" width="100" height="100"/></g><g transform="translate(516 538) scale(1.18)" color="#F4C24C"><use href="#flower6" x="-50" y="-50" width="100" height="100"/></g></g>`;
-  return g;
-}
-
 /* ---- greeting + welcome-back ---- */
 const GREET={ dawn:"Early light. Take it slow.", day:"A bright day. Tend one small thing, or just sit here.", golden:"Golden hour. The meadow's warm.", dusk:"Evening's settling in. The fireflies are out.", night:"Late and quiet. Rest counts too." };
 const SEASON_NOTE={
@@ -3200,21 +3211,46 @@ function maybeWelcomeBack(){
   store.meta.lastSeenAt=Date.now(); save();   // stamp AFTER the check
 }
 
+/* ---- craft invitation band: the one hero card no other area gets, near the top of the Meadow.
+   Opens the constellation road directly (no tend sheet first) when a craft is set; invites you to
+   pick one when it's still 'general'. Makes craft the most-surfaced of the seven — gently. ---- */
+function craftIsSet(){ return !!store.settings.craftOcc && store.settings.craftOcc!=='general'; }
+const CONSTEL_ICON='<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 27 17 15 24 22 31 11" opacity=".5"/><circle cx="9" cy="27" r="1.6" fill="currentColor" stroke="none"/><circle cx="17" cy="15" r="2.3" fill="currentColor" stroke="none"/><circle cx="24" cy="22" r="1.6" fill="currentColor" stroke="none"/><circle cx="31" cy="11" r="5" fill="currentColor" stroke="none" opacity=".18"/><circle cx="31" cy="11" r="2.9" fill="currentColor" stroke="none"/></svg>';
+const ROAD_ARROW='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>';
+function renderCraftInvite(){
+  const slot=document.getElementById('craftSlot'); if(!slot) return;
+  const set=craftIsSet();
+  const title=set?('Your craft — '+esc(craftLabel())):'Your craft';
+  const sub=set
+    ? 'See the whole road — a constellation of where you stand and what’s ahead.'
+    : 'Choose the work you’re walking toward, and see its whole shape.';
+  slot.innerHTML='<button class="craft-invite" id="craftInvite" style="--accent:'+AREA.craft.accent+'" aria-label="'
+    +(set?'See the whole road for '+esc(craftLabel()):'Choose your craft')+'">'
+    +'<span class="ci-ico" aria-hidden="true">'+CONSTEL_ICON+'</span>'
+    +'<span class="ci-body"><span class="ci-title">'+title+'</span><span class="ci-sub">'+sub+'</span></span>'
+    +'<span class="ci-arrow" aria-hidden="true">'+ROAD_ARROW+'</span></button>';
+  slot.querySelector('#craftInvite').addEventListener('click',set?openCraftPath:openCraftPick);
+}
+
 /* ---- area cards ---- */
 function renderCards(){
-  const wrap=document.getElementById('cards'); let h='';
+  const wrap=document.getElementById('cards'); let h=''; const craftSet=craftIsSet();
   AREAS.forEach(a=>{
-    const st=stageOf(careOf(a.id)), fresh=glowStrength(a.id)>0;
-    h+=`<button class="card${fresh?' fresh':''}" data-area="${a.id}" style="--accent:${a.accent}" aria-label="Tend ${a.label}, ${STAGE_WORD[st]}">
+    const st=stageOf(careOf(a.id)), fresh=glowStrength(a.id)>0, lead=a.id==='craft';
+    h+=`<button class="card${fresh?' fresh':''}${lead?' craft-lead':''}" data-area="${a.id}" style="--accent:${a.accent}" aria-label="Tend ${a.label}, ${STAGE_WORD[st]}">
       <span class="c-spark" role="img" aria-label="watered recently" title="watered recently"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-3.4 4.2-6 8-6 11a6 6 0 0 0 12 0c0-3-2.6-6.8-6-11z"/></svg></span>
       <span class="c-top"><span class="dot"></span><span class="c-name">${a.label}</span></span>
       <span class="c-stage">${a.label} · ${STAGE_WORD[st]}</span>
       <span class="c-prompt">${a.prompt}</span>
       ${a.kind==='invitation'?'<span class="invite-tag">an invitation</span>':''}
+      ${lead&&craftSet?'<span class="c-road">See the whole road →</span>':''}
     </button>`;
   });
   wrap.innerHTML=h;
-  wrap.querySelectorAll('.card').forEach(el=>el.addEventListener('click',()=>{ scrollToHabitat(el.dataset.area); openTend(el.dataset.area); }));
+  wrap.querySelectorAll('.card').forEach(el=>el.addEventListener('click',ev=>{
+    if(ev.target.closest('.c-road')){ openCraftPath(); return; }   // the in-card road affordance skips the tend sheet
+    scrollToHabitat(el.dataset.area); openTend(el.dataset.area);
+  }));
 }
 function buildHabDots(){
   const el=document.getElementById('habDots'); if(!el) return;
@@ -3512,8 +3548,8 @@ function openTend(areaId){
   const ot=document.getElementById('ownText'); ot.value=''; document.getElementById('ownCount').textContent='120';
   let foot = a.kind==='invitation'
     ? `<div class="invite-foot">${a.label} is an invitation, never owed. One step on the days you have it in you — and nothing at all on the days you don't.</div>` : '';
-  if(areaId==='craft' && (CAREER_PATHS[store.settings.craftOcc]||craftIsCatalog()))
-    foot+=`<button class="cp-open" id="cpOpenBtn">See the whole road — stages, years, what it pays →</button>`;
+  if(areaId==='craft')
+    foot+=`<button class="cp-open" id="cpOpenBtn">${craftIsSet()?'See the whole road — where you stand, and what’s ahead →':'Choose your craft, and see its road →'}</button>`;
   document.getElementById('inviteFoot').innerHTML = foot;
   const cpb=document.getElementById('cpOpenBtn');
   if(cpb) cpb.addEventListener('click',()=>{ closeTend(); openCraftPath(); });
@@ -3589,11 +3625,14 @@ function toast(msg){
 
 /* ============================== NAVIGATION =============================== */
 function go(view){
+  const target=document.getElementById('view-'+view);
+  if(!target) return;   // unknown view id → no-op, never blank the app
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view-'+view).classList.add('active');
-  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.go===view));
+  target.classList.add('active');
+  document.querySelectorAll('nav.tabs button').forEach(b=>{ const on=b.dataset.go===view;
+    b.classList.toggle('on',on); if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
   window.scrollTo({top:0,behavior:'instant'in window?'instant':'auto'});
-  if(view==='meadow'){ renderGreeting(); renderMeadow(true); renderCards(); }
+  if(view==='meadow'){ renderGreeting(); renderMeadow(true); renderCards(); renderCraftInvite(); }
   if(view==='journal') renderJournal();
   if(view==='path') renderPath();
 }
@@ -3694,7 +3733,7 @@ function wireCraftPick(){
   document.getElementById('craftPickSave').addEventListener('click',()=>{
     if(pickOcc){ store.settings.craftOcc=pickOcc; store.settings.craftTitle=pickTitle; }
     if(pickStage) store.settings.craftStage=pickStage;
-    save(); craftOccBtnText(); closeCraftPick();
+    save(); craftOccBtnText(); renderCraftInvite(); renderCards(); closeCraftPick();
   });
 }
 
@@ -3716,7 +3755,15 @@ function exportGarden(){
 }
 function importGarden(file){
   const r=new FileReader();
-  r.onload=()=>{ try{ const incoming=coerce(JSON.parse(r.result)); store=incoming; saveNow(); applySettings(); maybeWelcomeBack(); go('meadow'); toast('Your saved garden is here.'); }catch(err){ toast("That file couldn't be read — your garden is unchanged."); } };
+  r.onload=()=>{
+    let incoming;
+    try{ incoming=coerce(JSON.parse(r.result)); }
+    catch(err){ toast("That file couldn't be read — your garden is unchanged."); return; }
+    // guard: a garden with any history here shouldn't be silently overwritten
+    const hasHistory=(store.journal&&store.journal.length>0)||Object.values(store.areas||{}).some(a=>a&&a.care>0);
+    if(hasHistory && !window.confirm("Bring in this saved garden?\n\nIt replaces what’s on this device now — every small return and kept memory here. There’s no undo, so you may want to save a copy of this one first.")) return;
+    store=incoming; saveNow(); applySettings(); maybeWelcomeBack(); go('meadow'); toast('Your saved garden is here.');
+  };
   r.readAsText(file);
 }
 function startOver(){
@@ -3740,7 +3787,7 @@ function tick(){
 }
 
 /* ---- util ---- */
-function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ============================== BOOT ===================================== */
 function init(){
@@ -3748,7 +3795,7 @@ function init(){
   applySettings();
   lastPhase=dayPhase(); lastYMD=localYMD(new Date());
   buildHabDots();
-  renderGreeting(); maybeWelcomeBack(); renderMeadow(true); renderCards();
+  renderGreeting(); maybeWelcomeBack(); renderMeadow(true); renderCards(); renderCraftInvite();
   wireSettings(); updateStorageNote(); wireBreathe();
   const sw=document.getElementById('sceneWrap'); let sct=null;
   sw.addEventListener('scroll',()=>{ if(sct) return; sct=requestAnimationFrame(()=>{ sct=null; updateHabDots(); }); });

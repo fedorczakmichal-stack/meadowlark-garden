@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v53 (2026-07-07) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v54 (2026-07-07) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -131,3 +131,16 @@ nagłówek Look Back → „The sky was always full", copy karty craftu odcięte
 Obie sceny dzielą JEDEN język nieba (paleta dusk/night + słownik gwiazd). Motion-gated (twinkle: `body.motion-calm`
 + reduced-motion; swell `.rt-scale`/`.rt-halo` też). Zweryfikowane headless 3/5/6 etapów i ~3–24 powrotów, brak
 błędów konsoli, motion-probe bez regresji fableCollect. Harness: `shoot_trail.mjs`/`shoot_firmament.mjs`/`check_reduced.mjs`.
+
+**v54** (2026-07-07): **ODKRYWALNOŚĆ CRAFTU (główny hook produktu) + batch „hardening".** WS1: craft = teraz
+NAJBARDZIEJ wyeksponowany z 7 obszarów. (a) **Baner-bohater „Your craft"** (`#craftSlot`/`renderCraftInvite()`,
+CSS `.craft-invite`) nad kartami na Meadow — ustawiony craft → wprost otwiera KONSTELACJĘ (`openCraftPath`, bez
+arkusza tend), `general`/brak → picker (`openCraftPick`). (b) Karta craftu w siatce ma delikatny prymat
+(`.card.craft-lead` = pierścień accentu) + pigułkę „See the whole road →" (`.c-road`, tylko gdy craft ustawiony;
+klik omija tend-sheet). (c) **`general` nigdy nie jest ślepą uliczką**: `openCraftPath` bez danych drogi → spada do
+`openCraftPick`; gate cpOpenBtn w tend-sheet pokazuje się dla craftu ZAWSZE (kopia zależna od `craftIsSet()`).
+`renderCraftInvite()` woła się w `init`/`go('meadow')`/craftPickSave. WS2 (audyt): import z historią pyta
+`window.confirm` (nie kasuje po cichu); `.seg` przy ≤360px zawija się do własnej linii (`@media(max-width:360px)`);
+`go()` guarduje zły view-id (no-op zamiast blank) + ustawia `aria-current="page"`; `esc()` escapuje też `'`→`&#39;`;
+usunięty martwy `foregroundFlora()`. Zweryfikowane DSF2: `shoot_ws1.mjs` (baner set/general, picker, droga set,
+`general`→picker), `shoot_ws2.mjs` (320px bez overflow, aria-current, go-guard, esc), motion-probe bez regresji.
