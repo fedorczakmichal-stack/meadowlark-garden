@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v51 (2026-07-06) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v52 (2026-07-07) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -105,4 +105,13 @@ v42 droga OD ZERA (`renderTrail`, latarnie) · v43–v49 walker (JS maszyna stan
 `fl` bear+bee; kot+wiewiórka usunięci; niedźwiedź pod las w polanie; kaczka upend clip; bocian bez clatter) ·
 **v50 audyt**: soul-fix płac, guardy crashy, linie kryzysowe tappable, kontrast AA, first-run welcome, motes w calm,
 **sezony wizualne**, noc gęstsze gwiazdy, cienie drzew, perf scale-cache · **v51**: gwiazdy losowe+stałe,
-golden-hour blending, poświata siedlisk, keyboard/ARIA, **breathing** + **weekly compass** + **pressed flowers**.
+golden-hour blending, poświata siedlisk, keyboard/ARIA, **breathing** + **weekly compass** + **pressed flowers** ·
+**v52** (2026-07-07): **FIX ruchu zwierząt wodnych** — `fableCollect()` teraz ZACHOWUJE pozycję/stan każdego
+walkera przez rebuild sceny (v51 wrzucił `phaseBlendKey()` do `sceneSig` → renderMeadow rebuilduje się parę razy
+w oknie świtu/zmierzchu, a stary fableCollect resetował zwierzęta do pozy startowej = teleport przez cały staw u
+kaczki/bociana/ryby/żaby/żółwia; snapshot ox/oy/dir/mode/until/mid → wznawia; zweryfikowane headless). **REDESIGN
+2 scen dróg**: `renderTrail` (droga „mapped") z perspektywy-zbiegu → **łagodny serpentyn ku słońcu**, latarnie na
+przemian L/P (każdy etap+etykieta oddycha, koniec zbitej kolumny), większe latarnie, bieżący świeci; działa 3/5/6
+etapów. `renderPath` (Look Back) — **kamień = bohater** (większy, cieplejszy, poświata odcina od łąki, najnowszy
+świeci), droga z zygzaka → spokojny wiew, przerzedzone drzewa, USUNIĘTE przydrożne kwiaty/drifty (kamień niesie
+własny kwiat dnia). Harness zrzutów: scratchpad `shoot.mjs`/`shoot_scene.mjs`/`motion_probe.mjs`.
