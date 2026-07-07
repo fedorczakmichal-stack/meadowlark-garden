@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Meadowlark — a gentle comeback app for any craft</title>
 <meta name="theme-color" content="#FBF7F2">
-<meta name="description" content="You didn't lose it — it's still in you. Meadowlark helps you rebuild a life and a craft one small return at a time: one gentle thread a week, the whole road mapped honestly, for developers, nurses, electricians, teachers, chefs and more. No streaks, no shame, no productivity theater. Free, in your browser.">
+<meta name="description" content="You didn't lose it — it's still in you. Meadowlark helps you rebuild a life and a craft one small return at a time: one gentle thread a week, the whole path laid out honestly like a constellation, for developers, nurses, electricians, teachers, chefs and more. No streaks, no shame, no productivity theater. Free, in your browser.">
 <link rel="canonical" href="https://fedorczakmichal-stack.github.io/meadowlark-garden/">
 <meta property="og:title" content="Meadowlark — a gentle comeback app for any craft">
 <meta property="og:description" content="Rebuild a life and a craft one small return at a time. Pick a craft, see the whole road, take one small step. No streaks, no shame. Free.">
@@ -284,15 +284,15 @@
   <div class="wrap">
     <div class="sec-head">
       <div class="eyebrow">Try it — pick a craft</div>
-      <h2>The way back to any craft, mapped</h2>
-      <p>Not healthcare-only, not tech-only. Pick a craft, then tap a lantern to stand wherever you actually are. It's a map, not a race — every stage counts as a life, not a waiting room.</p>
+      <h2>The way back to any craft, drawn as a constellation</h2>
+      <p>Not healthcare-only, not tech-only. Pick a craft, then tap a star to stand wherever you actually are. It's a sky to find yourself in, not a race — every stage counts as a life, not a waiting room.</p>
     </div>
     <div class="picker" id="picker" role="tablist" aria-label="Choose a craft"></div>
     <div class="trail-card">
       <div class="trail-wrap" id="trailWrap"></div>
       <div class="trail-here" id="trailHere" aria-live="polite"></div>
     </div>
-    <div class="demo-hint">Tap a lantern to stand at any stage · your pace is yours</div>
+    <div class="demo-hint">Tap a star to stand at any stage · your pace is yours</div>
     <div class="facts" id="facts"></div>
     <div class="demo-cta"><a class="btn btn-primary" href="garden/">Open the garden — free</a></div>
   </div>
@@ -449,159 +449,140 @@
 </footer>
 
 <script>
-/* renderTrail — a calm storybook "craft road": a tapering ribbon path winds from the
-   foreground back to a low sun on the horizon; milestone lanterns (current one lit in the
-   craft's accent) mark the stages; full-name labels sit in tidy per-side stacks with leaders.
-   Universal for any craft (3–6 stages). Self-contained, deterministic. viewBox 680x340.
-   Each stage group carries data-i + a transparent hit-target so a host page can make it tappable. */
+/* renderTrail — the craft drawn as a CONSTELLATION on a calm dusk sky: each stage is a star
+   (size/warmth grow with the stage; the current one warmest, haloed), a loose deterministic 2-D
+   scatter threaded nearest-neighbour, star-chart labels. No start, no finish, no "distance covered".
+   Universal for any craft (3-6 stages). Self-contained. viewBox 680x352. VERBATIM copy of the app's
+   renderTrail (garden/index.html) — keep the two in sync. Each stage group carries class="trail-stage"
+   + data-i + a transparent hit-target, so this page's interactive controller (tap a star -> recalc)
+   keeps working unchanged. */
 var __trailSeq = 0;
 function renderTrail(stages, currentIndex, accent, interactive, lblScale){
   var esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  var clmp = function(v,a,b){ return v<a?a:(v>b?b:v); };
   lblScale = lblScale || 1;
   accent = (typeof accent==='string' && /^#[0-9a-fA-F]{3,8}$/.test(accent)) ? accent : '#C1663B';
   var n = Math.max(3, Math.min(6, (stages||[]).length));
   stages = (stages||[]).slice(0, n);
   currentIndex = Math.max(0, Math.min(n-1, currentIndex|0));
   var P = 'qm' + (++__trailSeq);
-  var W = 680, H = 340, HZ = 140;               // horizon ~41% down
-  var vpX = 344, vpY = HZ + 2;                   // vanishing point at the sun
+  var W = 680, H = 352, CX = 340, CY = 166;
 
-  function cubic(t,a,b,c,d){ var u=1-t; return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d; }
-  function pathPoint(f){                          // f:0 foreground(bottom) -> 1 horizon(sun); y strictly decreases
-    if(f<=0.5){ var t=f/0.5; return { x:cubic(t,206,150,476,486), y:cubic(t,332,268,244,206) }; }
-    var t2=(f-0.5)/0.5;    return { x:cubic(t2,486,498,vpX+34,vpX), y:cubic(t2,206,172,vpY+22,vpY) };
+  // ── Nocna Figura — the craft drawn as a CONSTELLATION on a calm dusk-blue sky ──
+  // Each stage is a STAR (size/warmth grow with the stage; the current one is warmest, with a soft halo).
+  // The layout is a loose 2-D scatter — never a line, ladder or road, so there is no start, no finish, no
+  // "distance covered". Positions are deterministic (a hash, not Math.random) so the figure never reshuffles;
+  // phyllotaxis spreads them, a relax pass keeps names from crowding, and the sequence is threaded by
+  // nearest-neighbour so the hair-thin filaments read as one figure to recognise, not a track to run.
+  var hsh = function(i,sd){ var v=Math.sin(i*127.1 + sd*311.7 + 17.13)*43758.5453; return v-Math.floor(v); };
+  var hx = function(c){ c=String(c).replace('#',''); if(c.length===3)c=c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+    return [parseInt(c.slice(0,2),16),parseInt(c.slice(2,4),16),parseInt(c.slice(4,6),16)]; };
+  var mixC = function(a,b,t){ var x=hx(a),y=hx(b), f=function(v){ v=Math.round(v); v=v<0?0:(v>255?255:v); return (v<16?'0':'')+v.toString(16); };
+    return '#'+f(x[0]+(y[0]-x[0])*t)+f(x[1]+(y[1]-x[1])*t)+f(x[2]+(y[2]-x[2])*t); };
+  // 1 — scatter the stars (even spread, jittered)
+  var pos=[], RADX=206, RADY=112;
+  for(var i=0;i<n;i++){
+    var ga = i*2.39996323 + (hsh(i,2)-0.5)*0.7;
+    var rr = Math.sqrt((i+0.6)/n) * (0.86 + 0.32*hsh(i,4));
+    pos.push({ x: CX + Math.cos(ga)*rr*RADX, y: CY + Math.sin(ga)*rr*RADY });
   }
-  function widthAt(f){ return 46*(1-f)*(1-f) + 4; }
+  // 2 — relax so no two stars crowd (every name gets room to breathe)
+  var MIN = n<=4 ? 150 : 122;
+  for(var it=0; it<90; it++){
+    for(var a=0;a<n;a++) for(var b=a+1;b<n;b++){
+      var ddx=pos[b].x-pos[a].x, ddy=pos[b].y-pos[a].y, dd=Math.sqrt(ddx*ddx+ddy*ddy)||0.01;
+      if(dd<MIN){ var pu=(MIN-dd)/2, ux=ddx/dd, uy=ddy/dd;
+        pos[a].x-=ux*pu; pos[a].y-=uy*pu; pos[b].x+=ux*pu; pos[b].y+=uy*pu; }
+    }
+    for(a=0;a<n;a++){ pos[a].x=clmp(pos[a].x,116,W-116); pos[a].y=clmp(pos[a].y,78,262); }
+  }
+  // 3 — thread the sequence through the scatter by nearest-neighbour (from the leftmost point) so
+  //     consecutive stages sit near each other → a legible figure, no crossing threads
+  var used=[], tour=[], startIdx=0;
+  for(i=1;i<n;i++) if(pos[i].x<pos[startIdx].x) startIdx=i;
+  var curp=startIdx; used[curp]=true; tour.push(curp);
+  for(var kk=1;kk<n;kk++){ var best=-1,bd=1e9;
+    for(var jj=0;jj<n;jj++){ if(used[jj])continue; var dm=Math.hypot(pos[jj].x-pos[curp].x,pos[jj].y-pos[curp].y); if(dm<bd){bd=dm;best=jj;} }
+    used[best]=true; tour.push(best); curp=best;
+  }
+  var star=[];
+  for(i=0;i<n;i++){ var pp=pos[tour[i]]; star.push({ x:pp.x, y:pp.y, i:i, t:(n===1?0.5:i/(n-1)) }); }
 
-  // ribbon outline (tapering) + dashed centreline
-  var Ns=64, left=[], right=[], cen=[];
-  for(var i=0;i<=Ns;i++){
-    var f=i/Ns, p=pathPoint(f), w=widthAt(f)/2;
-    var q=pathPoint(Math.min(1,f+0.01)), dx=q.x-p.x, dy=q.y-p.y, L=Math.hypot(dx,dy)||1;
-    var nx=-dy/L, ny=dx/L;
-    left.push([p.x+nx*w,p.y+ny*w]); right.push([p.x-nx*w,p.y-ny*w]); cen.push(p);
-  }
-  var ribbon='M'+left.map(function(a){return a[0].toFixed(1)+' '+a[1].toFixed(1);}).join(' L ')
-    +' L '+right.slice().reverse().map(function(a){return a[0].toFixed(1)+' '+a[1].toFixed(1);}).join(' L ')+' Z';
-  var centerLine='M '+cen.map(function(p){return p.x.toFixed(1)+' '+p.y.toFixed(1);}).join(' L ');
-
-  var markers=[];
-  for(var k=0;k<n;k++){ var fr=0.10+(n===1?0:(k/(n-1)))*0.80; var pp=pathPoint(fr);
-    markers.push({x:pp.x,y:pp.y,s:1-fr*0.62,frac:fr,i:k}); }
-
-  function hill(topY,curve,fill){
-    return '<path d="M0 '+topY+' Q170 '+(topY-curve)+' 340 '+topY+' T680 '+topY+' V'+H+' H0 Z" fill="'+fill+'"/>';
-  }
-  // a small wildflower tuft (deterministic) to warm the meadow
-  function tuft(x,y,sc,c1){
-    var g='<g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+sc.toFixed(2)+')" opacity="0.9">';
-    g+='<path d="M-3 0 Q-3 -7 -1 -9" stroke="#8FB07A" stroke-width="1.4" fill="none"/>';
-    g+='<path d="M0 0 Q0 -8 0 -11" stroke="#8FB07A" stroke-width="1.4" fill="none"/>';
-    g+='<path d="M3 0 Q3 -6 1.4 -8.5" stroke="#8FB07A" stroke-width="1.4" fill="none"/>';
-    g+='<circle cx="-1" cy="-9.4" r="2.1" fill="'+c1+'"/><circle cx="0" cy="-11.4" r="2.3" fill="#FBE7C0"/><circle cx="1.4" cy="-8.9" r="1.9" fill="'+c1+'"/>';
-    g+='<circle cx="0" cy="-10.6" r="0.9" fill="#C9781F"/></g>';
-    return g;
-  }
+  // motion gate — safe on the landing too (no store there); a slow-twinkling MINORITY only, never the named stars
+  var reduce = (typeof matchMedia==='function') && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var calm = (typeof store!=='undefined') && store && store.settings && store.settings.motion && store.settings.motion!=='full';
+  var anim = !reduce && !calm;
 
   var o=[];
-  o.push('<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" width="100%" style="height:auto;display:block" role="img" font-family="\'Figtree\',ui-sans-serif,system-ui,sans-serif">');
+  o.push('<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" width="100%" style="height:auto;display:block" role="img" aria-label="'+esc((stages[currentIndex]||'')+' — your place in a constellation of '+n+' stages')+'" font-family="\'Figtree\',ui-sans-serif,system-ui,sans-serif">');
   o.push('<defs>');
-  o.push('<linearGradient id="'+P+'sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F9E4D5"/><stop offset="0.55" stop-color="#F3E9E0"/><stop offset="1" stop-color="#EAF2F0"/></linearGradient>');
-  o.push('<radialGradient id="'+P+'sun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFF6DE"/><stop offset="0.3" stop-color="#FCEBC8"/><stop offset="0.62" stop-color="#FBD9A0" stop-opacity="0.5"/><stop offset="1" stop-color="#FBB36A" stop-opacity="0"/></radialGradient>');
-  o.push('<linearGradient id="'+P+'rib" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EFDDB8"/><stop offset="1" stop-color="#E7CDA0"/></linearGradient>');
-  o.push('<radialGradient id="'+P+'glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="'+accent+'" stop-opacity="0.5"/><stop offset="1" stop-color="'+accent+'" stop-opacity="0"/></radialGradient>');
+  o.push('<linearGradient id="'+P+'sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1E1B36"/><stop offset="0.5" stop-color="#2A2748"/><stop offset="0.82" stop-color="#3A3760"/><stop offset="1" stop-color="#4A4670"/></linearGradient>');
+  o.push('<radialGradient id="'+P+'gW" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFF6DE" stop-opacity="0.9"/><stop offset="0.45" stop-color="#FCEBC8" stop-opacity="0.28"/><stop offset="1" stop-color="#FCEBC8" stop-opacity="0"/></radialGradient>');
+  o.push('<radialGradient id="'+P+'gA" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="'+accent+'" stop-opacity="0.55"/><stop offset="0.5" stop-color="'+accent+'" stop-opacity="0.18"/><stop offset="1" stop-color="'+accent+'" stop-opacity="0"/></radialGradient>');
   o.push('</defs>');
-
+  if(anim) o.push('<style>@keyframes '+P+'tw{0%,100%{opacity:var(--o,0.4)}50%{opacity:1}}.'+P+'tw{animation:'+P+'tw var(--d,6s) ease-in-out infinite}@media(prefers-reduced-motion:reduce){.'+P+'tw{animation:none}}</style>');
   o.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="url(#'+P+'sky)"/>');
-  o.push('<circle cx="'+vpX+'" cy="'+(HZ-2)+'" r="165" fill="url(#'+P+'sun)"/>');
-  o.push('<circle cx="'+vpX+'" cy="'+(HZ-4)+'" r="30" fill="#FFF6DE" opacity="0.9"/>');
-  o.push('<path d="M0 '+(HZ-2)+' Q150 '+(HZ-20)+' 320 '+(HZ-8)+' T680 '+(HZ-13)+' V'+(HZ+40)+' H0 Z" fill="#CDBBD6" opacity="0.45"/>');
-  o.push(hill(HZ+6,10,'#E6EEDB'));
-  o.push(hill(HZ+42,22,'#DCE8CD'));
-  o.push(hill(HZ+92,32,'#CFE0BC'));
-  o.push(hill(HZ+152,42,'#BFD8A8'));
-
-  // wildflowers beside the path (deterministic placements, size ~ recession)
-  [[0.16,-1,42],[0.30,1,54],[0.13,1,30],[0.44,-1,66],[0.58,1,58],[0.72,-1,40]].forEach(function(t){
-    var p=pathPoint(t[0]); var s=(1-t[0]*0.6)*0.9; var off=(widthAt(t[0])/2 + t[2]*s)*t[1];
-    o.push(tuft(p.x+off, p.y+6*s, s, accent));
-  });
-
-  o.push('<path d="'+ribbon+'" fill="#000000" opacity="0.06" transform="translate(0,4)"/>');
-  o.push('<path d="'+ribbon+'" fill="url(#'+P+'rib)" stroke="#C8B183" stroke-width="1"/>');
-  o.push('<path d="'+centerLine+'" fill="none" stroke="#F5E5C6" stroke-width="6.5" stroke-linecap="round" opacity="0.5"/>');
-  o.push('<path d="'+centerLine+'" fill="none" stroke="#F5E5C6" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="7 9" opacity="0.9"/>');
-
-  // ---- lanterns (draw far->near). Each wrapped in a tappable group with data-i + hit target.
-  function lantern(m){
-    var s=m.s, x=m.x, y=m.y, isCur=m.i===currentIndex, isPast=m.i<currentIndex;
-    var ph=34*s, lw=9*s, lh=12*s, topY=y-ph;
-    var lightFill=isCur?accent:(isPast?'#FBD9A0':'#F1EAE0');
-    var lightStroke=isCur?accent:'#C9A96A';
-    var op=isCur?1:(isPast?0.98:0.8);
-    var hit=Math.max(15, 22*s);
+  // a whisper of warmth low in the sky — the same horizon glow the Look-Back firmament uses, so the two read as one sky
+  o.push('<ellipse cx="'+CX+'" cy="'+(H+26)+'" rx="'+(W*0.6).toFixed(0)+'" ry="92" fill="#6E5F86" opacity="0.38"/>');
+  // faint background stars for depth (deterministic; a slow-twinkling minority when motion is on)
+  var bg='';
+  for(i=0;i<58;i++){ var bx=(hsh(i,31)*W).toFixed(1), by=(8+hsh(i,37)*(H-30)).toFixed(1), br=(0.5+hsh(i,41)*1.2).toFixed(1), bo=(0.16+hsh(i,43)*0.34).toFixed(2);
+    if(anim && hsh(i,47)>0.82) bg+='<circle class="'+P+'tw" cx="'+bx+'" cy="'+by+'" r="'+br+'" fill="#E7E2F4" style="--o:'+bo+';--d:'+(4.5+hsh(i,53)*5).toFixed(1)+'s;animation-delay:-'+(hsh(i,59)*6).toFixed(1)+'s"/>';
+    else bg+='<circle cx="'+bx+'" cy="'+by+'" r="'+br+'" fill="#E7E2F4" opacity="'+bo+'"/>';
+  }
+  o.push('<g>'+bg+'</g>');
+  // filaments threading the figure (under the stars) — hair-thin, a soft under-glow + a crisp thread
+  var thread='M '+star.map(function(m){return m.x.toFixed(1)+' '+m.y.toFixed(1);}).join(' L ');
+  o.push('<path d="'+thread+'" fill="none" stroke="#8C87C4" stroke-width="3.4" opacity="0.10" stroke-linecap="round" stroke-linejoin="round"/>');
+  o.push('<path d="'+thread+'" fill="none" stroke="#B9B4E4" stroke-width="1" opacity="0.42" stroke-linecap="round" stroke-linejoin="round"/>');
+  // stars — dim→bright so the brighter / current ones sit over the faint ones
+  function drawStar(m){
+    var isCur=m.i===currentIndex, warm=m.t;
+    var core = isCur ? mixC(accent,'#FFF6DE',0.5) : mixC('#C4CBEA','#FFF6DE',0.28+0.46*warm);
+    var r = (2.0 + 2.5*warm) * (isCur?1.5:1);
+    var glowR = r*(isCur?5:3.1);
     var iattr = interactive ? ' style="cursor:pointer" tabindex="0" role="button" aria-label="Stand at: '+esc(stages[m.i])+'"' : '';
-    var g=['<g class="trail-stage" data-i="'+m.i+'" opacity="'+op.toFixed(2)+'"'+iattr+'>'];
-    if(interactive) g.push('<circle cx="'+x.toFixed(1)+'" cy="'+(y-ph*0.5).toFixed(1)+'" r="'+hit.toFixed(1)+'" fill="#000" opacity="0" pointer-events="all"/>');
-    if(isCur) g.push('<circle cx="'+x.toFixed(1)+'" cy="'+(topY-lh*0.4).toFixed(1)+'" r="'+(28*s).toFixed(1)+'" fill="url(#'+P+'glow)"/>');
-    g.push('<ellipse cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" rx="'+(5*s).toFixed(1)+'" ry="'+(2*s).toFixed(1)+'" fill="#7A6A57" opacity="0.35"/>');
-    g.push('<line x1="'+x.toFixed(1)+'" y1="'+y.toFixed(1)+'" x2="'+x.toFixed(1)+'" y2="'+topY.toFixed(1)+'" stroke="#8A6A4A" stroke-width="'+(2.6*s).toFixed(1)+'" stroke-linecap="round"/>');
-    g.push('<line x1="'+(x-6*s).toFixed(1)+'" y1="'+topY.toFixed(1)+'" x2="'+(x+6*s).toFixed(1)+'" y2="'+topY.toFixed(1)+'" stroke="#8A6A4A" stroke-width="'+(2*s).toFixed(1)+'" stroke-linecap="round"/>');
-    g.push('<rect x="'+(x-lw/2).toFixed(1)+'" y="'+(topY-lh).toFixed(1)+'" width="'+lw.toFixed(1)+'" height="'+lh.toFixed(1)+'" rx="'+(3*s).toFixed(1)+'" fill="'+lightFill+'" stroke="'+lightStroke+'" stroke-width="'+(1.1*s).toFixed(1)+'"/>');
-    g.push('<circle cx="'+x.toFixed(1)+'" cy="'+(topY-lh*0.5).toFixed(1)+'" r="'+(2.4*s).toFixed(1)+'" fill="#FFF6DE" opacity="'+(isCur?0.95:0.6)+'"/>');
-    g.push('<rect x="'+(x-lw*0.62).toFixed(1)+'" y="'+(topY-lh-2.6*s).toFixed(1)+'" width="'+(lw*1.24).toFixed(1)+'" height="'+(2.6*s).toFixed(1)+'" rx="'+(1.2*s).toFixed(1)+'" fill="#8A6A4A"/>');
-    if(isCur){
-      g.push('<circle cx="'+(x+8.5*s).toFixed(1)+'" cy="'+(y-3*s).toFixed(1)+'" r="'+(3.4*s).toFixed(1)+'" fill="'+accent+'" stroke="#FBF7F2" stroke-width="1.2"/>');
+    var g=['<g class="trail-stage" data-i="'+m.i+'"'+iattr+'>'];
+    if(interactive) g.push('<circle cx="'+m.x.toFixed(1)+'" cy="'+m.y.toFixed(1)+'" r="'+Math.max(18,r+16).toFixed(1)+'" fill="#000" opacity="0" pointer-events="all"/>');
+    g.push('<circle cx="'+m.x.toFixed(1)+'" cy="'+m.y.toFixed(1)+'" r="'+glowR.toFixed(1)+'" fill="url(#'+P+(isCur?'gA':'gW')+')"'+(isCur?'':' opacity="'+(0.5+0.5*warm).toFixed(2)+'"')+'/>');
+    if(isCur) g.push('<circle cx="'+m.x.toFixed(1)+'" cy="'+m.y.toFixed(1)+'" r="'+(glowR*0.5).toFixed(1)+'" fill="url(#'+P+'gW)"/>');
+    if(isCur || warm>0.7){ var L=(isCur?glowR*0.92:r*3.4);
+      g.push('<g stroke="'+(isCur?mixC(accent,'#FFF6DE',0.6):'#FFF6DE')+'" stroke-width="'+(isCur?1.1:0.7)+'" opacity="'+(isCur?0.7:0.4)+'" stroke-linecap="round">');
+      g.push('<line x1="'+(m.x-L).toFixed(1)+'" y1="'+m.y.toFixed(1)+'" x2="'+(m.x+L).toFixed(1)+'" y2="'+m.y.toFixed(1)+'"/>');
+      g.push('<line x1="'+m.x.toFixed(1)+'" y1="'+(m.y-L).toFixed(1)+'" x2="'+m.x.toFixed(1)+'" y2="'+(m.y+L).toFixed(1)+'"/></g>');
     }
+    g.push('<circle cx="'+m.x.toFixed(1)+'" cy="'+m.y.toFixed(1)+'" r="'+r.toFixed(1)+'" fill="'+core+'"/>');
+    g.push('<circle cx="'+(m.x-r*0.28).toFixed(1)+'" cy="'+(m.y-r*0.3).toFixed(1)+'" r="'+(r*0.42).toFixed(1)+'" fill="#FFFDF6" opacity="0.85"/>');
     g.push('</g>');
     return g.join('');
   }
-  markers.slice().sort(function(a,b){return a.frac-b.frac;}).forEach(function(m){ o.push(lantern(m)); });
+  star.slice().sort(function(a,b){return a.t-b.t;}).forEach(function(m){ o.push(drawStar(m)); });
 
-  // ---- labels: full names. Foreground (near) -> centred below the lantern.
-  //      Far -> pushed to the marker's side and de-collided vertically over open sky.
-  var lampTopOf=function(m){ return m.y - 34*m.s - 12; };
-  var near=[], farL=[], farR=[];
-  markers.forEach(function(m){
-    if(m.frac<=0.40){ near.push(m); }
-    else if(m.x<=vpX){ farL.push(m); } else { farR.push(m); }
-  });
-  function emitLabel(m, lx, ly, anchor, tieToTop){
-    var isCur=m.i===currentIndex;
-    var fs=(m.frac<=0.40?15.5:13.5)*lblScale;
-    var col=isCur?accent:'#8A8194';
-    var tieY = tieToTop ? lampTopOf(m) : (m.y+3);
-    o.push('<line x1="'+m.x.toFixed(1)+'" y1="'+tieY.toFixed(1)+'" x2="'+lx.toFixed(1)+'" y2="'+(ly-4).toFixed(1)+'" stroke="'+col+'" stroke-width="'+(isCur?1.4:0.9)+'" opacity="0.45"/>');
-    o.push('<circle cx="'+m.x.toFixed(1)+'" cy="'+tieY.toFixed(1)+'" r="2" fill="'+col+'"/>');
-    o.push('<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" font-size="'+fs.toFixed(1)+'" text-anchor="'+anchor+'" fill="'+(isCur?accent:'#3A3450')+'" font-weight="'+(isCur?'700':'600')+'">'+esc(stages[m.i])+'</text>');
-  }
-  // near: below lantern, centred, nudged inboard from the edges
-  near.forEach(function(m){
-    var lx=Math.max(60, Math.min(W-60, m.x));
-    emitLabel(m, lx, m.y+20, 'middle', false);
-  });
-  // far sides: stack upward from each marker; each column is positioned so its widest label
-  // fits inside the viewBox (no clipping), whatever the label scale.
-  function labelW(str){ return 13.5*lblScale*0.54*String(str).length; }
-  function stackSide(arr, side){                    // side 'R' grows right (anchor start), 'L' grows left (anchor end)
-    if(!arr.length) return;
-    var maxW=0; arr.forEach(function(m){ maxW=Math.max(maxW, labelW(stages[m.i])); });
-    var anchor = side==='R' ? 'start' : 'end';
-    var edgeX  = side==='R' ? Math.max(vpX+12, W-6-maxW) : Math.min(vpX-12, 6+maxW);
-    var gap = 21*lblScale;
-    arr.sort(function(a,b){ return b.y-a.y; });      // lowest (nearest) first, stack upward
-    var prevY=1e9;
+  // ── labels: each star is NAMED like a star chart — side chosen by which half it sits in, a faint leader
+  //    ties the name to its star, and same-side names are pushed apart so none collide ──
+  function labelW(str,fs){ return fs*0.55*String(str).length; }
+  var Ls=[], Rs=[];
+  star.forEach(function(m){ (m.x<=CX?Ls:Rs).push(m); });
+  function placeSide(arr, side){
+    arr.sort(function(a,b){ return a.y-b.y; });
+    var prevY=-1e9;
     arr.forEach(function(m){
-      var ly=Math.min(lampTopOf(m)-2, prevY-gap);
-      ly=Math.max(16, ly);
-      prevY=ly;
-      emitLabel(m, edgeX, ly, anchor, true);
+      var isCur=m.i===currentIndex;
+      var fs=(12.4 + (isCur?1.2:0))*lblScale;
+      var w=labelW(stages[m.i], fs);
+      var r=(2.0+2.5*m.t)*(isCur?1.5:1), gap=10+r;
+      var lx = side==='L' ? clmp(m.x-gap, 6+w, CX-4) : clmp(m.x+gap, CX+4, W-6-w);
+      var ly = Math.max(prevY + fs*1.55, m.y + fs*0.34);
+      ly = clmp(ly, 18, H-10); prevY = ly;
+      var col = isCur?accent:'#CFCADF';
+      var anchor = side==='L'?'end':'start';
+      var tieX = side==='L' ? lx+2 : lx-2;
+      o.push('<line x1="'+m.x.toFixed(1)+'" y1="'+m.y.toFixed(1)+'" x2="'+tieX.toFixed(1)+'" y2="'+(ly-fs*0.32).toFixed(1)+'" stroke="'+col+'" stroke-width="'+(isCur?1:0.7)+'" opacity="'+(isCur?0.5:0.32)+'"/>');
+      o.push('<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" font-size="'+fs.toFixed(1)+'" text-anchor="'+anchor+'" fill="'+col+'" font-weight="'+(isCur?'700':'500')+'" paint-order="stroke" stroke="#1B1832" stroke-width="'+(2.6*lblScale).toFixed(1)+'" stroke-linejoin="round">'+esc(stages[m.i])+'</text>');
     });
   }
-  stackSide(farL, 'L');
-  stackSide(farR, 'R');
-
+  placeSide(Ls,'L'); placeSide(Rs,'R');
   o.push('</svg>');
   return o.join('');
 }
