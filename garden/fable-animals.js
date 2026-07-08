@@ -2717,5 +2717,331 @@ return {
 };
 
 })();
+
+// ── butterfly variety (Motion Atlas fable5 pack, 2026-07-08): swallowtail / common blue / peacock ──
+__REG["swallowtail"] = (function(){
+// Swallowtail — fable style (front view: cream-yellow wings, dark tip bands + veins, blue lunules, red eyespots, tailed hindwings)
+
+const C = { yellow: '#E8CF7E', dark: '#3A3440', blue: '#7BA0C9', red: '#D2503E', body: '#2A2530', pale: '#FBF7F2' };
+const GY = 8.5;
+
+const fold = a => Math.max(0.12, Math.cos(Math.min(88, Math.abs(a)) * Math.PI / 180));
+
+const wingL = a => g(scl(fold(a), 1, -1, 0) + ' ' + rot(a * 0.55, -1, -2),
+  `<path d="M-0.8 -4.6 C -4.6 -7.6 -9.4 -12.1 -13.8 -14.9 L-16.3 -10.3 C -15.1 -6.3 -11.5 -3.1 -7.4 -1.8 C -4.4 -0.9 -1.8 -1.8 -0.8 -3.2 Z" fill="${C.yellow}"/>` +
+  `<path d="M-13.8 -14.9 L-16.3 -10.3 C -15.7 -8.4 -14.7 -6.7 -13.4 -5.3 C -14 -8 -14.2 -10.9 -12.6 -13.9 Z" fill="${C.dark}" opacity=".92"/>` +
+  `<path d="M-2.2 -4.2 C -5.2 -6.2 -8.2 -8.8 -11.2 -11.6 M-3.4 -3.2 C -6.6 -4.7 -9.6 -6.7 -12.4 -9 M-5 -2.4 C -7.8 -3.4 -10.4 -4.9 -12.6 -6.7" stroke="${C.dark}" stroke-width=".55" fill="none" opacity=".7" stroke-linecap="round"/>` +
+  `<path d="M-1 -1 C -4 0 -8.5 1.5 -9.5 5.5 C -10 8.4 -7.8 10.2 -4.8 9.2 C -2.4 8.4 -1 5.8 -0.6 3 Z" fill="${C.yellow}"/>` +
+  `<path d="M-9.1 5.7 C -8.7 8.1 -6.7 9.3 -4.7 8.7 C -3 8.1 -1.8 6.6 -1.2 4.5" stroke="${C.dark}" stroke-width="2.3" fill="none" stroke-linecap="round"/>` +
+  `<circle cx="-7.6" cy="7.3" r=".62" fill="${C.blue}"/><circle cx="-5.4" cy="8.1" r=".62" fill="${C.blue}"/><circle cx="-3.3" cy="7.4" r=".62" fill="${C.blue}"/>` +
+  `<circle cx="-1.7" cy="5.2" r=".85" fill="${C.red}"/><circle cx="-1.7" cy="5.2" r=".32" fill="${C.dark}" opacity=".7"/>` +
+  `<path d="M-5.9 8.3 C -6.1 9.5 -6.6 10.4 -7.4 11.2 C -7.7 10.2 -7.3 9.2 -6.5 8 Z" fill="${C.dark}"/>`);
+
+const wingR = a => g(scl(fold(a), 1, 1, 0) + ' ' + rot(-a * 0.55, 1, -2),
+  `<path d="M0.8 -4.6 C 4.6 -7.6 9.4 -12.1 13.8 -14.9 L16.3 -10.3 C 15.1 -6.3 11.5 -3.1 7.4 -1.8 C 4.4 -0.9 1.8 -1.8 0.8 -3.2 Z" fill="${C.yellow}"/>` +
+  `<path d="M13.8 -14.9 L16.3 -10.3 C 15.7 -8.4 14.7 -6.7 13.4 -5.3 C 14 -8 14.2 -10.9 12.6 -13.9 Z" fill="${C.dark}" opacity=".92"/>` +
+  `<path d="M2.2 -4.2 C 5.2 -6.2 8.2 -8.8 11.2 -11.6 M3.4 -3.2 C 6.6 -4.7 9.6 -6.7 12.4 -9 M5 -2.4 C 7.8 -3.4 10.4 -4.9 12.6 -6.7" stroke="${C.dark}" stroke-width=".55" fill="none" opacity=".7" stroke-linecap="round"/>` +
+  `<path d="M1 -1 C 4 0 8.5 1.5 9.5 5.5 C 10 8.4 7.8 10.2 4.8 9.2 C 2.4 8.4 1 5.8 0.6 3 Z" fill="${C.yellow}"/>` +
+  `<path d="M9.1 5.7 C 8.7 8.1 6.7 9.3 4.7 8.7 C 3 8.1 1.8 6.6 1.2 4.5" stroke="${C.dark}" stroke-width="2.3" fill="none" stroke-linecap="round"/>` +
+  `<circle cx="7.6" cy="7.3" r=".62" fill="${C.blue}"/><circle cx="5.4" cy="8.1" r=".62" fill="${C.blue}"/><circle cx="3.3" cy="7.4" r=".62" fill="${C.blue}"/>` +
+  `<circle cx="1.7" cy="5.2" r=".85" fill="${C.red}"/><circle cx="1.7" cy="5.2" r=".32" fill="${C.dark}" opacity=".7"/>` +
+  `<path d="M5.9 8.3 C 6.1 9.5 6.6 10.4 7.4 11.2 C 7.7 10.2 7.3 9.2 6.5 8 Z" fill="${C.dark}"/>`);
+
+// P: wA (0 open → 62 closed-up), antA
+const bfly = P =>
+  wingL(P.wA || 0) + wingR(P.wA || 0) +
+  `<path d="M0 -7.5 C 1.5 -7.5 2 -5.5 2 -3 C 2 0.5 1.4 5 0 7 C -1.4 5 -2 0.5 -2 -3 C -2 -5.5 -1.5 -7.5 0 -7.5 Z" fill="${C.body}"/>` +
+  `<ellipse cx="0" cy="-5.6" rx=".5" ry="2.6" fill="${C.yellow}" opacity=".4"/>` +
+  `<circle cx="0" cy="-7.6" r="1.7" fill="${C.body}"/>` +
+  `<circle cx="-0.5" cy="-8.1" r=".45" fill="${C.pale}" opacity=".6"/>` +
+  g(rot(P.antA || 0, 0, -8.6),
+    `<path d="M-0.8 -8.6 C -2.4 -11.5 -3.6 -13 -4.8 -13.8 M0.8 -8.6 C 2.4 -11.5 3.6 -13 4.8 -13.8" stroke="${C.body}" stroke-width=".9" fill="none" stroke-linecap="round"/>` +
+    `<circle cx="-4.8" cy="-13.8" r="1" fill="${C.body}"/><circle cx="4.8" cy="-13.8" r="1" fill="${C.body}"/>`);
+
+function draw(P) {
+  const dx = P.dx || 0, dy = P.dy || 0;
+  let s = P.ticks || '';
+  if (P.grounded) s += shadow(dx, GY + 0.8, 9, Math.max(0, -dy), 12);
+  return s + g(trl(dx, dy) + ' ' + rot(P.roll || 0, 0, 0), bfly(P));
+}
+
+return {
+  id: 'swallowtail', view: [-30, -26, 62, 44], groundY: GY,
+  thumb: { m: 'bask', t: 0.3 },
+  motions: [
+    { id: 'bask', label: 'Bask', short: 'Bask', dur: 3.8, env: { t: 'ground' }, speed: '0 km/h', beat: 'Open · tremble · hold',
+      desc: 'Wings spread wide to the sun, the twin tails just clearing the grass — held open far longer than the red admiral would dare.',
+      anim: 'Live in the open pose: a fine tremble at the wingtips, antennae always moving. Close once, decisively, and reopen at leisure.' },
+    { id: 'flit', label: 'Flit', short: 'Flit', dur: 0.62, env: { t: 'air' }, speed: '~14 km/h', beat: 'Deep strokes · lift',
+      desc: 'Big, deep wingbeats for a big butterfly — each stroke hoists the body a full length before the long sail downhill.',
+      anim: 'Fewer, deeper beats than any smaller butterfly. Let the body swing beneath the wings like cargo on a crane.' },
+    { id: 'nectar', label: 'Feed on the wing', short: 'Nectar', dur: 1.15, env: { t: 'reed', x: 11, y: -6 }, speed: '0 km/h · hovering', beat: 'Beats while feeding',
+      desc: 'Its signature habit: it never quite settles at the flower, but keeps the wings beating and merely touches down with its forefeet.',
+      anim: 'Constant shallow wingbeats with a soft vertical bob. The hold is never still — drift the body on a slow figure the wings must correct.' }
+  ],
+  render(mid, t) {
+    t = wrap(t);
+    if (mid === 'flit') {
+      const flap = osc(t, 2, 0);
+      return draw({
+        wA: 30 + 34 * flap,
+        dy: -4.2 * osc(t, 1, .3) - 1.4 * osc(t, 2, .1), dx: 3 * osc(t, 1, .04),
+        roll: 8 * osc(t, 1, .42), antA: 3 * osc(t, 2, .3),
+        ticks: airTicks(t, { x1: -27, x2: 29, y: -16, h: 14, v: 30, n: 4, s: 1.05 })
+      });
+    }
+    if (mid === 'nectar') {
+      return draw({
+        wA: 30 + 15 * osc(t, 7, 0),
+        dy: -2 - 1.1 * osc(t, 2, .15) - 0.5 * osc(t, 7, .25),
+        dx: 2 + 1.4 * osc(t, 1, .05),
+        roll: 4 * osc(t, 1, .35) + 2 * osc(t, 2, .6),
+        antA: 3 * osc(t, 3, .2)
+      });
+    }
+    // bask
+    const K = keys(t, [
+      [0.00, { wA: 3 }],
+      [0.44, { wA: 3 }],
+      [0.52, { wA: 60 }],
+      [0.62, { wA: 60 }],
+      [0.70, { wA: -4 }],
+      [0.76, { wA: 3 }],
+      [1.00, { wA: 3 }]
+    ]);
+    K.wA += 2 * osc(t, 6, .15) * (K.wA > 30 ? 0.5 : 1);
+    K.grounded = true;
+    K.dy = -0.8;
+    K.antA = 4 * osc(t, 3, .1);
+    return draw(K);
+  }
+};
+})();
+
+__REG["commonblue"] = (function(){
+// Common Blue — fable style (front view: male's lilac-blue wings, dark rim, white fringe, orange marginal lunules)
+
+const C = { blue: '#6E86D8', blue2: '#5A70C4', edge: '#3A3440', fringe: '#FBF7F2', orange: '#D98A3E', spot: '#2A2530', body: '#2A2530', pale: '#FBF7F2' };
+const GY = 8.5;
+
+const fold = a => Math.max(0.12, Math.cos(Math.min(88, Math.abs(a)) * Math.PI / 180));
+
+const wingL = a => g(scl(fold(a), 1, -1, 0) + ' ' + rot(a * 0.55, -1, -2),
+  `<path d="M-0.8 -4.6 C -4.6 -7.6 -9.4 -12.1 -13.8 -14.9 L-16.3 -10.3 C -15.1 -6.3 -11.5 -3.1 -7.4 -1.8 C -4.4 -0.9 -1.8 -1.8 -0.8 -3.2 Z" fill="${C.blue}"/>` +
+  `<path d="M-1.2 -3.6 C -4.8 -5.6 -8.8 -8.6 -12.4 -11.8" stroke="${C.blue2}" stroke-width="1.3" fill="none" opacity=".55" stroke-linecap="round"/>` +
+  `<path d="M-13.8 -14.9 L-16.3 -10.3 C -15.1 -6.3 -11.5 -3.1 -7.4 -1.8" stroke="${C.edge}" stroke-width="1" fill="none" stroke-linecap="round"/>` +
+  `<circle cx="-15.5" cy="-10.7" r=".4" fill="${C.fringe}"/><circle cx="-13.3" cy="-6.3" r=".4" fill="${C.fringe}"/><circle cx="-10.2" cy="-3.3" r=".4" fill="${C.fringe}"/>` +
+  `<path d="M-1 -1 C -4 0 -8.5 1.5 -9.5 5.5 C -10 8.4 -7.8 10.2 -4.8 9.2 C -2.4 8.4 -1 5.8 -0.6 3 Z" fill="${C.blue}"/>` +
+  `<path d="M-9.5 5.5 C -10 8.4 -7.8 10.2 -4.8 9.2 C -2.4 8.4 -1 5.8 -0.6 3" stroke="${C.edge}" stroke-width=".9" fill="none" stroke-linecap="round"/>` +
+  `<circle cx="-7.3" cy="7.7" r=".55" fill="${C.orange}"/><circle cx="-5.2" cy="8.4" r=".55" fill="${C.orange}"/>` +
+  `<circle cx="-7.3" cy="8.7" r=".34" fill="${C.spot}"/><circle cx="-5.2" cy="9.4" r=".34" fill="${C.spot}"/>` +
+  `<circle cx="-8.7" cy="7" r=".36" fill="${C.fringe}"/><circle cx="-3.2" cy="8.9" r=".36" fill="${C.fringe}"/>`);
+
+const wingR = a => g(scl(fold(a), 1, 1, 0) + ' ' + rot(-a * 0.55, 1, -2),
+  `<path d="M0.8 -4.6 C 4.6 -7.6 9.4 -12.1 13.8 -14.9 L16.3 -10.3 C 15.1 -6.3 11.5 -3.1 7.4 -1.8 C 4.4 -0.9 1.8 -1.8 0.8 -3.2 Z" fill="${C.blue}"/>` +
+  `<path d="M1.2 -3.6 C 4.8 -5.6 8.8 -8.6 12.4 -11.8" stroke="${C.blue2}" stroke-width="1.3" fill="none" opacity=".55" stroke-linecap="round"/>` +
+  `<path d="M13.8 -14.9 L16.3 -10.3 C 15.1 -6.3 11.5 -3.1 7.4 -1.8" stroke="${C.edge}" stroke-width="1" fill="none" stroke-linecap="round"/>` +
+  `<circle cx="15.5" cy="-10.7" r=".4" fill="${C.fringe}"/><circle cx="13.3" cy="-6.3" r=".4" fill="${C.fringe}"/><circle cx="10.2" cy="-3.3" r=".4" fill="${C.fringe}"/>` +
+  `<path d="M1 -1 C 4 0 8.5 1.5 9.5 5.5 C 10 8.4 7.8 10.2 4.8 9.2 C 2.4 8.4 1 5.8 0.6 3 Z" fill="${C.blue}"/>` +
+  `<path d="M9.5 5.5 C 10 8.4 7.8 10.2 4.8 9.2 C 2.4 8.4 1 5.8 0.6 3" stroke="${C.edge}" stroke-width=".9" fill="none" stroke-linecap="round"/>` +
+  `<circle cx="7.3" cy="7.7" r=".55" fill="${C.orange}"/><circle cx="5.2" cy="8.4" r=".55" fill="${C.orange}"/>` +
+  `<circle cx="7.3" cy="8.7" r=".34" fill="${C.spot}"/><circle cx="5.2" cy="9.4" r=".34" fill="${C.spot}"/>` +
+  `<circle cx="8.7" cy="7" r=".36" fill="${C.fringe}"/><circle cx="3.2" cy="8.9" r=".36" fill="${C.fringe}"/>`);
+
+// P: wA (0 open → 60 closed-up), antA
+const bfly = P =>
+  wingL(P.wA || 0) + wingR(P.wA || 0) +
+  `<path d="M0 -6.6 C 1.3 -6.6 1.7 -4.9 1.7 -2.7 C 1.7 0.4 1.2 4.4 0 6.2 C -1.2 4.4 -1.7 0.4 -1.7 -2.7 C -1.7 -4.9 -1.3 -6.6 0 -6.6 Z" fill="${C.body}"/>` +
+  `<ellipse cx="0" cy="-4.9" rx=".45" ry="2.3" fill="${C.blue}" opacity=".3"/>` +
+  `<circle cx="0" cy="-6.7" r="1.5" fill="${C.body}"/>` +
+  `<circle cx="-0.45" cy="-7.1" r=".4" fill="${C.pale}" opacity=".6"/>` +
+  g(rot(P.antA || 0, 0, -7.6),
+    `<path d="M-0.7 -7.6 C -2 -10.2 -3.1 -11.6 -4.2 -12.3 M0.7 -7.6 C 2 -10.2 3.1 -11.6 4.2 -12.3" stroke="${C.body}" stroke-width=".8" fill="none" stroke-linecap="round"/>` +
+    `<circle cx="-4.2" cy="-12.3" r=".9" fill="${C.pale}"/><circle cx="4.2" cy="-12.3" r=".9" fill="${C.pale}"/>` +
+    `<circle cx="-4.2" cy="-12.3" r=".9" fill="none" stroke="${C.body}" stroke-width=".4"/><circle cx="4.2" cy="-12.3" r=".9" fill="none" stroke="${C.body}" stroke-width=".4"/>`);
+
+function draw(P) {
+  const s0 = P.scale || 0.82;
+  const dx = P.dx || 0, dy = P.dy || 0;
+  let s = P.ticks || '';
+  if (P.grounded) s += shadow(dx, GY + 0.8, 7, Math.max(0, -dy), 12);
+  return s + g(trl(dx, dy) + ' ' + scl(s0, s0, 0, 0) + ' ' + rot(P.roll || 0, 0, 0), bfly(P));
+}
+
+return {
+  id: 'commonblue', view: [-26, -24, 52, 40], groundY: GY,
+  thumb: { m: 'bask', t: 0.5 },
+  motions: [
+    { id: 'bask', label: 'Bask', short: 'Bask', dur: 3.0, env: { t: 'ground' }, speed: '0 km/h', beat: 'Half-open · tremble',
+      desc: 'A thumbnail of sky held half-cocked to catch the low morning sun, wings quivering, rarely laid fully flat.',
+      anim: 'Keep the wings around a third open and alive with a fine tremble — a small butterfly never quite goes still. Antennae always working.' },
+    { id: 'flit', label: 'Flit', short: 'Flit', dur: 0.46, env: { t: 'air' }, speed: '~7 km/h', beat: 'Fast shallow flicks',
+      desc: 'Quick, low and restless, threading a wandering line a hand\u2019s breadth above the grass heads and never for long.',
+      anim: 'Fast, shallow beats — faster than any larger butterfly here. Keep it low, keep it wandering, and let the light body jitter.' },
+    { id: 'settle', label: 'Settle to feed', short: 'Settle', dur: 1.1, env: { t: 'reed', x: 9, y: -4 }, speed: '0 km/h', beat: 'Land · fold · sip',
+      desc: 'It drops onto a flower head, closes the wings up over its back, and feeds — the blue put away, only the freckled underside showing.',
+      anim: 'Arrive with a last flick, then fold the wings up and hold near-closed with a slow breathing sway. A tiny settle-bob on landing.' }
+  ],
+  render(mid, t) {
+    t = wrap(t);
+    if (mid === 'flit') {
+      const flap = osc(t, 2, 0);
+      return draw({
+        wA: 26 + 30 * flap,
+        dy: -2.4 * osc(t, 1, .28) - 1 * osc(t, 2, .1), dx: 2.2 * osc(t, 1, .05),
+        roll: 9 * osc(t, 1, .4), antA: 3 * osc(t, 2, .3),
+        ticks: airTicks(t, { x1: -23, x2: 25, y: -14, h: 12, v: 34, n: 4, s: .9 })
+      });
+    }
+    if (mid === 'settle') {
+      const land = keys(t, [
+        [0.00, { wA: 40 }],
+        [0.16, { wA: 20 }],
+        [0.30, { wA: 58 }],
+        [1.00, { wA: 58 }]
+      ]);
+      land.wA += 3 * osc(t, 3, .1) * (t > 0.32 ? 1 : 0);
+      land.dy = -1.4 - 0.6 * osc(t, 1.5, .2) - 1.2 * pulse(t, 0.16, 0.34);
+      land.antA = 3 * osc(t, 3, .2);
+      return draw(land);
+    }
+    // bask — held part-open, trembling
+    const K = keys(t, [
+      [0.00, { wA: 34 }],
+      [0.40, { wA: 34 }],
+      [0.50, { wA: 8 }],
+      [0.58, { wA: 34 }],
+      [1.00, { wA: 34 }]
+    ]);
+    K.wA += 2.6 * osc(t, 7, .15);
+    K.grounded = true;
+    K.dy = -0.6;
+    K.antA = 4.5 * osc(t, 3.5, .1);
+    return draw(K);
+  }
+};
+})();
+
+__REG["peacock"] = (function(){
+// Peacock — fable style (front view: rust-red wings with the four blue-and-black eyespots)
+
+const C = { red: '#A83A2A', red2: '#872E20', dark: '#2A2530', blue: '#5F7CB8', pale: '#FBF7F2', cream: '#EAD9B0', body: '#2A2530' };
+const GY = 8.5;
+
+const fold = a => Math.max(0.12, Math.cos(Math.min(88, Math.abs(a)) * Math.PI / 180));
+
+const wingL = a => g(scl(fold(a), 1, -1, 0) + ' ' + rot(a * 0.55, -1, -2),
+  `<path d="M-0.8 -4.6 C -4.6 -7.6 -9.4 -12.1 -13.8 -14.9 L-16.3 -10.3 C -15.1 -6.3 -11.5 -3.1 -7.4 -1.8 C -4.4 -0.9 -1.8 -1.8 -0.8 -3.2 Z" fill="${C.red}"/>` +
+  `<path d="M-0.8 -4.6 C -4.6 -7.6 -9.4 -12.1 -13.8 -14.9 L-14.7 -13.1 C -10.2 -10.6 -5.4 -7.1 -1.7 -4.2 Z" fill="${C.red2}"/>` +
+  `<path d="M-13.9 -14.6 C -11.4 -13.3 -9.9 -11.3 -9.9 -8.9 C -11.9 -9 -14 -10.3 -15.3 -12.3 Z" fill="${C.cream}"/>` +
+  `<circle cx="-12.5" cy="-11.6" r="1.75" fill="${C.dark}"/>` +
+  `<circle cx="-13.1" cy="-12.3" r=".78" fill="${C.blue}"/><circle cx="-11.7" cy="-10.7" r=".5" fill="${C.blue}"/>` +
+  `<path d="M-1 -1 C -4 0 -8.5 1.5 -9.5 5.5 C -10 8.4 -7.8 10.2 -4.8 9.2 C -2.4 8.4 -1 5.8 -0.6 3 Z" fill="${C.red}"/>` +
+  `<path d="M-1 -1 C -3.1 -0.2 -5.6 0.7 -7.1 2.5 C -5 3.1 -2.6 2.7 -0.8 2 Z" fill="${C.red2}" opacity=".8"/>` +
+  `<circle cx="-6.3" cy="6.2" r="2.35" fill="${C.dark}"/>` +
+  `<circle cx="-6.3" cy="6.2" r="1.4" fill="${C.blue}"/>` +
+  `<circle cx="-6.8" cy="5.7" r=".5" fill="${C.pale}" opacity=".85"/>`);
+
+const wingR = a => g(scl(fold(a), 1, 1, 0) + ' ' + rot(-a * 0.55, 1, -2),
+  `<path d="M0.8 -4.6 C 4.6 -7.6 9.4 -12.1 13.8 -14.9 L16.3 -10.3 C 15.1 -6.3 11.5 -3.1 7.4 -1.8 C 4.4 -0.9 1.8 -1.8 0.8 -3.2 Z" fill="${C.red}"/>` +
+  `<path d="M0.8 -4.6 C 4.6 -7.6 9.4 -12.1 13.8 -14.9 L14.7 -13.1 C 10.2 -10.6 5.4 -7.1 1.7 -4.2 Z" fill="${C.red2}"/>` +
+  `<path d="M13.9 -14.6 C 11.4 -13.3 9.9 -11.3 9.9 -8.9 C 11.9 -9 14 -10.3 15.3 -12.3 Z" fill="${C.cream}"/>` +
+  `<circle cx="12.5" cy="-11.6" r="1.75" fill="${C.dark}"/>` +
+  `<circle cx="13.1" cy="-12.3" r=".78" fill="${C.blue}"/><circle cx="11.7" cy="-10.7" r=".5" fill="${C.blue}"/>` +
+  `<path d="M1 -1 C 4 0 8.5 1.5 9.5 5.5 C 10 8.4 7.8 10.2 4.8 9.2 C 2.4 8.4 1 5.8 0.6 3 Z" fill="${C.red}"/>` +
+  `<path d="M1 -1 C 3.1 -0.2 5.6 0.7 7.1 2.5 C 5 3.1 2.6 2.7 0.8 2 Z" fill="${C.red2}" opacity=".8"/>` +
+  `<circle cx="6.3" cy="6.2" r="2.35" fill="${C.dark}"/>` +
+  `<circle cx="6.3" cy="6.2" r="1.4" fill="${C.blue}"/>` +
+  `<circle cx="5.8" cy="5.7" r=".5" fill="${C.pale}" opacity=".85"/>`);
+
+// P: wA (0 open → 62 closed-up), antA
+const bfly = P =>
+  wingL(P.wA || 0) + wingR(P.wA || 0) +
+  `<path d="M0 -7.5 C 1.5 -7.5 2 -5.5 2 -3 C 2 0.5 1.4 5 0 7 C -1.4 5 -2 0.5 -2 -3 C -2 -5.5 -1.5 -7.5 0 -7.5 Z" fill="${C.body}"/>` +
+  `<ellipse cx="0" cy="-5.6" rx=".5" ry="2.6" fill="${C.pale}" opacity=".18"/>` +
+  `<circle cx="0" cy="-7.6" r="1.7" fill="${C.body}"/>` +
+  `<circle cx="-0.5" cy="-8.1" r=".45" fill="${C.pale}" opacity=".6"/>` +
+  g(rot(P.antA || 0, 0, -8.6),
+    `<path d="M-0.8 -8.6 C -2.4 -11.5 -3.6 -13 -4.8 -13.8 M0.8 -8.6 C 2.4 -11.5 3.6 -13 4.8 -13.8" stroke="${C.body}" stroke-width=".9" fill="none" stroke-linecap="round"/>` +
+    `<circle cx="-4.8" cy="-13.8" r="1" fill="${C.body}"/><circle cx="4.8" cy="-13.8" r="1" fill="${C.body}"/>`);
+
+function draw(P) {
+  const dx = P.dx || 0, dy = P.dy || 0;
+  let s = P.ticks || '';
+  if (P.grounded) s += shadow(dx, GY + 0.8, 9, Math.max(0, -dy), 12);
+  return s + g(trl(dx, dy) + ' ' + rot(P.roll || 0, 0, 0), bfly(P));
+}
+
+return {
+  id: 'peacock', view: [-30, -26, 62, 44], groundY: GY,
+  thumb: { m: 'bask', t: 0.05 },
+  motions: [
+    { id: 'bask', label: 'Bask', short: 'Bask', dur: 3.6, env: { t: 'ground' }, speed: '0 km/h', beat: 'Open · hold · close',
+      desc: 'Wings laid flat to the sun, the four eyes staring up. Between spells it folds them shut to a dead-leaf brown and all but disappears.',
+      anim: 'Hold the open pose long and still — the eyespots are the whole point. Close slowly, hold shut even longer, reopen without warning.' },
+    { id: 'flash', label: 'Startle flash', short: 'Flash', dur: 1.6, env: { t: 'ground' }, speed: '0 km/h', beat: 'Snap open · glare · snap shut',
+      desc: 'Its famous bluff: wings clapped shut, then snapped wide in a single frame to throw four sudden eyes at whatever leaned too close.',
+      anim: 'The snap is 2–3 frames, no more — sell it with a tiny recoil of the body. Then a dead-still glare, then a hard clap shut. Fear, not grace.' },
+    { id: 'flutter', label: 'Flutter', short: 'Flutter', dur: 0.58, env: { t: 'air' }, speed: '~10 km/h', beat: 'Burst flaps + bounce',
+      desc: 'A powerful, jinking flight in bursts of deep flaps, the heavy body tossed on an unrepeatable line.',
+      anim: 'Deeper, slower beats than the smaller butterflies. Let the body swing and lurch — nothing travels straight.' },
+    { id: 'sail', label: 'Sail', short: 'Sail', dur: 2.8, env: { t: 'air' }, speed: '~13 km/h', beat: 'Set wings · drift',
+      desc: 'Between bursts it sets the wings flat and rides, losing height by lazy degrees before the next flurry.',
+      anim: 'Wings just above horizontal with the faintest flutter; sell the drift with a slow roll and a long sinking curve.' }
+  ],
+  render(mid, t) {
+    t = wrap(t);
+    if (mid === 'flutter') {
+      const flap = osc(t, 2, 0);
+      return draw({
+        wA: 32 + 32 * flap,
+        dy: -3.4 * osc(t, 1, .28) - 1.3 * osc(t, 2, .1), dx: 2.8 * osc(t, 1, .05),
+        roll: 8 * osc(t, 1, .4), antA: 3 * osc(t, 2, .3),
+        ticks: airTicks(t, { x1: -27, x2: 29, y: -16, h: 14, v: 32, n: 4, s: 1.05 })
+      });
+    }
+    if (mid === 'sail') {
+      return draw({
+        wA: -6 + 3 * osc(t, 4, .1),
+        dy: -3.5 * osc(t, 1, .3), dx: 4 * osc(t, 1, .02),
+        roll: 5 * osc(t, 1, .5), antA: 2 * osc(t, 2, .2),
+        ticks: airTicks(t, { x1: -27, x2: 29, y: -16, h: 14, v: 22, n: 4, s: 1 })
+      });
+    }
+    if (mid === 'flash') {
+      const K = keys(t, [
+        [0.00, { wA: 62 }],
+        [0.20, { wA: 62 }],
+        [0.26, { wA: -7 }],
+        [0.32, { wA: 1 }],
+        [0.58, { wA: 1 }],
+        [0.64, { wA: 62 }],
+        [0.90, { wA: 62 }],
+        [1.00, { wA: 62 }]
+      ]);
+      K.grounded = true;
+      K.dy = -1.6 * (pulse(t, 0.24, 0.34) + pulse(t, 0.62, 0.7));
+      K.antA = 5 * osc(t, 4, .1);
+      return draw(K);
+    }
+    // bask
+    const K = keys(t, [
+      [0.00, { wA: 1 }],
+      [0.18, { wA: 1 }],
+      [0.36, { wA: 62 }],
+      [0.54, { wA: 62 }],
+      [0.62, { wA: -5 }],
+      [0.68, { wA: 1 }],
+      [0.90, { wA: 1 }],
+      [1.00, { wA: 1 }]
+    ]);
+    K.wA += 1.4 * osc(t, 5, .2) * (K.wA > 30 ? 1 : 0.4);
+    K.grounded = true;
+    K.antA = 4 * osc(t, 3, .1);
+    return draw(K);
+  }
+};
+})();
+
 window.__FABLE_ANIMALS = __REG;
 })();

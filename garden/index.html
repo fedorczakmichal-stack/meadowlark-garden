@@ -488,34 +488,34 @@
   .sheet{
     position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:var(--maxw);margin:0 auto;
     background:var(--surface);border-radius:26px 26px 0 0;box-shadow:0 -20px 50px -20px rgba(120,92,150,.5);
-    padding:10px 20px max(env(safe-area-inset-bottom),22px);
-    transform:translateY(102%);transition:transform .36s var(--ease);max-height:90vh;overflow-y:auto;
+    padding:8px 20px max(env(safe-area-inset-bottom),18px);
+    transform:translateY(102%);transition:transform .36s var(--ease);max-height:80vh;overflow-y:auto;
     border-top:3px solid var(--accent);
   }
   .sheet.show{transform:none}
-  .sheet .grab{width:42px;height:5px;border-radius:999px;background:var(--hairline);margin:6px auto 14px}
+  .sheet .grab{width:42px;height:5px;border-radius:999px;background:var(--hairline);margin:5px auto 10px}
   .sheet .s-head{display:flex;align-items:center;gap:11px}
   .sheet .s-dot{width:14px;height:14px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 18%,transparent)}
   .sheet .s-title{font-family:var(--ff-brand);font-weight:600;font-size:21px;letter-spacing:-.01em}
-  .sheet .s-prompt{color:var(--muted);font-size:14.5px;margin:10px 0 2px;line-height:1.5}
+  .sheet .s-prompt{color:var(--muted);font-size:14.5px;margin:7px 0 2px;line-height:1.45}
   .sheet .s-stage{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:2px}
-  .quick{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}
+  .quick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
   .quick button{
     text-align:left;background:var(--cream);border:1px solid var(--hairline);border-radius:14px;
-    padding:12px 13px;font-size:13.5px;line-height:1.35;color:var(--ink);transition:border-color .15s,background .15s,transform .15s;min-height:58px;
+    padding:10px 12px;font-size:13.5px;line-height:1.3;color:var(--ink);transition:border-color .15s,background .15s,transform .15s;min-height:48px;
   }
   .quick button:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--hairline));background:color-mix(in srgb,var(--accent) 7%,var(--cream))}
   .quick button.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--cream))}
-  .own{margin-top:12px}
+  .own{margin-top:9px}
   .own label{display:block;font-size:12.5px;color:var(--faint);margin-bottom:6px}
   .own textarea{
     width:100%;border:1px solid var(--hairline);border-radius:14px;background:var(--cream);
-    padding:11px 13px;font-family:var(--ff);font-size:14.5px;color:var(--ink);resize:none;line-height:1.45;min-height:56px;
+    padding:10px 13px;font-family:var(--ff);font-size:14.5px;color:var(--ink);resize:none;line-height:1.4;min-height:44px;
   }
   .own textarea:focus{border-color:var(--accent);background:var(--surface)}
   .own .count{text-align:right;font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:4px}
-  .invite-foot{margin-top:13px;font-size:13px;color:var(--ink);background:color-mix(in srgb,var(--accent) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:13px;padding:10px 13px;line-height:1.45}
-  .sheet-actions{display:flex;gap:10px;margin-top:16px}
+  .invite-foot{margin-top:10px;font-size:13px;color:var(--ink);background:color-mix(in srgb,var(--accent) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:13px;padding:9px 13px;line-height:1.4}
+  .sheet-actions{display:flex;gap:10px;margin-top:12px}
   .sheet .tend-btn{flex:1;color:#FFFDFB;background:linear-gradient(100deg,color-mix(in srgb,var(--accent) 78%,#EF9C7E),var(--accent));border:0;border-radius:999px;min-height:50px;font-weight:700;font-size:15.5px;box-shadow:0 14px 26px -14px color-mix(in srgb,var(--accent) 70%,transparent)}
   .sheet .tend-btn:active{transform:scale(.98)}
   .sheet .close-btn{background:var(--bg-2);border:1px solid var(--hairline);border-radius:999px;min-height:50px;padding:0 18px;font-size:14px;color:var(--muted);font-weight:600}
@@ -2018,11 +2018,14 @@ function drawMidground(W,dusky){
   const PF=(dusky?['#3C4E45','#47594F','#34453D']:['#7FB263','#8CC06D','#6CA052']).map(nightStep);   // front row (richer)
   const tr=nightStep(dusky?'#4A4036':'#6E5A36');
   const ACC=['#EF9C7E','#E68AB0','#E8A33E','#9E7CC2','#6FB89A','#5B9BD9'].map(c=>nightTint(c,_phase));   // berries dim with the light too
+  // a few little blooms nestled at a seedling's base, so a sprout reads as already in a small patch of flowers
+  const petals=(acc)=>{ let d=''; for(const b of [[-9,5.5,1.9],[8.5,6,1.7],[-2.5,8,1.6],[5.5,8.5,1.5],[0.5,4,1.6]]){
+    d+=`<circle cx="${b[0]}" cy="${b[1]}" r="${b[2]}" fill="${acc}"/><circle cx="${b[0]}" cy="${b[1]}" r=".55" fill="#FBE7C0"/>`; } return d; };
   const plant=(x,y,sc,P,type,acc)=>{
     let p=`<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${sc.toFixed(2)})">`;
     if(type===0){ p+=`<ellipse cx="-13" cy="2" rx="15" ry="11" fill="${P[2]}"/><ellipse cx="12" cy="3" rx="13" ry="10" fill="${P[0]}"/><ellipse cx="0" cy="-5" rx="16" ry="12" fill="${P[1]}"/><ellipse cx="-3" cy="-8" rx="8" ry="6" fill="#fff" opacity=".12"/>`; }
-    else if(type===1){ p+=`<g stroke="${P[2]}" stroke-width="2" fill="none" stroke-linecap="round">`; for(let k=-2;k<=2;k++){ p+=`<path d="M0 5 C ${k*4} -6 ${k*8} -14 ${k*11} -24"/>`; } p+=`</g>`; }
-    else if(type===2){ p+=`<g stroke="${P[1]}" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".92"><path d="M0 6 C -4 -8 -6 -16 -8 -26 M0 6 C 0 -10 1 -18 2 -28 M0 6 C 4 -8 7 -16 10 -26 M0 6 C -2 -6 -3 -12 -4 -20 M0 6 C 3 -7 5 -12 7 -20"/></g>`; }
+    else if(type===1){ p+=`<g stroke="${P[2]}" stroke-width="2" fill="none" stroke-linecap="round">`; for(let k=-2;k<=2;k++){ p+=`<path d="M0 5 C ${k*4} -6 ${k*8} -14 ${k*11} -24"/>`; } p+=`</g>`; p+=petals(acc); }
+    else if(type===2){ p+=`<g stroke="${P[1]}" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".92"><path d="M0 6 C -4 -8 -6 -16 -8 -26 M0 6 C 0 -10 1 -18 2 -28 M0 6 C 4 -8 7 -16 10 -26 M0 6 C -2 -6 -3 -12 -4 -20 M0 6 C 3 -7 5 -12 7 -20"/></g>`; p+=petals(acc); }
     else if(type===3){ p+=`<ellipse cx="-8" cy="2" rx="13" ry="10" fill="${P[2]}"/><ellipse cx="9" cy="2" rx="12" ry="9" fill="${P[0]}"/><ellipse cx="0" cy="-4" rx="14" ry="10" fill="${P[1]}"/>`;
       // a single tight cluster of berries (not scattered confetti) growing from one spot near the top
       [[-3,-7],[1.4,-9],[4.4,-6.4]].forEach(d=>{ p+=`<circle cx="${d[0]}" cy="${d[1]}" r="1.8" fill="${acc}"/>`; });
@@ -3175,9 +3178,11 @@ function renderMeadow(force,opt){
   const sunx=1700, suny=84;
   if(dusky){
     st+=`<circle cx="2160" cy="92" r="120" fill="url(#moonHalo)"/><circle cx="2160" cy="92" r="62" fill="url(#moonHalo)"/><circle cx="2160" cy="92" r="30" fill="url(#moon)"/>`;
-    let stars=''; for(let i=0;i<108;i++){ const R=n=>wanderR(i*2.3+11,n);
-      const x=(R(1)*W).toFixed(0), y=(20+R(2)*192).toFixed(0), r=(0.7+R(3)*1.7).toFixed(1);
-      const base=((0.4+R(4)*0.55)*(phase==='night'?1:0.5)).toFixed(2);
+    // scattered like a real night sky — hashed per-star (the old i*2.3 seed banded them into rows)
+    let stars=''; const hs=(i,s)=>{ const v=Math.sin(i*127.1+s*311.7+7.71)*43758.5453; return v-Math.floor(v); };
+    for(let i=0;i<124;i++){
+      const x=(hs(i,1)*W).toFixed(0), y=(16+Math.pow(hs(i,2),0.9)*210).toFixed(0), r=(0.7+hs(i,3)*1.7).toFixed(1);
+      const base=((0.38+hs(i,4)*0.56)*(phase==='night'?1:0.5)).toFixed(2);
       stars+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#FBF7F2" opacity="${base}"/>`;
     }
     st+=`<g>${stars}</g>`;
@@ -3254,12 +3259,12 @@ function renderMeadow(force,opt){
   const CAST=[
     {id:'rabbit',   x:HABX.connection-88, y:HABY.connection+34, sc:.95, off:.10, amp:70, yd:16},
     {id:'fox',      x:HABX.body-268, y:HABY.body+24,  sc:.90, off:.35, amp:130, yd:14},
-    {id:'butterfly',mid:'flutter',x:HABX.body+130, y:HABY.body-150, sc:1.05,off:.50, flt:20,fltAmp:24,fltSeed:201},
+    {id:'swallowtail',mid:'flit',x:HABX.body+130, y:HABY.body-150, sc:.66,off:.50, flt:20,fltAmp:24,fltSeed:201},
     {id:'ladybug',  x:HABX.body+55,  y:HABY.body+68,  sc:.45, off:.05, amp:30, yd:8},
     {id:'bee',      mid:'patrol', x:HABX.home+70,  y:HABY.home-118, sc:.90, off:.20, flt:16,fltAmp:18,fltSeed:202},
     {id:'hedgehog', x:HABX.home-158, y:HABY.home+56,  sc:.80, off:.65, amp:46, yd:12},
     {id:'mouse',    x:HABX.home+128, y:HABY.home+66,  sc:.50, off:.48, amp:40, yd:9},
-    {id:'butterfly',mid:'sail',   x:HABX.connection+70, y:HABY.connection-150, sc:.95, off:.75, flt:22,fltAmp:27,fltSeed:203},
+    {id:'peacock',mid:'sail',   x:HABX.connection+70, y:HABY.connection-150, sc:.68, off:.75, flt:22,fltAmp:27,fltSeed:203},
     {id:'deer',     x:1000, y:336, sc:.72, off:.60, amp:80, yd:14, extra:` opacity="${dusky?.5:.72}"`},
     {id:'deer',     x:1380, y:320, sc:.80, off:.15, amp:34, yd:8, extra:` opacity="${dusky?.5:.7}"`},
     {id:'bear',     x:BEARX,y:352, sc:.74, off:.40, amp:BEARAMP, yd:7, extra:` opacity="${dusky?.6:.9}"`},
@@ -3273,8 +3278,8 @@ function renderMeadow(force,opt){
     {id:'snail',    x:HABX.calm+118,  y:HABY.calm+106, sc:.55, off:.85, amp:16, yd:3},
   ];
   if(dusky) CAST.push({id:'owl',mid:'perch',x:1452,y:320,sc:.45,off:.5,amp:0,yd:0,extra:' opacity=".85"'});
-  if(total>=12) CAST.push({id:'butterfly',mid:'bask',x:HABX.meaning-90,y:HABY.meaning-150,sc:.85,off:.33,flt:20});
-  if(total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-30,y:HABY.calm-150,sc:.82,off:.66,flt:22});
+  if(total>=12) CAST.push({id:'commonblue',mid:'flit',x:HABX.meaning-90,y:HABY.meaning-150,sc:.56,off:.33,flt:20});
+  if(total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-30,y:HABY.calm-150,sc:.6,off:.66,flt:22});
   CAST.forEach(o=>{ lv+=FB(o); });
   // golden-hour light wash (tints the animals + the canvas beneath, exactly as before)
   lv+=`<rect width="${W}" height="${H}" fill="url(#glow)" pointer-events="none"/>`;
