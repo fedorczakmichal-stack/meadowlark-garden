@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v58 (2026-07-08) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v59 (2026-07-08) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -227,3 +227,33 @@ obserwacja tygodniowa (rotacja `isoWeek`) TYLKO z istniejących danych — stadi
   kasuje tylko stare cache. CACHE `v58`, ASSETS=43 (dodane 12 splash). Zweryf. LIVE (lokalny http+SW):
   aktywny tylko `meadowlark-garden-v58`/43 assety, SWR podaje stary natychmiast → cache aktualizuje się do nowego
   sidecara w tle, offline serwuje sidecary+index.html z cache. Harness `sw_verify.mjs`+`verify_wave1.mjs`.
+
+**v59** (2026-07-08): **WAVE 2 redesignu (2 z 3) — NIEBO Look Back jako immersyjny, emocjonalny BOHATER ekranu.**
+(Wave 1=meadow-first=v58; Wave 3=SVG→canvas perf=osobno.) Problem właściciela: niebo było „stopką" pod długim
+scrollem kart + statyczne. Zmiany (wszystko w `renderPath` + CSS `.lb-sky*` + gating motion):
+- **A. HIERARCHIA — niebo NA GÓRZE, prawie full-bleed.** `view-path` przebudowany: `.lb-sky` (hero
+  `height:clamp(480px,76vh,780px)`) = PIERWSZA rzecz pod nagłówkiem; `#pathWrap` `position:absolute;inset:0` wypełnia
+  hero; **viewBox liczony z realnego aspektu kontenera** (`H=clamp(W*chP/cwP,620,1600)`) → na telefonie WYSOKIE
+  pionowe niebo („wyjście na dwór, spojrzenie w górę"), na szerокim ekranie szersza kopuła, bez letterboxa/dystorsji.
+  Nagłówek (eyebrow „Look back, gently" + h1 „The sky was always full" + ciepła linia „Every night you came back is
+  still up there. Come look up a while.") + `#cairnCap` = NAKŁADKI nad niebem (scrim gradienty, `pointer-events:none`).
+  Karty refleksyjne (then-now/memory/compass/pressed/chapters/keepsake/letters/„garden noticed") przeniesione POD niebo
+  do `.pad` (dalej działają). Zweryf. 390px: `skyTop=55, skyH=575, vp=757 → 76% pierwszego vieportu`.
+- **B. NIEBO ODDYCHA i ŻYJE (immersyjne, motion-gated, deterministyczne).** GŁĘBIA: warstwa gwiazd DALEKA (160 słabych)
+  + BLISKA (42 jaśniejszych, `.sky-near` dryf) → paralaksa; nebula/milky-way wash (`#skyNeb`, `.sky-neb` obrót+dryf).
+  WOLNE ŻYCIE: `.twinkle` (mniejszość), RZADKA spokojna spadająca gwiazda (`.sky-shoot` cykl 46s, streak ~3s, NIE nagroda),
+  aurora-wstęga nisko nad horyzontem (`.sky-aurora` dryf), księżyc z ŻYWYM halo (`.sky-halo` oddech). ODDECH: `.sky-breath`
+  (nakładka radialna, opacity .34↔.62, `opacity=.42` baza dla stanu still). CZAS: niebo czyta `dayPhase()` — świt=ciepła
+  poświata horyzontu (rosa `SKY.dawn[0]`), noc=najgłębsza chłodna, zmierzch/golden=złota ciepłota, dzień=chłodny błękit
+  (paleta z `SKY[phase]`, `warm`/`glowO` per faza; ZERO równoległego zegara). POWRÓT: `.rt-reveal` (gwiazdy delikatnie
+  „osiadają" przy każdym otwarciu, re-trigger `offsetWidth`), najnowsza = „tonight's light" (`.sky-tonight` puls).
+- **KONTRAKT DUSZY nienaruszony:** 1 powrót=1 gwiazda w akcencie obszaru; ZERO liczb care/osi/startu/mety/gamifikacji;
+  tap gwiazdy (klawiatura Enter/Space) → własne słowa wpisu w podpisie (`fuzzyGroup`); „niebo pełniejsze im więcej
+  powrotów" = gęstość, NIE licznik. Motion-gated: `.sky-breath/-halo/-neb/-near/-aurora/-shoot/-tonight/.rt-reveal`
+  dodane do `body.motion-calm` ORAZ `@media(prefers-reduced-motion)` (`animation:none!important`) → w spokoju niebo
+  renderuje się w PEŁNI jako nieruchomy obraz (zweryf. `neb anim=none`, spadająca gwiazda ukryta). Nowy resize-handler
+  `refitSky()` (debounce 220ms) przelicza aspekt gdy okno zmienia kształt przy otwartym Look Back.
+- Zweryf. headless DSF2 (`shoot_lb.mjs`/`shoot_lb2.mjs`/`zero_check.mjs`): mobile 390px (hero=76% vieportu), gęstość
+  8/20/40 powrotów (rośnie, spokojna, twarz księżyca czysta), fazy dawn/dusk/day/night (wyraźnie różne), tap→słowa,
+  calm+reduced-motion (pełny render, ruch stop), 0 powrotów (ciepła pustka bez błędu), szeroki 560px, karty pod niebem
+  renderują, `motion_probe.mjs` bez regresji fableCollect, 0 błędów konsoli. CACHE `sw.js` `v59` (ASSETS bez zmian).

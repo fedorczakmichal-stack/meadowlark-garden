@@ -269,16 +269,45 @@
   .empty .e-ico{width:62px;height:62px;margin:0 auto 14px;color:var(--gold);opacity:.85}
   .empty p{margin:0;font-size:15.5px;max-width:30ch;margin-inline:auto;line-height:1.55}
 
-  /* ── path / look back ── */
-  .path-wrap{position:relative;width:100%}
-  .path-wrap svg{display:block;width:100%;height:auto}
+  /* ── Look Back: the SKY is the hero (a tall, near-full-bleed night you step out under) ── */
+  .lb-sky{position:relative;width:100%;height:clamp(480px,76vh,780px);overflow:hidden;background:#141227;border-bottom:1px solid var(--hairline)}
+  .path-wrap{position:absolute;inset:0;width:100%;height:100%}
+  .path-wrap svg{display:block;width:100%;height:100%}
+  /* the title, laid over the deep upper sky — like a night that carries its own name */
+  .lb-sky-head{position:absolute;left:0;right:0;top:0;z-index:2;padding:20px 20px 46px;pointer-events:none;
+    background:linear-gradient(180deg,rgba(14,12,32,.60),rgba(14,12,32,.26) 54%,rgba(14,12,32,0))}
+  .lb-sky-head .lb-eyebrow{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#EAD09A;opacity:.92}
+  .lb-sky-head .lb-title{font-family:var(--ff-brand);font-weight:500;font-size:clamp(24px,6.6vw,33px);letter-spacing:-.02em;line-height:1.08;margin:5px 0 0;color:#FBF7F2;text-shadow:0 1px 16px rgba(0,0,0,.45)}
+  .lb-sky-head .lb-invite{margin:8px 0 0;font-size:14px;line-height:1.5;color:#D9D3EC;max-width:30ch;text-shadow:0 1px 10px rgba(0,0,0,.5)}
+  /* the caption sits over the dark garden at the foot of the sky */
+  .lb-sky .cairn-cap{position:absolute;left:0;right:0;bottom:0;z-index:2;margin:0;padding:14px 18px 16px;
+    text-align:center;color:#CFC9E6;font-size:14px;min-height:22px;transition:opacity .3s;pointer-events:none;
+    background:linear-gradient(0deg,rgba(9,8,24,.72),rgba(9,8,24,.34) 55%,rgba(9,8,24,0))}
   .cairn-cap{text-align:center;color:var(--muted);font-size:14px;margin-top:8px;min-height:22px;transition:opacity .3s}
+  .lb-under{margin-top:16px}
   /* Night Sky of Returns — a tapped light swells gently and its halo blooms */
   .path-wrap .cairnTap{cursor:pointer}
   .path-wrap .rt-scale{transform-box:fill-box;transform-origin:center;transition:transform .5s cubic-bezier(.2,.9,.25,1)}
   .path-wrap .cairnTap.lit .rt-scale{transform:scale(2.2)}
   .path-wrap .rt-halo{opacity:0;transition:opacity .5s}
   .path-wrap .cairnTap.lit .rt-halo{opacity:.85}
+  /* ── firmament ambient life — slow, calm, deterministic; ALL motion-gated (see motion-calm / reduced-motion) ── */
+  .path-wrap .sky-breath{animation:skyBreath 15s ease-in-out infinite}
+  @keyframes skyBreath{0%,100%{opacity:.34}50%{opacity:.62}}
+  .path-wrap .sky-halo{transform-box:fill-box;transform-origin:center;animation:skyHalo 12s ease-in-out infinite}
+  @keyframes skyHalo{0%,100%{opacity:.66;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
+  .path-wrap .sky-neb{transform-box:view-box;animation:skyNeb 52s ease-in-out infinite}
+  @keyframes skyNeb{0%,100%{transform:translateX(-1.6%);opacity:.78}50%{transform:translateX(1.6%);opacity:1}}
+  .path-wrap .sky-near{transform-box:view-box;animation:skyNear 34s ease-in-out infinite}
+  @keyframes skyNear{0%,100%{transform:translateX(1%)}50%{transform:translateX(-1%)}}
+  .path-wrap .sky-aurora{transform-box:view-box;animation:skyAurora 44s ease-in-out infinite}
+  @keyframes skyAurora{0%,100%{transform:translateX(2.4%);opacity:.42}50%{transform:translateX(-2.4%);opacity:.86}}
+  .path-wrap .sky-shoot{transform-box:view-box;opacity:0;animation:skyShoot 46s linear infinite}
+  @keyframes skyShoot{0%,2%{opacity:0;transform:translate(0,0)}3%{opacity:.9}8%{opacity:.8;transform:translate(25%,17%)}10%,100%{opacity:0;transform:translate(29%,20%)}}
+  .path-wrap .sky-tonight{transform-box:fill-box;transform-origin:center;animation:skyTonight 6.5s ease-in-out infinite}
+  @keyframes skyTonight{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.14)}}
+  .path-wrap .rt-reveal{animation:rtReveal 2.3s ease-out both}
+  @keyframes rtReveal{0%{opacity:0}55%{opacity:.45}100%{opacity:1}}
   @media (prefers-reduced-motion:reduce){.path-wrap .rt-scale{transition:none}.path-wrap .rt-halo{transition:none}}
   .lb-summary{margin-top:16px}
   .lb-stats{display:flex;gap:10px}
@@ -672,12 +701,15 @@
   body.motion-calm .firefly,body.motion-calm .dew,body.motion-calm .twinkle,
   body.motion-calm .grow-in,body.motion-calm .view,body.motion-calm .lwn,body.motion-calm .lwf,
   body.motion-calm .fall,body.motion-calm .spin,
+  body.motion-calm .sky-breath,body.motion-calm .sky-halo,body.motion-calm .sky-neb,body.motion-calm .sky-near,
+  body.motion-calm .sky-aurora,body.motion-calm .sky-shoot,body.motion-calm .sky-tonight,body.motion-calm .rt-reveal,
   body.motion-calm .rise{animation:none!important}
   body.motion-calm .glide,body.motion-calm .glide-rev,body.motion-calm .fall{opacity:0!important}
   body.motion-calm .pollen{opacity:.4!important}   /* kept, just still — a quiet dusting, not a dead field */
   body.motion-calm .firefly{opacity:.8!important}
   @media (prefers-reduced-motion:reduce){
-    .sway,.glide,.glide-rev,.rove,.float,.pollen,.firefly,.dew,.twinkle,.grow-in,.view,.lwn,.lwf,.rise,.rig,.flow,.fall,.spin{animation:none!important}
+    .sway,.glide,.glide-rev,.rove,.float,.pollen,.firefly,.dew,.twinkle,.grow-in,.view,.lwn,.lwf,.rise,.rig,.flow,.fall,.spin,
+    .sky-breath,.sky-halo,.sky-neb,.sky-near,.sky-aurora,.sky-shoot,.sky-tonight,.rt-reveal{animation:none!important}
     html{scroll-behavior:auto}
     .glide,.glide-rev,.pollen,.fall{opacity:0!important}
   }
@@ -794,12 +826,20 @@
       </div>
     </section>
 
-    <!-- ░░ LOOK BACK / PATH ░░ -->
+    <!-- ░░ LOOK BACK / PATH — the sky is the hero ░░ -->
     <section class="view" id="view-path" aria-label="Look back">
+      <!-- HERO: a near-full-bleed night sky you step out under; the reflective cards live below it -->
+      <div class="lb-sky" id="lbSky">
+        <div class="path-wrap" id="pathWrap"></div>
+        <div class="lb-sky-head">
+          <div class="lb-eyebrow">Look back, gently</div>
+          <h1 class="lb-title">The sky was always full</h1>
+          <p class="lb-invite">Every night you came back is still up there. Come look up a while.</p>
+        </div>
+        <p class="cairn-cap" id="cairnCap" aria-live="polite">Tap a light to return to that day.</p>
+      </div>
       <div class="pad">
-        <div class="eyebrow">Look back, gently</div>
-        <h1 class="lead-h">The sky was always full</h1>
-        <p class="sub">A quiet look at the nights you came back — not a race, not a finish line. Each small return is a light that stayed.</p>
+        <p class="sub lb-under">The nights you came back — not a race, not a finish line. Each small return is a light that stayed.</p>
         <div class="lb-summary" id="pathSummary"></div>
         <div id="lbNoticed"></div>
         <div id="lbLetters"></div>
@@ -810,8 +850,6 @@
         <div id="lbChapters"></div>
         <div id="lbKeepsake"></div>
       </div>
-      <div class="path-wrap" id="pathWrap"></div>
-      <p class="cairn-cap" id="cairnCap" aria-live="polite">Tap a light to return to that day.</p>
       <div style="height:24px"></div>
     </section>
 
@@ -2946,8 +2984,11 @@ let __fableTestNow=0;
 // (getBoundingClientRect) that used to run every animation frame — the main jank source on phones.
 let _sceneScale=0;
 function invalidateSceneScale(){ _sceneScale=0; }
-window.addEventListener('resize',invalidateSceneScale);
-window.addEventListener('orientationchange',invalidateSceneScale);
+// the Look Back sky sizes its viewBox to the container aspect; refit it if the window changes shape while open
+let _skyFit=null;
+function refitSky(){ if(_skyFit) clearTimeout(_skyFit); _skyFit=setTimeout(()=>{ const v=document.getElementById('view-path'); const w=document.getElementById('pathWrap'); if(v&&v.classList.contains('active')&&w){ w.dataset.sig=''; try{ renderPath(); }catch(_){}} },220); }
+window.addEventListener('resize',()=>{ invalidateSceneScale(); refitSky(); });
+window.addEventListener('orientationchange',()=>{ invalidateSceneScale(); refitSky(); });
 // cache the reduced-motion MediaQueryList once — allocating it every frame was pure churn
 let _rmql=null;
 function reduceMotion(){ if(_rmql===null) _rmql=(window.matchMedia?matchMedia('(prefers-reduced-motion: reduce)'):{matches:false}); return _rmql.matches; }
@@ -3710,89 +3751,131 @@ function renderPath(){
   renderThenNow(); renderMemoryCard(true); renderCompass(); renderPressed(); renderChapters();
   renderNoticed(); renderLetters(); renderKeepsake();   // v57: weekly noticing · letter to future self · printable keepsake
 
-  // ── Nocne Niebo Powrotów — a private night sky; every small return is a faint star ──
-  // No beginning, no end, no axis, no "you are here as goal" — just a full dome of scattered light that
-  // grows a little denser each time you come back. Deterministic scatter (hash, not Math.random) so the sky
-  // never reshuffles; the most recent glimmers softly as "tonight". Tap a light → that entry's own words rise
-  // below. (This replaces the receding stone trail: a track has a start and a finish; a sky has neither.)
-  const sig=`sky|${totalReturns}|${daysBack}|${dayKeys[dayKeys.length-1]||''}`;
-  if(wrap.dataset.sig===sig) return;
-  wrap.dataset.sig=sig;
-  const entries=[...store.journal].sort((a,b)=>a.t-b.t);   // oldest → newest; the last is "tonight"
-  const N=entries.length, W=1000;
-  const H=Math.round(clamp(544+N*6, 544, 772));
-  const HZ=H-96;                                            // where the dark garden meets the sky
-  const hh=(i,sd)=>{ const v=Math.sin(i*127.1 + sd*311.7 + 7.71)*43758.5453; return v-Math.floor(v); };
-  let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A night sky over your garden. Every small return you've made is a faint star — no beginning, no end.">`;
-  s+=`<defs>
-    <linearGradient id="skySky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#161328"/><stop offset=".46" stop-color="#221F3E"/><stop offset=".76" stop-color="#322E52"/><stop offset="1" stop-color="#403A63"/></linearGradient>
-    <radialGradient id="skyMoon" cx="42%" cy="38%" r="62%"><stop offset="0" stop-color="#FBF7F2"/><stop offset=".7" stop-color="#E4E0F0"/><stop offset="1" stop-color="#C4C0DC"/></radialGradient>
-    <radialGradient id="skyMoonH" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#D8D6EC" stop-opacity=".38"/><stop offset="1" stop-color="#D8D6EC" stop-opacity="0"/></radialGradient>
-    <radialGradient id="skyGlowW" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFF6DE" stop-opacity=".9"/><stop offset=".45" stop-color="#FCEBC8" stop-opacity=".25"/><stop offset="1" stop-color="#FCEBC8" stop-opacity="0"/></radialGradient>
-    <radialGradient id="skyHorizon" cx="50%" cy="100%" r="72%"><stop offset="0" stop-color="#6A5C86" stop-opacity=".5"/><stop offset=".5" stop-color="#4A4470" stop-opacity=".24"/><stop offset="1" stop-color="#4A4470" stop-opacity="0"/></radialGradient>
-  </defs>`;
-  s+=`<rect width="${W}" height="${H}" fill="url(#skySky)"/>`;
-  // a soft moon, low-key off to one side — atmosphere, never a destination
-  const MX=838, MY=112, moonClear=(x,y,pad)=>Math.hypot(x-MX,y-MY)<pad;   // keep points off the moon face
-  s+=`<circle cx="${MX}" cy="${MY}" r="128" fill="url(#skyMoonH)" opacity=".82"/><circle cx="${MX}" cy="${MY}" r="58" fill="url(#skyMoonH)" opacity=".82"/><circle cx="${MX}" cy="${MY}" r="26" fill="url(#skyMoon)" opacity=".92"/>`;
-  // warm horizon glow — the garden breathing in the dark
-  s+=`<rect x="0" y="${HZ-130}" width="${W}" height="${H-(HZ-130)}" fill="url(#skyHorizon)"/>`;
-  // a full field of faint background stars for depth (deterministic; a slow-twinkling minority) — kept dim
-  // so the RETURNS (below) read as the brighter characters of the sky, not lost among the decoration
-  let bg='';
-  for(let i=0;i<150;i++){ const bxn=hh(i,3)*W, byn=6+hh(i,7)*(HZ-12); if(moonClear(bxn,byn,58)) continue;   // the moon face stays clean
-    const bx=bxn.toFixed(1), by=byn.toFixed(1), br=(0.5+hh(i,11)*1.1).toFixed(1), bo=(0.1+hh(i,13)*0.32).toFixed(2);
-    if(hh(i,17)>0.86) bg+=`<circle class="twinkle" cx="${bx}" cy="${by}" r="${br}" fill="#E7E2F4" style="--d:${(4.5+hh(i,19)*5).toFixed(1)}s;animation-delay:-${(hh(i,23)*6).toFixed(1)}s;opacity:${bo}"/>`;
-    else bg+=`<circle cx="${bx}" cy="${by}" r="${br}" fill="#E7E2F4" opacity="${bo}"/>`;
+  // ── Nocne Niebo Powrotów (v59 HERO) — the sky is the emotional centerpiece of Look Back ──
+  // A private night sky where every small return is a faint star. No beginning, no end, no axis, no
+  // "you are here as a goal" — just a full dome of scattered light that grows a little richer each time
+  // you come back. Deterministic scatter (hash, not Math.random) so the sky never reshuffles; the most
+  // recent glimmers as "tonight". It BREATHES with slow ambient life (all motion-gated below) and it
+  // CHANGES with the real time of day — dawn glow, deepest night, dusk warmth — via the app's phase
+  // system, so returning at different hours feels different and alive: "it's still here."
+  const phase=dayPhase();
+  // viewBox tracks the container's real aspect → on a phone this is a TALL portrait sky that fills the
+  // hero (stepping outside, looking up); on a wide screen it's a broad dome. No letterbox, no distortion.
+  const cwP=wrap.clientWidth||360, chP=wrap.clientHeight||560;
+  const sig=`sky|${totalReturns}|${daysBack}|${dayKeys[dayKeys.length-1]||''}|${phase}|${cwP}x${chP}`;
+  const needBuild = wrap.dataset.sig!==sig;
+  if(needBuild){
+    wrap.dataset.sig=sig;
+    const entries=[...store.journal].sort((a,b)=>a.t-b.t);   // oldest → newest; the last is "tonight"
+    const N=entries.length, W=1000;
+    const H=Math.round(clamp(W*chP/cwP, 620, 1600));
+    const HZ=H-Math.round(H*0.11);                            // the dark garden is a thin strip at the very foot
+    const hh=(i,sd)=>{ const v=Math.sin(i*127.1 + sd*311.7 + 7.71)*43758.5453; return v-Math.floor(v); };
+    // time-aware palette: reuse SKY[phase] so dawn / midday / dusk / night each feel different, but the dome
+    // always stays deep enough that the RETURNS remain the brightest characters of the sky.
+    const horizonWarm=(SKY[phase]&&SKY[phase][0]&&SKY[phase][0][1])||'#4A4470';
+    const warm = phase==='night'?0 : phase==='day'?0.12 : 0.22;   // dawn/golden/dusk lean warmest
+    const cTop = mix('#141227', horizonWarm, warm*0.35);
+    const cMid = mix('#221F3E', horizonWarm, warm*0.50);
+    const cLow = mix('#322E52', horizonWarm, warm*0.72);
+    const cBase= mix('#403A63', horizonWarm, warm);
+    const glowO = phase==='night'?0.32 : phase==='day'?0.46 : 0.66;
+    const MX=838, MY=Math.round(H*0.11)+34, moonClear=(x,y,pad)=>Math.hypot(x-MX,y-MY)<pad;   // keep points off the moon face
+    let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A night sky over your garden. Every small return you've made is a faint star — no beginning, no end, nothing to catch up on.">`;
+    s+=`<defs>
+      <linearGradient id="skySky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${cTop}"/><stop offset=".46" stop-color="${cMid}"/><stop offset=".76" stop-color="${cLow}"/><stop offset="1" stop-color="${cBase}"/></linearGradient>
+      <radialGradient id="skyMoon" cx="42%" cy="38%" r="62%"><stop offset="0" stop-color="#FBF7F2"/><stop offset=".7" stop-color="#E4E0F0"/><stop offset="1" stop-color="#C4C0DC"/></radialGradient>
+      <radialGradient id="skyMoonH" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#D8D6EC" stop-opacity=".38"/><stop offset="1" stop-color="#D8D6EC" stop-opacity="0"/></radialGradient>
+      <radialGradient id="skyGlowW" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFF6DE" stop-opacity=".9"/><stop offset=".45" stop-color="#FCEBC8" stop-opacity=".25"/><stop offset="1" stop-color="#FCEBC8" stop-opacity="0"/></radialGradient>
+      <radialGradient id="skyHorizon" cx="50%" cy="100%" r="74%"><stop offset="0" stop-color="${horizonWarm}" stop-opacity="${glowO}"/><stop offset=".5" stop-color="${mix(horizonWarm,'#4A4470',.5)}" stop-opacity="${(glowO*0.5).toFixed(2)}"/><stop offset="1" stop-color="#4A4470" stop-opacity="0"/></radialGradient>
+      <radialGradient id="skyNeb" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#6E63A8" stop-opacity=".26"/><stop offset=".55" stop-color="#48507E" stop-opacity=".12"/><stop offset="1" stop-color="#48507E" stop-opacity="0"/></radialGradient>
+      <radialGradient id="skyBreath" cx="50%" cy="30%" r="62%"><stop offset="0" stop-color="#FBF3DE" stop-opacity=".6"/><stop offset="1" stop-color="#FBF3DE" stop-opacity="0"/></radialGradient>
+      <linearGradient id="skyAur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FE6C8" stop-opacity="0"/><stop offset=".5" stop-color="#7FD9C4" stop-opacity=".4"/><stop offset="1" stop-color="#9AA6E8" stop-opacity="0"/></linearGradient>
+      <linearGradient id="skyShootG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFDF6" stop-opacity="0"/><stop offset="1" stop-color="#FFFDF6" stop-opacity=".95"/></linearGradient>
+    </defs>`;
+    s+=`<rect width="${W}" height="${H}" fill="url(#skySky)"/>`;
+    // (1) nebula / milky-way wash — a soft diagonal band of faint galactic light, slowly drifting for depth
+    s+=`<g class="sky-neb"><g transform="rotate(-24 ${(W/2).toFixed(0)} ${(H*0.42).toFixed(0)})"><ellipse cx="${(W/2).toFixed(0)}" cy="${(H*0.42).toFixed(0)}" rx="${(W*0.62).toFixed(0)}" ry="${(H*0.12).toFixed(0)}" fill="url(#skyNeb)"/><ellipse cx="${(W*0.34).toFixed(0)}" cy="${(H*0.30).toFixed(0)}" rx="${(W*0.30).toFixed(0)}" ry="${(H*0.07).toFixed(0)}" fill="url(#skyNeb)" opacity=".7"/></g></g>`;
+    // (2) FAR star field — many, faint, mostly steady (a slow-twinkling minority) → depth behind the returns
+    let bg='';
+    for(let i=0;i<160;i++){ const bxn=hh(i,3)*W, byn=6+hh(i,7)*(HZ-12); if(moonClear(bxn,byn,58)) continue;   // the moon face stays clean
+      const bx=bxn.toFixed(1), by=byn.toFixed(1), br=(0.4+hh(i,11)*1.0).toFixed(1), bo=(0.09+hh(i,13)*0.28).toFixed(2);
+      if(hh(i,17)>0.86) bg+=`<circle class="twinkle" cx="${bx}" cy="${by}" r="${br}" fill="#E7E2F4" style="--d:${(4.5+hh(i,19)*5).toFixed(1)}s;animation-delay:-${(hh(i,23)*6).toFixed(1)}s;opacity:${bo}"/>`;
+      else bg+=`<circle cx="${bx}" cy="${by}" r="${br}" fill="#E7E2F4" opacity="${bo}"/>`;
+    }
+    s+=`<g>${bg}</g>`;
+    // (3) NEAR star field — fewer, brighter, larger, drifting the other way → a parallax sense of depth
+    let near='';
+    for(let i=0;i<42;i++){ const nxn=hh(i,131)*W, nyn=10+hh(i,137)*(HZ*0.82); if(moonClear(nxn,nyn,66)) continue;
+      const nx=nxn.toFixed(1), ny=nyn.toFixed(1), nr=(1.0+hh(i,139)*1.4).toFixed(1), no=(0.28+hh(i,149)*0.42).toFixed(2), tw=hh(i,151)>0.6;
+      near+=tw?`<circle class="twinkle" cx="${nx}" cy="${ny}" r="${nr}" fill="#F2EEFB" style="--d:${(5+hh(i,157)*4).toFixed(1)}s;animation-delay:-${(hh(i,163)*5).toFixed(1)}s;opacity:${no}"/>`
+              :`<circle cx="${nx}" cy="${ny}" r="${nr}" fill="#F2EEFB" opacity="${no}"/>`;
+    }
+    s+=`<g class="sky-near">${near}</g>`;
+    // (4) a very slow breath of light — the whole sky gently brightening and settling, like breathing
+    s+=`<rect class="sky-breath" x="0" y="0" width="${W}" height="${HZ}" fill="url(#skyBreath)" opacity=".42"/>`;   // base for still (calm/reduced) → the keyframe breathes it .34↔.62
+    // (5) a slow aurora ribbon, low and barely-there — a soft drifting light for calm ambient life
+    s+=`<g class="sky-aurora"><path d="M-40 ${(HZ-150).toFixed(0)} C ${(W*0.28).toFixed(0)} ${(HZ-206).toFixed(0)} ${(W*0.62).toFixed(0)} ${(HZ-120).toFixed(0)} ${(W+40).toFixed(0)} ${(HZ-172).toFixed(0)} L ${(W+40).toFixed(0)} ${(HZ-96).toFixed(0)} C ${(W*0.62).toFixed(0)} ${(HZ-62).toFixed(0)} ${(W*0.28).toFixed(0)} ${(HZ-120).toFixed(0)} -40 ${(HZ-74).toFixed(0)} Z" fill="url(#skyAur)"/></g>`;
+    // (6) the moon, low-key off to one side — atmosphere, never a destination; its halo softly breathes
+    s+=`<g class="sky-halo"><circle cx="${MX}" cy="${MY}" r="128" fill="url(#skyMoonH)"/><circle cx="${MX}" cy="${MY}" r="58" fill="url(#skyMoonH)"/></g>`;
+    s+=`<circle cx="${MX}" cy="${MY}" r="26" fill="url(#skyMoon)" opacity=".92"/>`;
+    // (7) a rare, calm shooting star — NOT a reward, NOT frequent; a long quiet cycle, a brief streak
+    s+=`<g class="sky-shoot"><g transform="translate(160 ${(H*0.15).toFixed(0)})"><line x1="-58" y1="-30" x2="0" y2="0" stroke="url(#skyShootG)" stroke-width="1.7" stroke-linecap="round"/><circle cx="0" cy="0" r="2.1" fill="#FFFDF6"/></g></g>`;
+    // warm horizon glow (phase-tinted) — the garden breathing in the dark
+    s+=`<rect x="0" y="${HZ-160}" width="${W}" height="${H-(HZ-160)}" fill="url(#skyHorizon)"/>`;
+    // the dark garden along the very bottom — a low silhouette so the sky has ground, but no path, no axis
+    s+=`<path d="M0 ${HZ} C 150 ${HZ-30} 320 ${HZ-8} 500 ${HZ-22} C 680 ${HZ-36} 840 ${HZ-10} 1000 ${HZ-24} L1000 ${H} L0 ${H} Z" fill="#171430"/>`;
+    s+=`<path d="M0 ${HZ+22} C 240 ${HZ+4} 520 ${HZ+28} 760 ${HZ+10} C 880 ${HZ+2} 950 ${HZ+12} 1000 ${HZ+8} L1000 ${H} L0 ${H} Z" fill="#0F0D22"/>`;
+    const silTree=(x,y,sc)=>`<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${sc.toFixed(2)})" fill="#120F26"><rect x="-2" y="-15" width="4" height="17"/><circle cx="-7" cy="-18" r="9"/><circle cx="7" cy="-19" r="8"/><circle cx="0" cy="-25" r="10.5"/></g>`;
+    const silPine=(x,y,sc)=>`<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${sc.toFixed(2)})" fill="#120F26"><rect x="-1.6" y="-9" width="3.2" height="11"/><path d="M0 -35 L11 -6 L-11 -6 Z"/><path d="M0 -24 L9 -2 L-9 -2 Z"/></g>`;
+    let ridge='';
+    for(let i=0;i<9;i++){ const rx=42+i*((W-84)/8)+(hh(i,29)-0.5)*44; const ry=HZ+2+hh(i,31)*9; const rs=0.7+hh(i,37)*0.7;
+      ridge += (hh(i,41)>0.5?silPine(rx,ry,rs):silTree(rx,ry,rs)); }
+    s+=ridge;
+    // (8) the returns themselves — one faint star per entry; density grows softly, and they settle in on open
+    let rt='';
+    entries.forEach((e,idx)=>{
+      let gx=34+hh(idx,61)*(W-68);
+      let gy=26+Math.pow(hh(idx,67),0.92)*((HZ-46)-26);
+      if(moonClear(gx,gy,104)){ const ang=Math.atan2(gy-MY,gx-MX)||0.6; gx=clamp(MX+Math.cos(ang)*104,34,W-34); gy=clamp(MY+Math.sin(ang)*104,26,HZ-46); }
+      const latest=idx===N-1;
+      const a=AREA[e.area]||{accent:'#E8943E',label:'A return'};
+      const bright=hh(idx,73);
+      const rr=latest?4.4:(2.0+bright*2.0);
+      const core=mix('#FFF6DE', a.accent, latest?0.32:0.24);
+      const cap=`“${e.text}” — ${a.label}, ${fuzzyGroup(e.ymd).toLowerCase()}`;
+      const aria=a.label+', '+niceDay(e.ymd,{day:'numeric',month:'long'});
+      let g=`<g class="cairnTap" data-cap="${esc(cap)}" role="button" tabindex="0" aria-label="${esc(aria)}">`;
+      g+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="16" fill="#000" opacity="0" pointer-events="all"/>`;
+      g+=`<circle class="rt-halo" cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*5.2).toFixed(1)}" fill="url(#skyGlowW)"/>`;
+      g+=`<g class="rt-scale">`;
+      // every return carries a soft glow tinted by its area — a warm point of light, a character of the sky,
+      // distinct from the pinprick background; the latest is "tonight's light" and shimmers on its own beat.
+      g+=`<circle${latest?' class="sky-tonight"':''} cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*(latest?3.4:1.9)).toFixed(1)}" fill="url(#skyGlowW)" opacity="${latest?0.92:(0.34+bright*0.24)}"/>`;
+      g+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*2.2).toFixed(1)}" fill="${a.accent}" opacity="${latest?0.22:0.12}"/>`;
+      if(latest) g+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*4.4).toFixed(1)}" fill="none" stroke="${a.accent}" stroke-width="1" opacity=".28"/>`;
+      const twk=(!latest && hh(idx,79)>0.72);
+      const st=twk?` class="twinkle" style="--d:${(4+hh(idx,83)*4).toFixed(1)}s;animation-delay:-${(hh(idx,89)*5).toFixed(1)}s"`:'';
+      g+=`<circle${st} cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${rr.toFixed(1)}" fill="${core}"/>`;
+      g+=`<circle cx="${(gx-rr*0.3).toFixed(1)}" cy="${(gy-rr*0.3).toFixed(1)}" r="${(rr*0.4).toFixed(1)}" fill="#FFFDF6" opacity=".85"/>`;
+      g+=`</g></g>`;
+      rt+=g;
+    });
+    s+=`<g class="rt-reveal">${rt}</g>`;
+    s+=`</svg>`;
+    wrap.innerHTML=s;
+    const cap=document.getElementById('cairnCap');
+    const all=wrap.querySelectorAll('.cairnTap');
+    all.forEach(el=>{
+      const set=()=>{ all.forEach(o=>o.classList.remove('lit')); el.classList.add('lit');
+        cap.style.opacity=0; setTimeout(()=>{ cap.textContent=el.dataset.cap; cap.style.opacity=1; },150); };
+      el.addEventListener('click',set);
+      el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); set(); } });
+    });
   }
-  s+=`<g>${bg}</g>`;
-  // the dark garden along the bottom — a low silhouette so the sky has ground, but no path, no axis
-  s+=`<path d="M0 ${HZ} C 150 ${HZ-30} 320 ${HZ-8} 500 ${HZ-22} C 680 ${HZ-36} 840 ${HZ-10} 1000 ${HZ-24} L1000 ${H} L0 ${H} Z" fill="#171430"/>`;
-  s+=`<path d="M0 ${HZ+22} C 240 ${HZ+4} 520 ${HZ+28} 760 ${HZ+10} C 880 ${HZ+2} 950 ${HZ+12} 1000 ${HZ+8} L1000 ${H} L0 ${H} Z" fill="#0F0D22"/>`;
-  const silTree=(x,y,sc)=>`<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${sc.toFixed(2)})" fill="#120F26"><rect x="-2" y="-15" width="4" height="17"/><circle cx="-7" cy="-18" r="9"/><circle cx="7" cy="-19" r="8"/><circle cx="0" cy="-25" r="10.5"/></g>`;
-  const silPine=(x,y,sc)=>`<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${sc.toFixed(2)})" fill="#120F26"><rect x="-1.6" y="-9" width="3.2" height="11"/><path d="M0 -35 L11 -6 L-11 -6 Z"/><path d="M0 -24 L9 -2 L-9 -2 Z"/></g>`;
-  let ridge='';
-  for(let i=0;i<9;i++){ const rx=42+i*((W-84)/8)+(hh(i,29)-0.5)*44; const ry=HZ+2+hh(i,31)*9; const rs=0.7+hh(i,37)*0.7;
-    ridge += (hh(i,41)>0.5?silPine(rx,ry,rs):silTree(rx,ry,rs)); }
-  s+=ridge;
-  // the returns themselves — one faint star per entry, scattered like real stars; density grows softly
-  entries.forEach((e,idx)=>{
-    let gx=34+hh(idx,61)*(W-68);
-    let gy=26+Math.pow(hh(idx,67),0.92)*((HZ-46)-26);
-    if(moonClear(gx,gy,104)){ const ang=Math.atan2(gy-MY,gx-MX)||0.6; gx=clamp(MX+Math.cos(ang)*104,34,W-34); gy=clamp(MY+Math.sin(ang)*104,26,HZ-46); }
-    const latest=idx===N-1;
-    const a=AREA[e.area]||{accent:'#E8943E',label:'A return'};
-    const bright=hh(idx,73);
-    const rr=latest?4.2:(2.0+bright*2.0);
-    const core=mix('#FFF6DE', a.accent, latest?0.32:0.24);
-    const cap=`“${e.text}” — ${a.label}, ${fuzzyGroup(e.ymd).toLowerCase()}`;
-    const aria=a.label+', '+niceDay(e.ymd,{day:'numeric',month:'long'});
-    let g=`<g class="cairnTap" data-cap="${esc(cap)}" role="button" tabindex="0" aria-label="${esc(aria)}">`;
-    g+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="15" fill="#000" opacity="0" pointer-events="all"/>`;
-    g+=`<circle class="rt-halo" cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*5.2).toFixed(1)}" fill="url(#skyGlowW)"/>`;
-    g+=`<g class="rt-scale">`;
-    // every return carries a soft glow tinted by its area — so it reads as a warm point of light, a character
-    // of the sky, distinct from the pinprick background field; the brighter ones and the latest bloom further
-    g+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*(latest?3.4:1.9)).toFixed(1)}" fill="url(#skyGlowW)" opacity="${latest?0.92:(0.34+bright*0.24)}"/>`;
-    g+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*2.2).toFixed(1)}" fill="${a.accent}" opacity="${latest?0.22:0.12}"/>`;
-    if(latest) g+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*4.4).toFixed(1)}" fill="none" stroke="${a.accent}" stroke-width="1" opacity=".28"/>`;
-    const twk=(latest||hh(idx,79)>0.72);
-    const st=twk?` class="twinkle" style="--d:${(4+hh(idx,83)*4).toFixed(1)}s;animation-delay:-${(hh(idx,89)*5).toFixed(1)}s"`:'';
-    g+=`<circle${st} cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${rr.toFixed(1)}" fill="${core}"/>`;
-    g+=`<circle cx="${(gx-rr*0.3).toFixed(1)}" cy="${(gy-rr*0.3).toFixed(1)}" r="${(rr*0.4).toFixed(1)}" fill="#FFFDF6" opacity=".85"/>`;
-    g+=`</g></g>`;
-    s+=g;
-  });
-  s+=`</svg>`;
-  wrap.innerHTML=s;
-  const cap=document.getElementById('cairnCap');
-  const all=wrap.querySelectorAll('.cairnTap');
-  all.forEach(el=>{
-    const set=()=>{ all.forEach(o=>o.classList.remove('lit')); el.classList.add('lit');
-      cap.style.opacity=0; setTimeout(()=>{ cap.textContent=el.dataset.cap; cap.style.opacity=1; },150); };
-    el.addEventListener('click',set);
-    el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); set(); } });
-  });
+  // gently replay the "settle in" reveal each time Look Back opens (motion-gated in CSS → a no-op when still)
+  const rev=wrap.querySelector('.rt-reveal');
+  if(rev){ rev.style.animation='none'; void rev.offsetWidth; rev.style.animation=''; }
 }
 
 /* ===================== MODAL ACCESSIBILITY (shared) ======================= */
