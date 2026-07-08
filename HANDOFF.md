@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v60 (2026-07-08) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v61 (2026-07-08) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -285,3 +285,17 @@ warstwy w `.scene-plane` (ten sam box PANO, ten sam zoom/scroll — szczegóły 
 - Zweryf. headless DSF2: parity dzień/zmierzch/low/full (`wave3.mjs`), tap→tend + cross-fade + poświata + zoom-align (dx=0) + canvas nie-tainted +
   reduced-motion (`verify_wave3.mjs`), `motion_probe.mjs` (wszystkie zwierzęta go=Y, pozycje zachowane 1:1 przez rebuild — fix v52 trzyma),
   zima/jesień/calm (`season_check.mjs`), 0 błędów konsoli w pełnej turze. CACHE `sw.js` `v60` (ASSETS bez zmian — wszystko inline w index.html).
+
+**v61** (2026-07-08): **MEADOW = HERO + konstelacja craftu immersyjna + przełącznik Sezonu.** (A) `.scene-wrap`
+`--scene-h: clamp(290px,48vh,420px)→clamp(430px,68vh,760px)` — scena zajmuje ~68% pierwszego vieportu na 390×844
+(jak niebo Look Back); raster crisp @DPR2 (effDPR 2.0 zoom 1; przy zoomie 1.8/2.3 cap 16M px daje effDPR ~1.7/1.3 —
+wizualnie czyste, dx=0 align overlay↔canvas). (B) Konstelacja = HERO arkusza craftu: `.cp-sky` full-bleed (~69% arkusza,
+`clamp(360px,58vh,620px)`), viewBox fitowany do realnego aspektu panelu (`_craftSkyOpts`: W=520 mobile/680 desktop,
+H z aspektu; `fitCraftSky()` po layout + w `refitSky` na resize), gwiazdy/etykiety ×1.5 (`renderTrail` dostał OPCJONALNY
+6. arg `opts={W,H,sz,yPad}` — sygnatura kompatybilna, landing nietknięty), nagłówek+„You're at…" jako nakładki na niebie
+(język Look Back). (C) Ustawienie **Season** w More: seg 5 opcji Auto/Spring/Summer/Autumn/Winter (`store.settings.season`,
+`coerce()` waliduje, default 'auto'); manualny wybór nadpisuje `season()` wszędzie (scena+overlay, greeting, miniGarden
+then-now/keepsake); nocne niebo Look Back sezonu nie renderuje (świadomie); `.set-row.stack` = seg zawija się bez overflow
+od 320px. Hardening: `loadCraftIndex` nie fetchuje na file:// (koniec błędu CORS w konsoli). Zweryf. DSF2 (`v61_*.mjs`):
+droga+picker z 4 wejść scrollTop=0 (mobile+desktop), 3/5/6 etapów, 0 błędów konsoli file://+http (pełna tura), Look Back
+hero 76% bez regresji, motion_probe bez regresji, 320/390 bez h-overflow, SW lokalnie aktywny cache `v61`. CACHE `sw.js` `v61`.

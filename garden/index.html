@@ -122,7 +122,7 @@
   /* ── meadow scene ── */
   /* the meadow is a wide world you pan a camera across */
   .scene-stage{position:relative}
-  .scene-wrap{--scene-h:clamp(290px,48vh,420px);--zoom:1;position:relative;width:100%;height:var(--scene-h);overflow:auto;border-bottom:1px solid var(--hairline);-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-x pan-y;overscroll-behavior:contain;background:linear-gradient(180deg,#E8C8DA,#F6C089 30%,#FBEBD6)}
+  .scene-wrap{--scene-h:clamp(430px,68vh,760px);--zoom:1;position:relative;width:100%;height:var(--scene-h);overflow:auto;border-bottom:1px solid var(--hairline);-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-x pan-y;overscroll-behavior:contain;background:linear-gradient(180deg,#E8C8DA,#F6C089 30%,#FBEBD6)}
   .scene-wrap::-webkit-scrollbar{display:none}
   /* WAVE 3: the scene plane holds a static-bitmap <canvas> + a live overlay <svg>, both filling the
      same panorama box so animals/taps sit exactly over the raster; the plane sizes the scroll extent. */
@@ -148,8 +148,19 @@
   .stage-chip{background:var(--cream);border:1px solid var(--hairline);border-radius:999px;padding:8px 13px;font:inherit;font-size:13px;color:var(--ink);cursor:pointer}
   .stage-chip.sel{background:#C1663B;border-color:#C1663B;color:#fff}
   .cp-stage.me b{color:#8A3F1E}
-  /* craft path sheet */
-  #craftSheet{max-height:84vh;overflow-y:auto;overscroll-behavior:contain}
+  /* craft path sheet — the constellation is the immersive HERO: a near-full-bleed night sky up top,
+     header + "you are here" as calm overlays on the sky (the Look-Back language), prose below */
+  #craftSheet{max-height:84vh;overflow-y:auto;overscroll-behavior:contain;padding-top:0}
+  #craftSheet .grab{position:absolute;top:12px;left:50%;transform:translateX(-50%);margin:0;background:rgba(251,247,242,.42);z-index:7}
+  .cp-sky{position:relative;margin:0 -20px 16px;height:clamp(360px,58vh,620px);background:#1E1B36;overflow:hidden;border-radius:23px 23px 20px 20px}
+  .cp-sky-fig{position:absolute;inset:0;line-height:0}
+  .cp-sky-fig svg{width:100%!important;height:100%!important;display:block}
+  .cp-sky-head{position:absolute;top:0;left:0;right:0;padding:26px 22px 46px;background:linear-gradient(180deg,rgba(20,17,36,.72),rgba(20,17,36,.30) 58%,rgba(20,17,36,0));pointer-events:none}
+  .cp-sky-head .cp-eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#B9B2DC;margin-bottom:5px}
+  .cp-sky-head .cp-title{color:#F6F3FF;margin:0 0 4px}
+  .cp-sky-head .cp-sub{color:#CFC9E8;margin:0;max-width:430px}
+  .cp-sky-foot{position:absolute;left:0;right:0;bottom:0;padding:44px 20px 13px;text-align:center;font-size:13px;line-height:1.5;color:#D8D2EE;background:linear-gradient(0deg,rgba(20,17,36,.68),rgba(20,17,36,0));pointer-events:none}
+  .cp-sky-foot b{color:#FFD9A8}
   .cp-title{font-size:21px;font-weight:700;color:var(--ink);margin:2px 0 3px}
   .cp-sub{font-size:13.5px;color:var(--muted);margin:0 0 14px;line-height:1.5}
   .cp-sec{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:18px 0 8px}
@@ -451,6 +462,10 @@
   .set-row .s-label{font-size:14.5px;font-weight:600}
   .set-row .s-desc{font-size:12.5px;color:var(--faint);margin-top:1px}
   .seg{display:inline-flex;background:var(--bg-2);border:1px solid var(--hairline);border-radius:999px;padding:3px;gap:2px}
+  /* wide segs (e.g. the 5-option Season) get their own full row: label above, buttons below, free to wrap */
+  .set-row.stack{flex-wrap:wrap}
+  .set-row.stack>div:first-child{flex:1 1 100%;min-width:0}
+  .set-row.stack .seg{flex-wrap:wrap;justify-content:flex-start;border-radius:22px;margin-top:2px}
   .seg button{background:none;border:0;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--muted);min-height:34px}
   .seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 2px 8px -4px rgba(58,52,80,.3)}
   /* comfortable touch targets on phones: seg buttons and stage chips reach the 44px minimum */
@@ -927,6 +942,10 @@
           <div class="set-row">
             <div><div class="s-label">Scene</div><div class="s-desc">Follow your clock, or settle on one.</div></div>
             <div class="seg" data-seg="theme"><button data-v="auto">Clock</button><button data-v="day">Day</button><button data-v="evening">Evening</button></div>
+          </div>
+          <div class="set-row stack">
+            <div><div class="s-label">Season</div><div class="s-desc">Let the year turn on its own, or keep the one you love.</div></div>
+            <div class="seg" data-seg="season"><button data-v="auto">Auto</button><button data-v="spring">Spring</button><button data-v="summer">Summer</button><button data-v="autumn">Autumn</button><button data-v="winter">Winter</button></div>
           </div>
           <div class="set-row">
             <div><div class="s-label">Your craft</div><div class="s-desc">Pick from 860+ crafts, and where you stand on its road.</div></div>
@@ -1478,6 +1497,7 @@ let craftIndex=null, craftIndexTried=false;
 function loadCraftIndex(){
   if(craftIndex) return Promise.resolve(craftIndex);
   if(craftIndexTried) return Promise.resolve(null);
+  if(location.protocol==='file:'){ craftIndexTried=true; return Promise.resolve(null); }   // file:// can't fetch (CORS) — the 7 hand-tuned crafts still work
   return fetch('craft-index.json').then(r=>r.ok?r.json():null).then(j=>{ craftIndexTried=true; craftIndex=j; return j; }).catch(()=>{ craftIndexTried=true; return null; });
 }
 // live stage-task pool for catalog crafts (public read-only data; cached so it works offline afterwards)
@@ -1590,17 +1610,21 @@ function craftUserPathStage(p){
    gets breathing room instead of crowding the horizon. Universal for any craft (3–6 stages),
    deterministic. viewBox 680x360. Shared with the /comeback/ landing (there: interactive=true). */
 var __trailSeq = 0;
-function renderTrail(stages, currentIndex, accent, interactive, lblScale){
+function renderTrail(stages, currentIndex, accent, interactive, lblScale, opts){
   var esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
   var clmp = function(v,a,b){ return v<a?a:(v>b?b:v); };
   lblScale = lblScale || 1;
+  opts = opts || {};   // optional 6th arg (additive — the landing's own copy never passes it):
+                       // {W,H} viewBox, {sz} star-size factor, {yPad:[lo,hi]} vertical scatter band (fractions of H)
   accent = (typeof accent==='string' && /^#[0-9a-fA-F]{3,8}$/.test(accent)) ? accent : '#C1663B';
   var n = Math.max(3, Math.min(6, (stages||[]).length));
   stages = (stages||[]).slice(0, n);
   currentIndex = Math.max(0, Math.min(n-1, currentIndex|0));
   var P = 'qm' + (++__trailSeq);
-  var W = 680, H = 352, CX = 340, CY = 166;
+  var W = opts.W||680, H = opts.H||352, SZ = opts.sz||1, CX = W/2, CY = H*0.472;
+  var K = Math.sqrt((W*H)/(680*352));          // how much MORE sky than the classic viewBox — scales scatter + dressing
+  var YLO = H*(opts.yPad?opts.yPad[0]:0.222), YHI = H*(opts.yPad?opts.yPad[1]:0.744);
 
   // ── Nocna Figura — the craft drawn as a CONSTELLATION on a calm dusk-blue sky ──
   // Each stage is a STAR (size/warmth grow with the stage; the current one is warmest, with a soft halo).
@@ -1614,21 +1638,21 @@ function renderTrail(stages, currentIndex, accent, interactive, lblScale){
   var mixC = function(a,b,t){ var x=hx(a),y=hx(b), f=function(v){ v=Math.round(v); v=v<0?0:(v>255?255:v); return (v<16?'0':'')+v.toString(16); };
     return '#'+f(x[0]+(y[0]-x[0])*t)+f(x[1]+(y[1]-x[1])*t)+f(x[2]+(y[2]-x[2])*t); };
   // 1 — scatter the stars (even spread, jittered)
-  var pos=[], RADX=206, RADY=112;
+  var pos=[], RADX=W*0.303, RADY=(YHI-YLO)*0.61;
   for(var i=0;i<n;i++){
     var ga = i*2.39996323 + (hsh(i,2)-0.5)*0.7;
     var rr = Math.sqrt((i+0.6)/n) * (0.86 + 0.32*hsh(i,4));
-    pos.push({ x: CX + Math.cos(ga)*rr*RADX, y: CY + Math.sin(ga)*rr*RADY });
+    pos.push({ x: CX + Math.cos(ga)*rr*RADX, y: (YLO+YHI)/2 + Math.sin(ga)*rr*RADY });
   }
   // 2 — relax so no two stars crowd (every name gets room to breathe)
-  var MIN = n<=4 ? 150 : 122;
+  var MIN = (n<=4 ? 150 : 122) * K;
   for(var it=0; it<90; it++){
     for(var a=0;a<n;a++) for(var b=a+1;b<n;b++){
       var ddx=pos[b].x-pos[a].x, ddy=pos[b].y-pos[a].y, dd=Math.sqrt(ddx*ddx+ddy*ddy)||0.01;
       if(dd<MIN){ var pu=(MIN-dd)/2, ux=ddx/dd, uy=ddy/dd;
         pos[a].x-=ux*pu; pos[a].y-=uy*pu; pos[b].x+=ux*pu; pos[b].y+=uy*pu; }
     }
-    for(a=0;a<n;a++){ pos[a].x=clmp(pos[a].x,116,W-116); pos[a].y=clmp(pos[a].y,78,262); }
+    for(a=0;a<n;a++){ pos[a].x=clmp(pos[a].x,W*0.17,W*0.83); pos[a].y=clmp(pos[a].y,YLO,YHI); }
   }
   // 3 — thread the sequence through the scatter by nearest-neighbour (from the leftmost point) so
   //     consecutive stages sit near each other → a legible figure, no crossing threads
@@ -1657,31 +1681,31 @@ function renderTrail(stages, currentIndex, accent, interactive, lblScale){
   if(anim) o.push('<style>@keyframes '+P+'tw{0%,100%{opacity:var(--o,0.4)}50%{opacity:1}}.'+P+'tw{animation:'+P+'tw var(--d,6s) ease-in-out infinite}@media(prefers-reduced-motion:reduce){.'+P+'tw{animation:none}}</style>');
   o.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="url(#'+P+'sky)"/>');
   // a whisper of warmth low in the sky — the same horizon glow the Look-Back firmament uses, so the two read as one sky
-  o.push('<ellipse cx="'+CX+'" cy="'+(H+26)+'" rx="'+(W*0.6).toFixed(0)+'" ry="92" fill="#6E5F86" opacity="0.38"/>');
+  o.push('<ellipse cx="'+CX+'" cy="'+(H+26)+'" rx="'+(W*0.6).toFixed(0)+'" ry="'+(H*0.261).toFixed(0)+'" fill="#6E5F86" opacity="0.38"/>');
   // faint background stars for depth (deterministic; a slow-twinkling minority when motion is on)
-  var bg='';
-  for(i=0;i<58;i++){ var bx=(hsh(i,31)*W).toFixed(1), by=(8+hsh(i,37)*(H-30)).toFixed(1), br=(0.5+hsh(i,41)*1.2).toFixed(1), bo=(0.16+hsh(i,43)*0.34).toFixed(2);
+  var bg='', NBG=Math.min(150,Math.round(58*K*K));
+  for(i=0;i<NBG;i++){ var bx=(hsh(i,31)*W).toFixed(1), by=(8+hsh(i,37)*(H-30)).toFixed(1), br=((0.5+hsh(i,41)*1.2)*Math.max(1,SZ*0.75)).toFixed(1), bo=(0.16+hsh(i,43)*0.34).toFixed(2);
     if(anim && hsh(i,47)>0.82) bg+='<circle class="'+P+'tw" cx="'+bx+'" cy="'+by+'" r="'+br+'" fill="#E7E2F4" style="--o:'+bo+';--d:'+(4.5+hsh(i,53)*5).toFixed(1)+'s;animation-delay:-'+(hsh(i,59)*6).toFixed(1)+'s"/>';
     else bg+='<circle cx="'+bx+'" cy="'+by+'" r="'+br+'" fill="#E7E2F4" opacity="'+bo+'"/>';
   }
   o.push('<g>'+bg+'</g>');
   // filaments threading the figure (under the stars) — hair-thin, a soft under-glow + a crisp thread
   var thread='M '+star.map(function(m){return m.x.toFixed(1)+' '+m.y.toFixed(1);}).join(' L ');
-  o.push('<path d="'+thread+'" fill="none" stroke="#8C87C4" stroke-width="3.4" opacity="0.10" stroke-linecap="round" stroke-linejoin="round"/>');
-  o.push('<path d="'+thread+'" fill="none" stroke="#B9B4E4" stroke-width="1" opacity="0.42" stroke-linecap="round" stroke-linejoin="round"/>');
+  o.push('<path d="'+thread+'" fill="none" stroke="#8C87C4" stroke-width="'+(3.4*SZ).toFixed(1)+'" opacity="0.10" stroke-linecap="round" stroke-linejoin="round"/>');
+  o.push('<path d="'+thread+'" fill="none" stroke="#B9B4E4" stroke-width="'+(1*SZ).toFixed(1)+'" opacity="0.42" stroke-linecap="round" stroke-linejoin="round"/>');
   // stars — dim→bright so the brighter / current ones sit over the faint ones
   function drawStar(m){
     var isCur=m.i===currentIndex, warm=m.t;
     var core = isCur ? mixC(accent,'#FFF6DE',0.5) : mixC('#C4CBEA','#FFF6DE',0.28+0.46*warm);
-    var r = (2.0 + 2.5*warm) * (isCur?1.5:1);
+    var r = (2.0 + 2.5*warm) * (isCur?1.5:1) * SZ;
     var glowR = r*(isCur?5:3.1);
     var iattr = interactive ? ' style="cursor:pointer" tabindex="0" role="button" aria-label="Stand at: '+esc(stages[m.i])+'"' : '';
     var g=['<g class="trail-stage" data-i="'+m.i+'"'+iattr+'>'];
-    if(interactive) g.push('<circle cx="'+m.x.toFixed(1)+'" cy="'+m.y.toFixed(1)+'" r="'+Math.max(18,r+16).toFixed(1)+'" fill="#000" opacity="0" pointer-events="all"/>');
+    if(interactive) g.push('<circle cx="'+m.x.toFixed(1)+'" cy="'+m.y.toFixed(1)+'" r="'+Math.max(18*SZ,r+16*SZ).toFixed(1)+'" fill="#000" opacity="0" pointer-events="all"/>');
     g.push('<circle cx="'+m.x.toFixed(1)+'" cy="'+m.y.toFixed(1)+'" r="'+glowR.toFixed(1)+'" fill="url(#'+P+(isCur?'gA':'gW')+')"'+(isCur?'':' opacity="'+(0.5+0.5*warm).toFixed(2)+'"')+'/>');
     if(isCur) g.push('<circle cx="'+m.x.toFixed(1)+'" cy="'+m.y.toFixed(1)+'" r="'+(glowR*0.5).toFixed(1)+'" fill="url(#'+P+'gW)"/>');
     if(isCur || warm>0.7){ var L=(isCur?glowR*0.92:r*3.4);
-      g.push('<g stroke="'+(isCur?mixC(accent,'#FFF6DE',0.6):'#FFF6DE')+'" stroke-width="'+(isCur?1.1:0.7)+'" opacity="'+(isCur?0.7:0.4)+'" stroke-linecap="round">');
+      g.push('<g stroke="'+(isCur?mixC(accent,'#FFF6DE',0.6):'#FFF6DE')+'" stroke-width="'+((isCur?1.1:0.7)*Math.max(1,SZ*0.85)).toFixed(2)+'" opacity="'+(isCur?0.7:0.4)+'" stroke-linecap="round">');
       g.push('<line x1="'+(m.x-L).toFixed(1)+'" y1="'+m.y.toFixed(1)+'" x2="'+(m.x+L).toFixed(1)+'" y2="'+m.y.toFixed(1)+'"/>');
       g.push('<line x1="'+m.x.toFixed(1)+'" y1="'+(m.y-L).toFixed(1)+'" x2="'+m.x.toFixed(1)+'" y2="'+(m.y+L).toFixed(1)+'"/></g>');
     }
@@ -1704,14 +1728,14 @@ function renderTrail(stages, currentIndex, accent, interactive, lblScale){
       var isCur=m.i===currentIndex;
       var fs=(12.4 + (isCur?1.2:0))*lblScale;
       var w=labelW(stages[m.i], fs);
-      var r=(2.0+2.5*m.t)*(isCur?1.5:1), gap=10+r;
+      var r=(2.0+2.5*m.t)*(isCur?1.5:1)*SZ, gap=10*SZ+r;
       var lx = side==='L' ? clmp(m.x-gap, 6+w, CX-4) : clmp(m.x+gap, CX+4, W-6-w);
       var ly = Math.max(prevY + fs*1.55, m.y + fs*0.34);
-      ly = clmp(ly, 18, H-10); prevY = ly;
+      ly = clmp(ly, opts.yPad?Math.max(18,YLO-40):18, H-10); prevY = ly;
       var col = isCur?accent:'#CFCADF';
       var anchor = side==='L'?'end':'start';
       var tieX = side==='L' ? lx+2 : lx-2;
-      o.push('<line x1="'+m.x.toFixed(1)+'" y1="'+m.y.toFixed(1)+'" x2="'+tieX.toFixed(1)+'" y2="'+(ly-fs*0.32).toFixed(1)+'" stroke="'+col+'" stroke-width="'+(isCur?1:0.7)+'" opacity="'+(isCur?0.5:0.32)+'"/>');
+      o.push('<line x1="'+m.x.toFixed(1)+'" y1="'+m.y.toFixed(1)+'" x2="'+tieX.toFixed(1)+'" y2="'+(ly-fs*0.32).toFixed(1)+'" stroke="'+col+'" stroke-width="'+((isCur?1:0.7)*Math.max(1,SZ*0.75)).toFixed(2)+'" opacity="'+(isCur?0.5:0.32)+'"/>');
       o.push('<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" font-size="'+fs.toFixed(1)+'" text-anchor="'+anchor+'" fill="'+col+'" font-weight="'+(isCur?'700':'500')+'" paint-order="stroke" stroke="#1B1832" stroke-width="'+(2.6*lblScale).toFixed(1)+'" stroke-linejoin="round">'+esc(stages[m.i])+'</text>');
     });
   }
@@ -1719,9 +1743,25 @@ function renderTrail(stages, currentIndex, accent, interactive, lblScale){
   o.push('</svg>');
   return o.join('');
 }
-function craftRoadSVG(p,userIdx){
+/* The constellation is the HERO of the craft sheet: a near-full-bleed night-sky panel at the top,
+   its viewBox fitted to the real panel aspect (like the Look-Back sky) so the figure fills the frame —
+   tall on a phone, wide on a desktop — with bigger stars and readable star-chart names. */
+function _craftSkyOpts(cw,ch){
+  const W = cw<480 ? 520 : 680;                                  // narrower viewBox on phones → labels render larger
+  const H = Math.max(430, Math.min(1200, Math.round(W*ch/Math.max(1,cw))));
+  return {W:W, H:H, sz:1.5, yPad:[0.30,0.80]};                   // scatter band leaves air for the overlaid header + footline
+}
+function craftRoadSVG(p,userIdx,cw,ch){
   const names=(p.stages||[]).map(s=>s.name);
-  return '<div style="border-radius:14px;overflow:hidden;line-height:0">'+renderTrail(names, userIdx, '#C1663B', false, 1.3)+'</div>';
+  return renderTrail(names, userIdx, '#C1663B', false, 1.5, _craftSkyOpts(cw,ch));
+}
+let _craftSky=null;   // {p, me} — lets the sky re-fit to its real box (after layout, and on resize)
+function fitCraftSky(){
+  if(!_craftSky) return;
+  const box=document.getElementById('cpSky'), fig=document.getElementById('cpSkyFig');
+  if(!box||!fig) return;
+  const r=box.getBoundingClientRect(); if(r.width<40||r.height<40) return;
+  fig.innerHTML=craftRoadSVG(_craftSky.p,_craftSky.me,r.width,r.height);
 }
 
 /* The road to each craft, mapped for the US (BLS/O*NET figures) — informational only: a map, not a race.
@@ -1732,10 +1772,18 @@ function openCraftPath(){
   const p=craftPathData(); if(!p){ openCraftPick(); return; }   // never a dead end: no road yet → gently invite picking one
   const me=craftUserPathStage(p);
   const el=document.getElementById('craftPathBody');
-  let h=`<div class="cp-title">${p.label} — the shape of it</div>
-  <p class="cp-sub">The stages, the ways in, how long it tends to take — laid out like a constellation, not a ladder. Your pace is yours, and every stage counts as a life, not a waiting room.</p>`;
-  h+=craftRoadSVG(p,me);
-  h+=`<div class="cp-note" style="text-align:center;margin-top:6px">You're at <b>${esc(p.stages[me].name)}</b> right now — ${esc(craftStageLabel())}.</div>`;
+  _craftSky={p:p, me:me};
+  // first paint uses a window-based guess; fitCraftSky() re-fits to the real panel box one frame later
+  const gw=Math.min(window.innerWidth||390,560), gh=Math.max(380,Math.min(620,Math.round((window.innerHeight||760)*0.58)));
+  let h=`<div class="cp-sky" id="cpSky">
+    <div class="cp-sky-fig" id="cpSkyFig">${craftRoadSVG(p,me,gw,gh)}</div>
+    <div class="cp-sky-head">
+      <div class="cp-eyebrow">The shape of it</div>
+      <div class="cp-title">${p.label}</div>
+      <p class="cp-sub">A constellation, not a ladder — your pace is yours, and every stage counts as a life, not a waiting room.</p>
+    </div>
+    <div class="cp-sky-foot">You're at <b>${esc(p.stages[me].name)}</b> right now${(()=>{const sl=craftStageLabel();return sl&&sl.trim().toLowerCase()!==String(p.stages[me].name).trim().toLowerCase()?' — '+esc(sl):'';})()}.</div>
+  </div>`;
   // Pay is real but kept OFF the default view — a salary is a comparison lens, and "am I behind?"
   // is the exact thought this app protects you from. Here only if you deliberately open it.
   h+=`<details class="cp-pay-wrap"><summary>The honest money — open only if it helps</summary>
@@ -1758,6 +1806,7 @@ function openCraftPath(){
   const cs=document.getElementById('craftSheet');
   cs.classList.add('show');
   openModal(cs, cs);   // focus the dialog itself (top) — not the bottom "Back" button — so it opens on the constellation
+  requestAnimationFrame(()=>{ fitCraftSky(); cs.scrollTop=0; });   // fit the sky to its laid-out box; stay at the top
 }
 function closeCraftPath(){
   const cs=document.getElementById('craftSheet');
@@ -1802,6 +1851,9 @@ function dayPhase(){
   return 'night';
 }
 function season(){
+  // a held season (purely aesthetic — the garden simply wears the one you love) wins over the calendar
+  const pick = store && store.settings && store.settings.season;
+  if(pick && pick!=='auto') return pick;
   let m = new Date().getMonth();              // 0..11
   if(store.settings.hemisphere==='south') m = (m+6)%12;
   if(m===11||m===0||m===1) return 'winter';
@@ -1815,7 +1867,7 @@ let store, memoryOnly=false;
 function freshStore(){
   const now=Date.now(), areas={};
   AREAS.forEach(a=>areas[a.id]={care:0,lastTendAt:0});
-  return { schema:1, meta:{ firstOpenAt:now, lastSeenAt:now, lastTendAt:0, appVersion:'1.0.0' }, areas, journal:[], settings:{ motion:'full', textScale:'normal', hemisphere:'north', theme:'auto', craftOcc:'general', craftStage:'curious', craftTitle:'' } };
+  return { schema:1, meta:{ firstOpenAt:now, lastSeenAt:now, lastTendAt:0, appVersion:'1.0.0' }, areas, journal:[], settings:{ motion:'full', textScale:'normal', hemisphere:'north', theme:'auto', season:'auto', craftOcc:'general', craftStage:'curious', craftTitle:'' } };
 }
 function coerce(s){
   const base=freshStore();
@@ -1842,6 +1894,7 @@ function coerce(s){
   out.settings.textScale  = st.textScale==='large'?'large':'normal';
   out.settings.hemisphere = st.hemisphere==='south'?'south':'north';
   out.settings.theme      = ['day','evening'].includes(st.theme)?st.theme:'auto';
+  out.settings.season     = ['spring','summer','autumn','winter'].includes(st.season)?st.season:'auto';
   out.settings.craftOcc   = (typeof st.craftOcc==='string'&&(CAREER_PACKS[st.craftOcc]||/^soc:\d{2}-\d{4}$/.test(st.craftOcc)))?st.craftOcc:'general';
   out.settings.craftStage = CRAFT_STAGE_IDS.includes(st.craftStage)?st.craftStage:'curious';
   out.settings.craftTitle = (typeof st.craftTitle==='string')?st.craftTitle.slice(0,80):'';
@@ -2990,7 +3043,8 @@ let _sceneScale=0;
 function invalidateSceneScale(){ _sceneScale=0; }
 // the Look Back sky sizes its viewBox to the container aspect; refit it if the window changes shape while open
 let _skyFit=null;
-function refitSky(){ if(_skyFit) clearTimeout(_skyFit); _skyFit=setTimeout(()=>{ const v=document.getElementById('view-path'); const w=document.getElementById('pathWrap'); if(v&&v.classList.contains('active')&&w){ w.dataset.sig=''; try{ renderPath(); }catch(_){}} },220); }
+function refitSky(){ if(_skyFit) clearTimeout(_skyFit); _skyFit=setTimeout(()=>{ const v=document.getElementById('view-path'); const w=document.getElementById('pathWrap'); if(v&&v.classList.contains('active')&&w){ w.dataset.sig=''; try{ renderPath(); }catch(_){}}
+  const cs=document.getElementById('craftSheet'); if(cs&&cs.classList.contains('show')){ try{ fitCraftSky(); }catch(_){}} },220); }
 window.addEventListener('resize',()=>{ invalidateSceneScale(); refitSky(); });
 window.addEventListener('orientationchange',()=>{ invalidateSceneScale(); refitSky(); });
 // cache the reduced-motion MediaQueryList once — allocating it every frame was pure churn
