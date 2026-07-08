@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v57 (2026-07-07) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v58 (2026-07-08) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -46,7 +46,7 @@ Cel: spokojne, wolne od wstydu miejsce na trudne sezony. „Świetna funkcja", k
 
 ## 3. Architektura apki (`garden/index.html`, single-file: inline CSS+JS+SVG)
 
-Sidecary: `sw.js`, `manifest.json`, `fable-animals.js` (silnik sprite'ów zwierząt), `craft-index.json`, ikony.
+Sidecary: `sw.js`, `manifest.json`, `fable-animals.js` (silnik sprite'ów zwierząt), `craft-index.json`, ikony (`icons/`), fonty (`fonts/`), splash iOS (`splash/`).
 Dane: 1 klucz localStorage `meadowlark.garden` (+ osobne klucze: `meadowlark.pressed`, `meadowlark.compass`,
 `meadowlark.craft.<soc>`). `coerce()` migruje stare zapisy; `persist()` łapie quota → tryb „memory only" + toast.
 
@@ -195,3 +195,35 @@ obserwacja tygodniowa (rotacja `isoWeek`) TYLKO z istniejących danych — stadi
 `renderNoticed`. Sloty `#lbNoticed`/`#lbLetters`/`#lbKeepsake` w view-path, podpięte w `renderPath()`. Zweryf. DSF2
 `shoot_v57.mjs` (look-back, open list, compose+seal, keepsake w print-media), 0 błędów konsoli (`console_check.mjs`),
 `motion_probe.mjs` bez regresji. CACHE `sw.js` `v57` (ASSETS bez zmian — wszystko inline w index.html).
+
+**v58** (2026-07-08): **WAVE 1 redesignu (1 z 3; Look Back-niebo i canvas-perf = osobne fale).**
+- **TASK 1 — MEADOW FIRST.** Baner „Your craft" (`#craftSlot`) PRZENIESIONY z powrotem POD scenę (v54-pozycja: między
+  `.scene-hint` a `.cards-head`; był NAD sceną w v56 → dominował). Powitanie skompaktowane (`.greeting` padding
+  `16px→11px`, `.hello` `clamp(20,5.4vw,25)→clamp(19,5vw,23)`, `.season` `14→13px`) → żywa scena jest pierwszym
+  emocjonalnym uderzeniem w 1. widoku. Zweryf. 390px: returning-user sceneTop=152, scena=48% pierwszego vieportu,
+  craftBelowScene=true; first-run scena też dominuje (welcome-card = jednorazowy). `wave1_meadow_returning.png`.
+- **TASK 2 — craft otwiera się na POCZĄTKU (nie na końcu).** Bug: `openModal(cs, craftPathClose)` fokusował dolny
+  przycisk „Back to the garden" → przeglądarka scrollowała `#craftSheet` (`overflow-y:auto`) na dół (repro: scrollTop
+  skakał do 985). Fix w `openModal` (~3781): `el.scrollTop=0` przed/po fokusie + `focus({preventScroll:true})`;
+  `openCraftPath` fokusuje teraz KONTENER (`openModal(cs,cs)`), a `#sheet`/`#craftSheet`/`#craftPick` dostały
+  `tabindex="-1"`. Focus-trap+Escape zachowane. Zweryf. 390px: road scrollTop=0, konstelacja+nagłówek w widoku;
+  picker scrollTop=0, nagłówek w widoku. `wave1_craftroad_open.png`.
+- **TASK 3 — nici craftu na spokojnym cyklu 3-tygodniowym, JEDNAKOWYM dla wszystkich.** `craftThread()` (~1454):
+  nowe `craftCycleIdx()`=`((isoWeek()%3)+3)%3` (0/1/2, powtarza się co 3 tyg) + `craftCycleSlice(pool,size)` (3
+  okna po puli, 1/tydzień). Tier 1 (7 ręcznych, po 3 nici/etap) = już `isoWeek%3`. Tier 2 (katalog `soc:`) i Tier 3
+  (`general`) znormalizowane do tego SAMEGO cyklu (było: dryf przez całą pulę). Powrót po przerwie = po prostu nić
+  bieżącego tygodnia, nigdy „ominąłeś". ZERO copy presji. Zweryf. isoWeek N/N+1/N+2/N+3: zmiana co tydzień + N+3==N
+  dla wszystkich 3 tierów; skan słów-presji = 0.
+- **TASK 4 — splash iOS (v55 dodał ikony, pominął splash).** Head miał już `apple-mobile-web-app-capable=yes`,
+  `status-bar-style=default` (pasuje do jasnego papieru), `theme-color=#FBF7F2`, `apple-touch-icon`. Dodane 12 PNG
+  `garden/splash/` (marka `icon.svg` wyśrodkowana na papierze `#FBF7F2`, portrait, per-urządzenie: SE/8+/X…16 Pro
+  Max + 3 iPady), zrasteryzowane headless Chrome (CDP device-metrics, dokładne px), 12 tagów
+  `<link rel="apple-touch-startup-image" media=…>` w head. Pełna weryfikacja on-device iOS niemożliwa headless —
+  potwierdzone: PNG renderują (Read), wymiary dokładne, media-query poprawne. Generator `gen_splash.mjs`.
+- **TASK 5 — sidecary wersjonowane w cache (koniec honor-system stale).** `sw.js` przepisany: (a) `install` pobiera
+  ASSETS z `{cache:'reload'}` (świeży CACHE = świeże pliki z sieci, nie z HTTP-cache); (b) same-origin sidecary =
+  **stale-while-revalidate** (cache natychmiast + rewalidacja w tle → nowy deploy łapany przy następnym ładowaniu,
+  offline dalej z cache); (c) cross-origin (Supabase) = pass-through→cache; HTML dalej network-first; `activate`
+  kasuje tylko stare cache. CACHE `v58`, ASSETS=43 (dodane 12 splash). Zweryf. LIVE (lokalny http+SW):
+  aktywny tylko `meadowlark-garden-v58`/43 assety, SWR podaje stary natychmiast → cache aktualizuje się do nowego
+  sidecara w tle, offline serwuje sidecary+index.html z cache. Harness `sw_verify.mjs`+`verify_wave1.mjs`.

@@ -12,6 +12,19 @@
 <!-- manifest is injected by script only when served over http(s); a file:// manifest link logs a harmless CORS error -->
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png">
+<!-- iOS launch (splash) images — brand mark on paper; portrait, per common device. Ignored off iOS. -->
+<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:667px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash/splash-750x1334.png">
+<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:736px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/splash-1242x2208.png">
+<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:812px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/splash-1125x2436.png">
+<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash/splash-828x1792.png">
+<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/splash-1242x2688.png">
+<link rel="apple-touch-startup-image" media="(device-width:390px) and (device-height:844px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/splash-1170x2532.png">
+<link rel="apple-touch-startup-image" media="(device-width:393px) and (device-height:852px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/splash-1179x2556.png">
+<link rel="apple-touch-startup-image" media="(device-width:428px) and (device-height:926px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/splash-1284x2778.png">
+<link rel="apple-touch-startup-image" media="(device-width:430px) and (device-height:932px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/splash-1290x2796.png">
+<link rel="apple-touch-startup-image" media="(device-width:768px) and (device-height:1024px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash/splash-1536x2048.png">
+<link rel="apple-touch-startup-image" media="(device-width:834px) and (device-height:1194px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash/splash-1668x2388.png">
+<link rel="apple-touch-startup-image" media="(device-width:1024px) and (device-height:1366px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash/splash-2048x2732.png">
 <!-- Fonts are self-hosted below: nothing loads cross-origin, nothing leaves the device, and they work fully offline. -->
 <style>
 @font-face{font-family:'Figtree';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/figtree-400-latinext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
@@ -168,9 +181,9 @@
   .scene-cap{text-align:center;font-family:var(--ff-brand);font-weight:500;font-size:16px;letter-spacing:-.01em;color:var(--ink);padding:6px 18px 0;transition:opacity .3s var(--ease)}
   .scene-cap b{color:var(--accent,var(--gold-text));font-weight:600}
   .scene-hint{text-align:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-text);opacity:.8;padding:3px 0 0}
-  .greeting{padding:16px 18px 4px}
-  .greeting .hello{font-family:var(--ff-brand);font-weight:600;font-size:clamp(20px,5.4vw,25px);letter-spacing:-.02em;margin:0;line-height:1.2}
-  .greeting .season{color:var(--muted);font-size:14px;margin:6px 0 0}
+  .greeting{padding:11px 18px 2px}
+  .greeting .hello{font-family:var(--ff-brand);font-weight:600;font-size:clamp(19px,5vw,23px);letter-spacing:-.02em;margin:0;line-height:1.15}
+  .greeting .season{color:var(--muted);font-size:13px;margin:4px 0 0}
   .welcome{
     margin:14px 18px 0;background:var(--surface);border:1px solid rgba(232,148,62,.28);
     border-radius:16px;padding:13px 15px;display:flex;gap:11px;align-items:flex-start;
@@ -750,7 +763,6 @@
         <p class="season" id="greetSeason"></p>
       </div>
       <div id="welcomeSlot"></div>
-      <div id="craftSlot" class="craft-slot"></div>
       <div class="scene-stage">
         <div class="scene-wrap" id="sceneWrap"></div>
         <div class="zoom-ctl">
@@ -761,6 +773,7 @@
       <div class="scene-cap" id="sceneCap"></div>
       <div id="habDots" aria-label="Wander to a habitat"></div>
       <div class="scene-hint">← swipe to wander · tap a place to tend →</div>
+      <div id="craftSlot" class="craft-slot"></div>
       <div class="cards-head">
         <h2 id="cardsHeadTitle">Tend one small thing</h2>
         <span class="hint" id="cardsHeadHint">or just sit here</span>
@@ -920,7 +933,7 @@
 
 <!-- tend sheet -->
 <div class="scrim" id="scrim"></div>
-<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Tend">
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Tend" tabindex="-1">
   <div class="grab"></div>
   <div class="s-head"><span class="s-dot"></span><span class="s-title" id="sheetTitle">Body</span></div>
   <div class="s-stage" id="sheetStage"></div>
@@ -941,14 +954,14 @@
 </div>
 
 <!-- craft path sheet: the road to the chosen craft, mapped (US data — a map, not a race) -->
-<div class="sheet" id="craftSheet" role="dialog" aria-modal="true" aria-label="The path of your craft">
+<div class="sheet" id="craftSheet" role="dialog" aria-modal="true" aria-label="The path of your craft" tabindex="-1">
   <div class="grab"></div>
   <div id="craftPathBody"></div>
   <div class="sheet-actions"><button class="close-btn" id="craftPathClose">Back to the garden</button></div>
 </div>
 
 <!-- craft picker: search the catalog, then anchor where you stand -->
-<div class="sheet" id="craftPick" role="dialog" aria-modal="true" aria-label="Choose your craft">
+<div class="sheet" id="craftPick" role="dialog" aria-modal="true" aria-label="Choose your craft" tabindex="-1">
   <div class="grab"></div>
   <div class="cp-title">Your craft</div>
   <p class="cp-sub" style="margin-bottom:10px">Pick the work you do — or the one you're walking toward.</p>
@@ -1450,29 +1463,43 @@ function craftStageLabel(){
   return CRAFT_STAGE_GENERIC[st][0];
 }
 function isoWeek(){ const d=new Date(); const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const dn=(t.getUTCDay()+6)%7; t.setUTCDate(t.getUTCDate()-dn+3); const f=new Date(Date.UTC(t.getUTCFullYear(),0,4)); return 1+Math.round(((t-f)/864e5-3+((f.getUTCDay()+6)%7))/7); }
-// this week's thread: a titled bundle of related steps for YOUR stage (rotates weekly, steady within a week)
+// A calm, universal 3-week cadence: every craft surfaces one of three threads, one per week, repeating
+// every three weeks. A return after any gap just shows THIS week's thread — never "you missed" anything.
+function craftCycleIdx(){ return ((isoWeek()%3)+3)%3; }   // 0,1,2 — same for everyone, repeats every 3 weeks
+// carve a pool of items into the current week's bundle (3 distinct windows across the pool, one per cycle week)
+function craftCycleSlice(pool, size){
+  const n=pool.length; if(!n) return [];
+  size=Math.min(size, n);
+  const stride=Math.max(1, Math.floor(n/3));   // three evenly-spaced starts across the pool
+  const k=(craftCycleIdx()*stride)%n;
+  const out=[]; for(let i=0;i<size;i++) out.push(pool[(k+i)%n]);
+  return out;
+}
+// this week's thread: a titled bundle of related steps for YOUR stage — same 3-week cadence for all craft tiers
 function craftThread(){
   const occ=store.settings.craftOcc, st=store.settings.craftStage||'curious';
   const S=CRAFT_STAGES[occ];
+  // Tier 1 — hand-authored: each stage has exactly 3 threads, so isoWeek%3 IS the 3-week cycle
   if(S){ const stage=S.stages.find(s=>s.id===st)||S.stages[0];
-    const th=stage.threads[isoWeek()%stage.threads.length];
+    const th=stage.threads[craftCycleIdx()%stage.threads.length];
     return {title:th.title, steps:th.steps.slice(0,5)}; }
+  // Tier 2 — catalog (soc:) crafts: normalise the fetched step pool onto the same 3-week cycle
   if(craftIsCatalog()){
     let rows=null; try{ rows=JSON.parse(localStorage.getItem(craftTaskKey(craftSoc()))||'null'); }catch(_){}
     if(rows&&rows.length){
       let pool=rows.filter(r=>CRAFT_NODE2STAGE[r[0]]===st);
       if(st==='seasoned'&&pool.length<4) pool=rows.filter(r=>r[1]==='consolidate');
       const use=pool.length>=4?pool:rows;
-      const w=isoWeek(), n=use.length, k=((w*7)%n+n)%n;
-      const steps=[]; for(let i=0;i<Math.min(4,n);i++) steps.push(use[(k+i)%n][2]);
+      const steps=craftCycleSlice(use, 4).map(r=>r[2]);
       const names={curious:'From the first stretch',learning:'From the training stretch',exams:'From the proving stretch',early:'From the first working years',seasoned:'Keeping the craft warm'};
-      return {title:names[st], steps};
+      return {title:names[st]||'A few small things', steps};
     }
   }
+  // Tier 3 — 'general' / any craft with no data: same 3-week cycle over the general pack
   const pack=CAREER_PACKS[occ]||CAREER_PACKS.general;
-  const n=pack.steps.length, seed=isoWeek()*11+CRAFT_STAGE_IDS.indexOf(st)*5;
-  const steps=[]; for(let i=0;i<4;i++) steps.push(pack.steps[((seed+i*7)%n+n)%n]);
-  return {title:'A few small things', steps:[...new Set(steps)]};
+  const titles=['A few small things','Small things to return to','A gentle handful for the week'];
+  const steps=[...new Set(craftCycleSlice(pack.steps, 4))].slice(0,4);
+  return {title:titles[craftCycleIdx()], steps};
 }
 // generic road for catalog crafts, shaped by the typical entry education (0-6)
 function genericStages(edu){
@@ -1688,7 +1715,7 @@ function openCraftPath(){
   document.getElementById('scrim').classList.add('show');
   const cs=document.getElementById('craftSheet');
   cs.classList.add('show');
-  openModal(cs, document.getElementById('craftPathClose'));
+  openModal(cs, cs);   // focus the dialog itself (top) — not the bottom "Back" button — so it opens on the constellation
 }
 function closeCraftPath(){
   const cs=document.getElementById('craftSheet');
@@ -3782,7 +3809,15 @@ function openModal(el, focusEl){
   modalReturnFocus=document.activeElement;
   activeModal=el;
   document.getElementById('app').setAttribute('aria-hidden','true');
-  setTimeout(()=>{ const f=focusEl||modalFocusables(el)[0]||el; if(f&&f.focus){ try{ f.focus(); }catch(_){} } },60);
+  if(el) el.scrollTop=0;                                  // ALWAYS open at the top of the sheet (heading / constellation)
+  setTimeout(()=>{
+    if(el) el.scrollTop=0;                                // reset again once content is injected + laid out
+    // Focus a TOP element (the dialog container, or a caller-chosen near-top field) — never a bottom
+    // button, which would scroll the sheet down. preventScroll keeps the sheet pinned to its start.
+    const f=focusEl||el||modalFocusables(el)[0];
+    if(f&&f.focus){ try{ f.focus({preventScroll:true}); }catch(_){ try{ f.focus(); }catch(__){} } }
+    if(el) el.scrollTop=0;                                // and once more, in case focus nudged the scroll
+  },60);
 }
 function closeModal(el){
   if(el&&activeModal&&activeModal!==el) return;   // a newer sheet already owns focus
