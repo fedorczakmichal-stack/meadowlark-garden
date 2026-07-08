@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v59 (2026-07-08) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v60 (2026-07-08) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -50,11 +50,17 @@ Sidecary: `sw.js`, `manifest.json`, `fable-animals.js` (silnik sprite'ów zwierz
 Dane: 1 klucz localStorage `meadowlark.garden` (+ osobne klucze: `meadowlark.pressed`, `meadowlark.compass`,
 `meadowlark.craft.<soc>`). `coerce()` migruje stare zapisy; `persist()` łapie quota → tryb „memory only" + toast.
 
-- **Scena (`renderMeadow`)**: panorama `PANO_W×PANO_H` (`.scene-wrap` scroll + zoom). Warstwy:
-  niebo→góry (`drawForest` y≈312)→mgła→wzgórza→`drawMidground` (krzewy, omija `inStream`/`inTrail`/`inBearClearing`)→
-  env per siedlisko (`env-<id>`)→przejścia→drzewa (host `tw-<id>`: **poświata siedliska (accent) + cień kontaktowy + drzewo + `glw-<id>`**)→
-  zwierzęta→pyłki/gwiazdy→**`drawSeasonOverlay`**→veil nocny→kolumny-tapy. Cache: `sceneSig()` (rebuild tylko
-  gdy sig się zmieni); `patchTree`/`patchEnv` = cross-fade jednego drzewa/env bez rebuildu.
+- **Scena (`renderMeadow`)**: panorama `PANO_W×PANO_H` w `#sceneWrap` (scroll + zoom). **Od v60 = DWIE warstwy w `.scene-plane`**
+  (obie wypełniają ten sam box PANO, więc zwierzęta/tapy leżą DOKŁADNIE nad rastrem): (1) **`<canvas class="scene-canvas">` = statyczny bitmapowy dekor**
+  (niebo→góry `drawForest` y≈312→mgła→wzgórza→`drawMidground`→env per siedlisko `env-<id>`→przejścia→drzewa `tw-<id>` [poświata accent + cień + drzewo]→
+  gwiazdy→sezonowy scatter) — generowany JAK DAWNIEJ jako string SVG, potem **rasteryzowany przez `Image`+`drawImage`** (`rasterScene()`,
+  re-rastr tylko gdy `sceneSig()` się zmieni albo na zoomie; backing @DPR≤3 z limitem 16M px pod iOS; `_lastStaticInner`=string,
+  `hiddenDefs()` inline'uje `#glDof`/`#daisy`/… bo raster to samodzielny dokument). (2) **overlay `<svg class="scene-svg">` = warstwa ŻYWA+INTERAKTYWNA**
+  (larki/skybirdy, `glw-<id>` iskry poświaty, **zwierzęta `g.fable`**, `drawSeasonOverlay` [wash+scatter+spadające], golden-wash `#glow`, veil nocny, **kolumny-tapy**).
+  **`fableCollect`/`fableTickNow` bez zmian** — dalej pytają `#sceneWrap svg`/`g.fable`; overlay = jedyny svg w `#sceneWrap`, `_sceneScale` z jego wysokości.
+  Cache: `sceneSig()` (rebuild tylko gdy sig się zmieni). **Tend: `growHabitat(id)`** = `renderMeadow(true,{staticOnly:true,crossfade:true})`
+  (re-rastr TYLKO canvasu z płynnym cross-fade przez tymczasowy `canvas.scene-fade` → drzewo+flora rosną bez flasha; animacje nietknięte) + `patchGlow`.
+  **Node-count: statyczny dekor w żywym DOM spadł ~3682→56 (full care) / ~1967→56 (low)**; zniknął też per-frame koszt filtra blur `glDof`. `patchTree`/`patchEnv` USUNIĘTE.
 - **Pory dnia**: `dayPhase()` (theme/godzina) → 'dawn/day/golden/dusk/night'. **`phaseBlend()`** =
   ciągły cross-fade nieba+wzgórz w ~45min przed każdą granicą (sampleGrad+mix); `phaseBlendKey()` w
   `sceneSig` + `tick()` (60s) → scena re-renderuje kilka razy w oknie przejścia. dayPhase i phaseBlend
@@ -257,3 +263,25 @@ scrollem kart + statyczne. Zmiany (wszystko w `renderPath` + CSS `.lb-sky*` + ga
   8/20/40 powrotów (rośnie, spokojna, twarz księżyca czysta), fazy dawn/dusk/day/night (wyraźnie różne), tap→słowa,
   calm+reduced-motion (pełny render, ruch stop), 0 powrotów (ciepła pustka bez błędu), szeroki 560px, karty pod niebem
   renderują, `motion_probe.mjs` bez regresji fableCollect, 0 błędów konsoli. CACHE `sw.js` `v59` (ASSETS bez zmian).
+
+**v60** (2026-07-08): **WAVE 3 redesignu (3 z 3, ostatnia) — PERF: statyczny dekor sceny SVG→`<canvas>`, bez zmiany wyglądu.**
+Problem właściciela: ~15k węzłów SVG (drzewa growth-atlas + flora env + las/midground) laytowanych/kompozytowanych na KAŻDĄ klatkę
+animacji i scroll (+ drogi filtr blur `glDof` na żywo) = zacinanie na telefonie. Rozwiązanie: `renderMeadow` rozbity na DWIE skoordynowane
+warstwy w `.scene-plane` (ten sam box PANO, ten sam zoom/scroll — szczegóły w §3):
+- **`<canvas>` = statyczny bitmapowy dekor** (niebo/słońce-księżyc/gwiazdy, wzgórza, `drawForest`, mgła, `drawMidground`, flora env
+  `env-<id>`, przejścia, drzewa `tw-<id>`, sezonowy scatter). Generowany DALEJ jako string SVG (reużyte CAŁE stare rysowanie), potem
+  **rasteryzowany przez `Image`→`ctx.drawImage`** (`rasterScene()`). Backing @DPR (≤3) z limitem 16M px (pod iOS ~4096²), CSS-skalowany zoomem;
+  re-rastr TYLKO na zmianę `sceneSig()` albo zoom. `hiddenDefs()` inline'uje globalne defy (`#glDof`/`#daisy`/`#flower6`/`#bell`/gradienty `gl*`)
+  bo raster = samodzielny dokument. **Blur `glDof` + gradienty rasteryzują się 1:1** (zweryfikowane).
+- **overlay `<svg>` = warstwa ŻYWA** (larki/skybirdy, iskry poświaty `glw-<id>`, **zwierzęta `g.fable`**, pyłki/świetliki, sezonowe spadające
+  cząstki, golden-wash + veil nocny [tintują też zwierzęta — dlatego w overlayu NAD nimi], **kolumny-tapy** [klik + a11y]). **Silnik walkera
+  (`fableCollect`/`fableTickNow`) NIETKNIĘTY** — dalej pyta `#sceneWrap svg`/`g.fable`; overlay = jedyny svg w wrap.
+- **Tend = płynny (bez flasha):** `growHabitat(id)` re-rasteruje TYLKO canvas z cross-fade przez tymczasowy `canvas.scene-fade`
+  (opacity 0→1, potem blit do main) — tylko pielęgnowany narożnik widocznie się zmienia; zwierzęta idą dalej. `patchTree`/`patchEnv` USUNIĘTE.
+- **KONTRAKT WIZUALNY zachowany:** przed/po (dzień+zmierzch, low+full care, zima/jesień, calm) NIEODRÓŻNIALNE. **Kompromis (motion-only,
+  klatka statyczna identyczna):** kołysanie drzew/kwiatów przejść (`.sway`) i migotanie gwiazd (`.twinkle`) ZAMROŻONE na canvasie; żywy klimat
+  niosą dalej zwierzęta/ptaki/larki/pyłki/świetliki/spadający śnieg. **Node-count: statyczny dekor w żywym DOM 3682→56 (full) / 1967→56 (low)**
+  (→ 1 canvas + 56 lekkich węzłów overlay; flipbooki zwierząt ~3828 bez zmian, MUSZĄ zostać żywe). `renderMeadow(true)` sync 12.8ms→4.5ms.
+- Zweryf. headless DSF2: parity dzień/zmierzch/low/full (`wave3.mjs`), tap→tend + cross-fade + poświata + zoom-align (dx=0) + canvas nie-tainted +
+  reduced-motion (`verify_wave3.mjs`), `motion_probe.mjs` (wszystkie zwierzęta go=Y, pozycje zachowane 1:1 przez rebuild — fix v52 trzyma),
+  zima/jesień/calm (`season_check.mjs`), 0 błędów konsoli w pełnej turze. CACHE `sw.js` `v60` (ASSETS bez zmian — wszystko inline w index.html).

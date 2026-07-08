@@ -124,7 +124,11 @@
   .scene-stage{position:relative}
   .scene-wrap{--scene-h:clamp(290px,48vh,420px);--zoom:1;position:relative;width:100%;height:var(--scene-h);overflow:auto;border-bottom:1px solid var(--hairline);-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-x pan-y;overscroll-behavior:contain;background:linear-gradient(180deg,#E8C8DA,#F6C089 30%,#FBEBD6)}
   .scene-wrap::-webkit-scrollbar{display:none}
-  .scene-wrap svg{display:block;height:calc(var(--scene-h) * var(--zoom));width:auto}
+  /* WAVE 3: the scene plane holds a static-bitmap <canvas> + a live overlay <svg>, both filling the
+     same panorama box so animals/taps sit exactly over the raster; the plane sizes the scroll extent. */
+  .scene-plane{position:relative;height:calc(var(--scene-h) * var(--zoom));width:calc(var(--scene-h) * var(--zoom) * 3100 / 600)}
+  .scene-wrap canvas.scene-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .scene-wrap svg.scene-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
   .zoom-ctl{position:absolute;right:12px;bottom:12px;z-index:6;display:flex;flex-direction:column;gap:6px}
   .zoom-ctl button{width:38px;height:38px;border-radius:12px;border:1px solid var(--hairline);background:rgba(255,253,251,.9);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:var(--ink);font-size:20px;font-weight:600;line-height:1;display:grid;place-items:center;box-shadow:0 6px 16px -8px rgba(120,92,150,.5)}
   .zoom-ctl button:active{transform:scale(.94)}
@@ -3063,7 +3067,23 @@ function drawSeasonOverlay(W,H,seasonName,phase,dusky){
   if(p) o+=`<g>${p}</g>`;
   return o;
 }
-function renderMeadow(force){
+/* ────────────────────────────────────────────────────────────────────────────
+   WAVE 3 (perf): the Meadow is split across TWO coordinated layers in #sceneWrap,
+   both filling the same PANO_W×PANO_H plane at the same zoom/scroll:
+     • a <canvas> for the STATIC decorative bulk (sky, hills, forest, midground,
+       per-habitat flora, the growth-atlas trees, season wash+scatter, stars) —
+       generated as an SVG string exactly as before, then rasterised via an Image.
+       This collapses the ~thousands of static nodes to ONE canvas + kills the
+       per-frame cost of the glDof blur / gradient compositing during scroll+animation.
+     • a live overlay <svg> for the ANIMATED + INTERACTIVE bits (fable animals, sky
+       birds/larks, glow sparkles, atmospheric motes, seasonal falling particles,
+       the golden-hour wash + night veil that tint the animals, and the tap columns).
+   The canvas re-rasterises only on a sceneSig change (day/night, season, growth,
+   demo care) or on zoom — the same gate that already rebuilt the scene. Animals
+   keep animating on the overlay at rAF, untouched by the canvas. ──────────────── */
+function renderMeadow(force,opt){
+  opt=opt||{};
+  const staticOnly=!!opt.staticOnly;
   const phase=dayPhase(), seasonName=season();
   _phase=phase;   // flora helpers (flowers/leaves/grass) read this to darken at dusk/night
   const sig = sceneSig();
@@ -3081,109 +3101,86 @@ function renderMeadow(force){
   const W=PANO_W,H=PANO_H, total=totalCare();
   const pb=phaseBlend();                       // cross-fade sky+hills across sunrise/sunset
   const hills=blendHills(pb.a,pb.b,pb.t), dusky=DUSKY(phase);
-  let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Your life as a landscape — seven habitats at ${phase}, in ${seasonName}. Swipe to wander across them.">`;
-  s+=`<defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">${gradStops(blendSky(pb.a,pb.b,pb.t))}</linearGradient>
+
+  // the golden-hour wash gradient — shared by the raster defs (harmless there) and the overlay's wash rect
+  const glowDef=`<radialGradient id="glow" cx="64%" cy="8%" r="70%"><stop offset="0" stop-color="#FFEFC6" stop-opacity="${dusky?.16:.36}"/><stop offset=".5" stop-color="#FFE3A8" stop-opacity="${dusky?.04:.1}"/><stop offset="1" stop-color="#FBC089" stop-opacity="0"/></radialGradient>`;
+  const defsInner=`<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">${gradStops(blendSky(pb.a,pb.b,pb.t))}</linearGradient>
     <radialGradient id="sun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFF7DF"/><stop offset=".7" stop-color="#FFE6B4"/><stop offset="1" stop-color="#FFE6B4" stop-opacity="0"/></radialGradient>
     <radialGradient id="halo" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FDE3AE" stop-opacity=".5"/><stop offset="1" stop-color="#FDE3AE" stop-opacity="0"/></radialGradient>
     <radialGradient id="moon" cx="42%" cy="38%" r="62%"><stop offset="0" stop-color="#FBF7F2"/><stop offset=".7" stop-color="#E7E3F0"/><stop offset="1" stop-color="#BDB9D4"/></radialGradient>
     <radialGradient id="moonHalo" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#D8D6EC" stop-opacity=".5"/><stop offset="1" stop-color="#D8D6EC" stop-opacity="0"/></radialGradient>
-    <radialGradient id="glow" cx="64%" cy="8%" r="70%"><stop offset="0" stop-color="#FFEFC6" stop-opacity="${dusky?.16:.36}"/><stop offset=".5" stop-color="#FFE3A8" stop-opacity="${dusky?.04:.1}"/><stop offset="1" stop-color="#FBC089" stop-opacity="0"/></radialGradient>
+    ${glowDef}
     <radialGradient id="water" cx="40%" cy="28%" r="78%"><stop offset="0" stop-color="#C4E8DD"/><stop offset=".5" stop-color="#7FC3AC"/><stop offset="1" stop-color="#4F9C85"/></radialGradient>
     <linearGradient id="streamGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FC9B4" stop-opacity="0"/><stop offset=".16" stop-color="#8FC9B4" stop-opacity=".7"/><stop offset=".5" stop-color="#7FC3AC"/><stop offset="1" stop-color="#4F9C85"/></linearGradient>
     ${GA.DEFS}${GA_DEFS_NIGHT}
-    <linearGradient id="pathGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8D7B8" stop-opacity="0"/><stop offset=".42" stop-color="#E8D7B8"/><stop offset="1" stop-color="#D6C098"/></linearGradient>
-    <style id="wander-kf"></style>
-  </defs>`;
-  s+=`<rect width="${W}" height="${H}" fill="url(#sky)"/>`;
+    <linearGradient id="pathGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8D7B8" stop-opacity="0"/><stop offset=".42" stop-color="#E8D7B8"/><stop offset="1" stop-color="#D6C098"/></linearGradient>`;
 
-  // sun (with ray-lines + a small flock) / moon + stars
+  // ══════════ STATIC decoration → rasterised to <canvas> ══════════
+  let st=`<rect width="${W}" height="${H}" fill="url(#sky)"/>`;
+  // sun (with ray-lines) / moon + stars  (stars render on the canvas as a steady field)
   const sunx=1700, suny=84;
   if(dusky){
-    s+=`<circle cx="2160" cy="92" r="120" fill="url(#moonHalo)"/><circle cx="2160" cy="92" r="62" fill="url(#moonHalo)"/><circle cx="2160" cy="92" r="30" fill="url(#moon)"/>`;
-    // random-scattered (hashed, not a lattice), mostly steady; a minority twinkles slowly on its own clock
+    st+=`<circle cx="2160" cy="92" r="120" fill="url(#moonHalo)"/><circle cx="2160" cy="92" r="62" fill="url(#moonHalo)"/><circle cx="2160" cy="92" r="30" fill="url(#moon)"/>`;
     let stars=''; for(let i=0;i<108;i++){ const R=n=>wanderR(i*2.3+11,n);
       const x=(R(1)*W).toFixed(0), y=(20+R(2)*192).toFixed(0), r=(0.7+R(3)*1.7).toFixed(1);
       const base=((0.4+R(4)*0.55)*(phase==='night'?1:0.5)).toFixed(2);
-      if(phase==='night' && R(5)>0.8){ stars+=`<circle class="twinkle" cx="${x}" cy="${y}" r="${r}" fill="#FBF7F2" style="--d:${(4+R(6)*5).toFixed(1)}s;animation-delay:${(-R(7)*6).toFixed(1)}s;opacity:${base}"/>`; }
-      else stars+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#FBF7F2" opacity="${base}"/>`;
+      stars+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#FBF7F2" opacity="${base}"/>`;
     }
-    s+=`<g>${stars}</g>`;
+    st+=`<g>${stars}</g>`;
   } else {
-    s+=`<circle cx="${sunx}" cy="${suny}" r="158" fill="url(#halo)"/><circle cx="${sunx}" cy="${suny}" r="56" fill="url(#sun)"/>`;
-    s+=`<g stroke="#FFE9B8" stroke-width="2.4" opacity=".3" stroke-linecap="round"><path d="M${sunx} -4 L ${sunx} -38"/><path d="M${sunx+72} 44 L ${sunx+104} 18"/><path d="M${sunx-72} 44 L ${sunx-104} 18"/><path d="M${sunx+84} 118 L ${sunx+124} 118"/><path d="M${sunx-84} 118 L ${sunx-124} 118"/></g>`;
-    s+=`<g stroke="#B89C86" stroke-width="1.6" fill="none" opacity=".38" stroke-linecap="round"><path d="M520 96 C 526 92 532 92 538 96"/><path d="M546 90 C 552 86 558 86 564 90"/><path d="M566 100 C 572 96 578 96 584 100"/><path d="M1180 86 C 1186 82 1192 82 1198 86"/><path d="M1206 92 C 1212 88 1218 88 1224 92"/></g>`;
+    st+=`<circle cx="${sunx}" cy="${suny}" r="158" fill="url(#halo)"/><circle cx="${sunx}" cy="${suny}" r="56" fill="url(#sun)"/>`;
+    st+=`<g stroke="#FFE9B8" stroke-width="2.4" opacity=".3" stroke-linecap="round"><path d="M${sunx} -4 L ${sunx} -38"/><path d="M${sunx+72} 44 L ${sunx+104} 18"/><path d="M${sunx-72} 44 L ${sunx-104} 18"/><path d="M${sunx+84} 118 L ${sunx+124} 118"/><path d="M${sunx-84} 118 L ${sunx-124} 118"/></g>`;
+    st+=`<g stroke="#B89C86" stroke-width="1.6" fill="none" opacity=".38" stroke-linecap="round"><path d="M520 96 C 526 92 532 92 538 96"/><path d="M546 90 C 552 86 558 86 564 90"/><path d="M566 100 C 572 96 578 96 584 100"/><path d="M1180 86 C 1186 82 1192 82 1198 86"/><path d="M1206 92 C 1212 88 1218 88 1224 92"/></g>`;
   }
-
-  // continuous rolling ground (full width) — with a faint far ridge for extra distance
-  s+=`<path d="${wavy(176,12)}" fill="${dusky?'#586A78':'#C2D6CE'}" opacity="${dusky?.5:.5}"/>`;
-  s+=`<path d="${wavy(206,16)}" fill="${hills[0]}" opacity=".5"/>`;
-  s+=`<path d="${wavy(240,18)}" fill="${hills[0]}" opacity=".72"/>`;
-  s+=`<path d="${wavy(300,26)}" fill="${hills[1]}"/>`;
-  s+=drawForest(W,dusky);   // a hazed treeline on the far hillside — the river springs from it, the paths lead into it
-  // drifting mist along the treeline — pushes the woods back and softens the join
-  { let mist=''; for(let x=60;x<W;x+=300){ mist+=`<ellipse cx="${x}" cy="${336+((x*7)%18)}" rx="190" ry="14" fill="#FFFFFF" opacity="${dusky?.10:.2}" filter="url(#glDof)"/>`; } s+=`<g>${mist}</g>`; }
-  s+=`<path d="${wavy(362,22)}" fill="${hills[2]}"/>`;
-  s+=`<path d="${wavy(432,18)}" fill="${hills[3]}"/>`;
-  s+=drawMidground(W,dusky);   // shrubs + small trees on the slope, between woods and meadow (depth)
-
-
-
-  // per-habitat environments (behind the trees) — each habitat's flowers grow with THAT area's care (like its tree).
-  // wrapped in id'd groups so a tend can cross-fade just that habitat's flora (see patchEnv), no full scene rebuild.
+  // continuous rolling ground (full width) + a faint far ridge for depth
+  st+=`<path d="${wavy(176,12)}" fill="${dusky?'#586A78':'#C2D6CE'}" opacity="${dusky?.5:.5}"/>`;
+  st+=`<path d="${wavy(206,16)}" fill="${hills[0]}" opacity=".5"/>`;
+  st+=`<path d="${wavy(240,18)}" fill="${hills[0]}" opacity=".72"/>`;
+  st+=`<path d="${wavy(300,26)}" fill="${hills[1]}"/>`;
+  st+=drawForest(W,dusky);
+  { let mist=''; for(let x=60;x<W;x+=300){ mist+=`<ellipse cx="${x}" cy="${336+((x*7)%18)}" rx="190" ry="14" fill="#FFFFFF" opacity="${dusky?.10:.2}" filter="url(#glDof)"/>`; } st+=`<g>${mist}</g>`; }
+  st+=`<path d="${wavy(362,22)}" fill="${hills[2]}"/>`;
+  st+=`<path d="${wavy(432,18)}" fill="${hills[3]}"/>`;
+  st+=drawMidground(W,dusky);
+  // per-habitat environments (kept in id'd groups so they read the same as before)
   const gG={}; HAB.forEach(id=>gG[id]=growthOf(id));
-  s+=`<g id="env-body">${envMeadow(HABX.body,HABY.body,gG.body)}</g>`;
-  s+=`<g id="env-home">${envHome(HABX.home,HABY.home,phase,gG.home)}</g>`;
-  s+=`<g id="env-connection">${envThicket(HABX.connection,HABY.connection,phase,gG.connection)}</g>`;
-  s+=`<g id="env-meaning">${envKnoll(HABX.meaning,HABY.meaning,phase,gG.meaning)}</g>`;
-  s+=`<g id="env-craft">${envCraft(HABX.craft,HABY.craft,phase,gG.craft)}</g>`;
-  s+=`<g id="env-future">${envStream(HABX.future,HABY.future,dusky,gG.future)}</g>`;
-  s+=`<g id="env-calm">${envPool(HABX.calm,HABY.calm,dusky,gG.calm)}</g>`;
-
-  // gentle transitions so the habitats blend into one another (no hard edges); grow with the two neighbours' care
+  st+=`<g id="env-body">${envMeadow(HABX.body,HABY.body,gG.body)}</g>`;
+  st+=`<g id="env-home">${envHome(HABX.home,HABY.home,phase,gG.home)}</g>`;
+  st+=`<g id="env-connection">${envThicket(HABX.connection,HABY.connection,phase,gG.connection)}</g>`;
+  st+=`<g id="env-meaning">${envKnoll(HABX.meaning,HABY.meaning,phase,gG.meaning)}</g>`;
+  st+=`<g id="env-craft">${envCraft(HABX.craft,HABY.craft,phase,gG.craft)}</g>`;
+  st+=`<g id="env-future">${envStream(HABX.future,HABY.future,dusky,gG.future)}</g>`;
+  st+=`<g id="env-calm">${envPool(HABX.calm,HABY.calm,dusky,gG.calm)}</g>`;
+  // gentle transitions between habitats
   const TSP=[['poppy',null],['buttercup',null],['cosmos',null],['cornflower',null],['daisy','cream']];
   for(let i=0;i<HAB.length-1;i++){ const mx=(HABX[HAB[i]]+HABX[HAB[i+1]])/2, tgr=(gG[HAB[i]]+gG[HAB[i+1]])/2;
-    s+=grassClump(mx-16,490)+grassClump(mx+22,494);
-    s+=`<g class="sway" style="animation-duration:8s;animation-delay:${-i}s"><g transform="translate(${mx} 494)">${wildflower(TSP[i%TSP.length][0],TSP[i%TSP.length][1],.5,64,tgr)}</g></g>`;
+    st+=grassClump(mx-16,490)+grassClump(mx+22,494);
+    st+=`<g class="sway" style="animation-duration:8s;animation-delay:${-i}s"><g transform="translate(${mx} 494)">${wildflower(TSP[i%TSP.length][0],TSP[i%TSP.length][1],.5,64,tgr)}</g></g>`;
   }
-
-  // gliding larks (light only), spread across
-  if(!dusky){
-    s+=`<g class="glide" style="animation-delay:-3s"><use href="#lark" x="-34" y="-22" width="60" height="40" transform="translate(140 150)"/></g>`;
-  }
-
-  // ── the six growth-trees: the landmark of each habitat (prominent). Each in a stable host
-  //    so a single tree can be patched + cross-faded smoothly on tend (no full-scene flash). ──
+  // the six growth-trees: static host (accent tint + contact shadow + tree art). Their transient
+  // rising glow sparkles ride on the LIVE overlay (lvGlow) so they animate + fade without re-rastering.
+  let lvGlow='';
   HAB.forEach(id=>{
     const a=AREA[id], cx=HABX[id]+(HAB_TX[id]||0), by=HABY[id];
-    const care=careOf(id), st=stageOf(care), fr=fracOf(care), f=glowStrength(id);
+    const care=careOf(id), stg=stageOf(care), fr=fracOf(care), f=glowStrength(id);
     const scale=treeScale(id);
-    const swayCls=(st>=1 && store.settings.motion==='full')?' sway':'';
-    const shR=(scale*(4+st*6)).toFixed(1);   // soft contact shadow, grows with the tree so it never floats
-    // each habitat softly tints its own ground in its accent — so the seven corners read apart at a glance (the 'map of your life')
-    s+=`<g id="tw-${id}" transform="translate(${cx} ${by})"><ellipse cx="0" cy="16" rx="150" ry="38" fill="${a.accent}" opacity="${dusky?.05:.08}" filter="url(#glDof)"/><ellipse cx="0" cy="3" rx="${shR}" ry="${(scale*2.4).toFixed(1)}" fill="rgba(58,44,26,${dusky?.08:.15})"/><g class="treeart${swayCls}" transform="scale(${scale.toFixed(3)})">${tree(st,fr,id,seasonName,phase,FORM[id])}</g><g id="glw-${id}">${glowSparkles(st,scale,a.accent,f)}</g></g>`;
+    const shR=(scale*(4+stg*6)).toFixed(1);
+    st+=`<g id="tw-${id}" transform="translate(${cx} ${by})"><ellipse cx="0" cy="16" rx="150" ry="38" fill="${a.accent}" opacity="${dusky?.05:.08}" filter="url(#glDof)"/><ellipse cx="0" cy="3" rx="${shR}" ry="${(scale*2.4).toFixed(1)}" fill="rgba(58,44,26,${dusky?.08:.15})"/><g class="treeart" transform="scale(${scale.toFixed(3)})">${tree(stg,fr,id,seasonName,phase,FORM[id])}</g></g>`;
+    if(!staticOnly) lvGlow+=`<g transform="translate(${cx} ${by})"><g id="glw-${id}">${glowSparkles(stg,scale,a.accent,f)}</g></g>`;
   });
 
-  // ── a LIVING landscape: a gently-animated creature in every habitat ──
-  // outer <g> = position (never animated), inner <g class> = the motion (so animation never moves it off-place)
-  // outer <g> = position + per-instance stagger (--d, read by the symbol's own .rig animations); the artwork's
-  // internal rig (legs/wings/tail/body) does all the in-place motion. Pass `travel` {amp,dur,dir} to also make the
-  // sprite roam its lane and flip to face its heading (dir 'l' = art faces left natively → pace-flip-l).
-  const cr=(x,y,sc,href,vb,delay,extra,travel,flt)=>{
-    const art=`<use href="#${href}" x="${vb[0]}" y="${vb[1]}" width="${vb[2]}" height="${vb[3]}"/>`;
-    if(travel){ const w=regWander(travel.seed??(x*7+y),travel.amp,travel);
-      const dur=(travel.dur*(0.9+wanderR(travel.seed??x,50)*0.22)).toFixed(2);
-      return `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)})"${extra||''}><g class="rove" style="--d:${delay}s;animation:${w.id} ${dur}s ease-in-out infinite ${w.alt};animation-delay:${delay}s"><g transform="scale(${sc})">${art}</g></g></g>`; }
-    if(flt){
-      const fl=regFloat(flt.seed??(x*5+y),flt.amp||22,flt.dur||10);
-      return `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)})"${extra||''}><g class="float" style="--d:${delay}s;animation:${fl.id} ${fl.dur}s ease-in-out infinite alternate;animation-delay:${delay}s"><g transform="scale(${sc})">${art}</g></g></g>`; }
-    return `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${sc})" style="--d:${delay}s"${extra||''}>${art}</g>`;
-  };
-  const BF=[-21.8,-24.3,43.7,48.6], BEE=[-16.9,-24.1,33.8,46.2], DF=[-27,-16.9,56.1,33.8], RB=[-33.7,-58.2,75.4,85.4], DE=[-20,-36,48,58], SQ=[-27.8,-33.8,55.6,55.6], DK=[-24.8,-23.6,53.6,41.2], FR=[-26.5,-30,53,51], FX=[-31.5,-29.3,61,49.6], BR=[-24,-26,50,50];
-  const HH=[-22,-20,44,38], OW=[-20,-24,40,46], LBG=[-27,-23.5,54,45], SN=[-22,-18,46,30], STK=[-21,-22,46,48], FI=[-25,-19,50,38], TU=[-24,-21,48,38];
+  _lastStaticInner=`<defs>${defsInner}${hiddenDefs()}</defs>`+st;
+
+  // a tend re-rasters ONLY the static bitmap (with a gentle cross-fade); the overlay/animals stay put
+  if(staticOnly){ rasterScene(!!opt.crossfade); return; }
+
+  // ══════════ LIVE overlay <svg> — animated + interactive ══════════
+  let lvSky='';
+  // gliding larks (light only)
+  if(!dusky){
+    lvSky+=`<g class="glide" style="animation-delay:-3s"><use href="#lark" x="-34" y="-22" width="60" height="40" transform="translate(140 150)"/></g>`;
+  }
   // ── THE MOTION ATLAS cast — procedural fable animals, rendered per-frame by their own physics ──
-  // (fable-animals.js, verbatim). Each entry: which animal, which of ITS motions, where it lives,
-  // and optionally a travel lane (rove) or a drift (float) — the atlas does everything else.
   const FB=(o)=>{
     const fin=`<g class="fin" transform="scale(${o.sc||1})"></g>`;
     const data=`data-id="${o.id}" data-mid="${o.mid||''}" data-x="${o.x.toFixed(0)}" data-off="${((o.off||0)*7).toFixed(2)}"`;
@@ -3194,10 +3191,11 @@ function renderMeadow(force){
     // walkers (incl. art mode): the JS director owns .mover's translate + facing flip
     return `<g class="fable" ${data} data-amp="${(o.amp||0).toFixed(0)}" data-yd="${(o.yd||0).toFixed(0)}" transform="translate(${o.x.toFixed(0)} ${o.y.toFixed(0)})"${o.extra||''}><g class="mover">${o.art||fin}</g></g>`;
   };
+  let lv='';
   // blue nuthatches crossing the sky — SVG symbol #bird with CSS wing rigs (always flapping, even while gliding)
   if(!dusky){
-    s+=skyBird(-11,120,118,1)+skyBird(-24,210,128,0.72,0.78,true);
-    s+=skyBird(-38,90,102,0.58,0.65);
+    lv+=skyBird(-11,120,118,1)+skyBird(-24,210,128,0.72,0.78,true);
+    lv+=skyBird(-38,90,102,0.58,0.65);
   }
   const CAST=[
     {id:'rabbit',   x:HABX.connection-88, y:HABY.connection+34, sc:.95, off:.10, amp:70, yd:16},
@@ -3210,10 +3208,10 @@ function renderMeadow(force){
     {id:'butterfly',mid:'sail',   x:HABX.connection+70, y:HABY.connection-150, sc:.95, off:.75, flt:22,fltAmp:27,fltSeed:203},
     {id:'deer',     x:1000, y:336, sc:.72, off:.60, amp:80, yd:14, extra:` opacity="${dusky?.5:.72}"`},
     {id:'deer',     x:1380, y:320, sc:.80, off:.15, amp:34, yd:8, extra:` opacity="${dusky?.5:.7}"`},
-    {id:'bear',     x:BEARX,y:352, sc:.74, off:.40, amp:BEARAMP, yd:7, extra:` opacity="${dusky?.6:.9}"`},   // ambling just under the treeline; drawMidground clears the shrubs from this stretch (inBearClearing)
+    {id:'bear',     x:BEARX,y:352, sc:.74, off:.40, amp:BEARAMP, yd:7, extra:` opacity="${dusky?.6:.9}"`},
     {id:'bee',      mid:'waggle', x:HABX.craft+168, y:HABY.craft-56, sc:.62, off:.90, flt:14,fltAmp:15,fltSeed:204},
     {id:'dragonfly',mid:'hover',  x:HABX.future-30, y:HABY.future-40, sc:.95, off:.80, flt:14,fltAmp:30,fltSeed:205},
-    {id:'stork',    x:HABX.future+32, y:HABY.future+62, sc:1, off:.45, amp:46, yd:5, extra:` opacity="${dusky?.9:1}"`},   // white bird over water: .6 at dusk read as see-through
+    {id:'stork',    x:HABX.future+32, y:HABY.future+62, sc:1, off:.45, amp:46, yd:5, extra:` opacity="${dusky?.9:1}"`},
     {id:'turtle',   x:HABX.future-124,y:HABY.future+64, sc:.60, off:.70, amp:26, yd:3},
     {id:'mallard',  x:HABX.calm-4,    y:HABY.calm+66,  sc:.92, off:.30, amp:45, yd:3},
     {id:'frog',     x:HABX.calm-74,   y:HABY.calm+72,  sc:.70, off:.55, amp:22, yd:4},
@@ -3223,80 +3221,108 @@ function renderMeadow(force){
   if(dusky) CAST.push({id:'owl',mid:'perch',x:1452,y:320,sc:.45,off:.5,amp:0,yd:0,extra:' opacity=".85"'});
   if(total>=12) CAST.push({id:'butterfly',mid:'bask',x:HABX.meaning-90,y:HABY.meaning-150,sc:.85,off:.33,flt:20});
   if(total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-30,y:HABY.calm-150,sc:.82,off:.66,flt:22});
-  CAST.forEach(o=>{ s+=FB(o); });
-  // golden-hour light wash
-  s+=`<rect width="${W}" height="${H}" fill="url(#glow)" pointer-events="none"/>`;
-
+  CAST.forEach(o=>{ lv+=FB(o); });
+  // golden-hour light wash (tints the animals + the canvas beneath, exactly as before)
+  lv+=`<rect width="${W}" height="${H}" fill="url(#glow)" pointer-events="none"/>`;
   // motes: pollen drifting by day, fireflies by dusk/night (spread across the world)
-  // atmospheric motes render ALWAYS (calm mode keeps them, just still — a static field still reads
-  // as a living meadow; the CSS below drops only their drift in calm/reduced-motion, not their presence)
   {
     if(dusky){
       let ff=''; for(let i=0;i<26;i++){ const x=(i*211+60)%W, y=410+((i*73)%70); ff+=`<circle class="firefly" style="animation-delay:${-(i*0.7).toFixed(1)}s" cx="${x}" cy="${y}" r="${(2.4+(i%3)*0.5)}" fill="#FCFBE0"/>`; }
-      s+=`<g>${ff}</g>`;
+      lv+=`<g>${ff}</g>`;
     } else {
       let pl=''; for(let i=0;i<18;i++){ const x=(i*271+90)%W, y=280+((i*53)%60); pl+=`<circle class="pollen" style="animation-duration:${12+(i%5)*1.5}s;animation-delay:${-(i*1.7).toFixed(1)}s" cx="${x}" cy="${y}" r="${(2.4+(i%3)*0.6).toFixed(1)}" fill="#FFF1C8"/>`; }
-      s+=`<g>${pl}</g>`;
+      lv+=`<g>${pl}</g>`;
     }
   }
-
-  // seasonal atmosphere (wash + fallen scatter + drifting snow/leaves/petals) — under the night veil
-  s+=drawSeasonOverlay(W,H,seasonName,phase,dusky);
-
+  // seasonal atmosphere (wash + fallen scatter + drifting particles) — over the animals, under the veil
+  lv+=drawSeasonOverlay(W,H,seasonName,phase,dusky);
   // dusk/night veil
-  if(dusky) s+=`<rect width="${W}" height="${H}" fill="#2A2740" opacity="${phase==='night'?.22:.12}"/>`;
-
-  // ── transparent tap columns, one per habitat (tap anywhere in a habitat to tend it) ──
+  if(dusky) lv+=`<rect width="${W}" height="${H}" fill="#2A2740" opacity="${phase==='night'?.22:.12}"/>`;
+  // transparent tap columns, one per habitat (tap anywhere in a habitat to tend it)
   HAB.forEach((id,i)=>{
     const x0 = i===0 ? 0 : (HABX[HAB[i-1]]+HABX[id])/2;
     const x1 = i===HAB.length-1 ? W : (HABX[id]+HABX[HAB[i+1]])/2;
-    const st=stageOf(careOf(id));
-    s+=`<rect class="treeTap" data-area="${id}" x="${x0.toFixed(0)}" y="0" width="${(x1-x0).toFixed(0)}" height="${H}" fill="transparent" style="cursor:pointer" aria-hidden="true"/>`;
+    lv+=`<rect class="treeTap" data-area="${id}" x="${x0.toFixed(0)}" y="0" width="${(x1-x0).toFixed(0)}" height="${H}" fill="transparent" style="cursor:pointer" aria-hidden="true"/>`;
   });
 
-  s+=`</svg>`;
-  const wrap=document.getElementById('sceneWrap');
+  const layers=ensureSceneLayers();
+  const wrap=layers.wrap, svg=layers.svg;
+  svg.setAttribute('aria-label',`Your life as a landscape — seven habitats at ${phase}, in ${seasonName}. Swipe to wander across them.`);
+  const wasStarted=sceneStarted;
   const sl=wrap.scrollLeft;
-  wrap.innerHTML=s;
-  const wkf=wrap.querySelector('#wander-kf'); if(wkf) wkf.textContent=wanderKf;
+  svg.innerHTML=`<defs>${glowDef}<style id="wander-kf"></style></defs>`+lvSky+lvGlow+lv;
+  const wkf=svg.querySelector('#wander-kf'); if(wkf) wkf.textContent=wanderKf;
   // keep the camera where it was; on first ever paint, open on Body (left)
-  wrap.scrollLeft = sceneStarted ? sl : 0;
+  wrap.scrollLeft = wasStarted ? sl : 0;
   sceneStarted=true;
+  rasterScene(false);          // paint the static bitmap onto the canvas
+  invalidateSceneScale();      // scene svg may have resized; recompute the cull scale next frame
   fableCollect();
   growAreaId=null;
 
   // pointer-only (the cards are the keyboard/screen-reader controls) — so no focus ring/line on the scene
-  wrap.querySelectorAll('.treeTap').forEach(el=>{ el.addEventListener('click',()=>openTend(el.dataset.area)); });
+  svg.querySelectorAll('.treeTap').forEach(el=>{ el.addEventListener('click',()=>openTend(el.dataset.area)); });
   updateHabDots();
 }
 
-/* smoothly grow ONE tree into its new form (cross-fade), without rebuilding the scene */
-function patchTree(id){
-  const svg=document.querySelector('#sceneWrap svg');
-  const host=svg&&svg.querySelector('#tw-'+id);
-  if(!host){ lastSceneSig=''; renderMeadow(true); return; }
-  const phase=dayPhase(), seasonName=season();
-  const a=AREA[id], care=careOf(id), st=stageOf(care), f=glowStrength(id), scale=treeScale(id);
-  const swayCls=(st>=1 && store.settings.motion==='full')?' sway':'';
-  const shadow=host.querySelector('ellipse'); if(shadow){ shadow.setAttribute('rx',(scale*(4+st*6)).toFixed(1)); shadow.setAttribute('ry',(scale*2.4).toFixed(1)); }
-  const NS='http://www.w3.org/2000/svg';
-  const ng=document.createElementNS(NS,'g');
-  ng.setAttribute('class','treeart'+swayCls);
-  ng.setAttribute('transform',`scale(${scale.toFixed(3)})`);
-  ng.innerHTML=tree(st,fracOf(care),id,seasonName,phase,FORM[id]);
-  const glw=host.querySelector('#glw-'+id);
-  if(store.settings.motion==='full'){
-    // fade the old plant out as the new one blooms in — a gentle dissolve, never a blank gap
-    host.querySelectorAll('g.treeart').forEach(o=>{ o.style.transition='opacity .85s var(--ease)'; o.style.opacity='0'; setTimeout(()=>o.remove(),900); });
-    ng.style.opacity='0'; ng.style.transition='opacity .85s var(--ease)';
-    glw ? host.insertBefore(ng,glw) : host.appendChild(ng);
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{ ng.style.opacity='1'; }));
-  } else {
-    host.querySelectorAll('g.treeart').forEach(o=>o.remove());
-    glw ? host.insertBefore(ng,glw) : host.appendChild(ng);
+/* ── scene layers: a persistent <canvas> (static bitmap) + a live overlay <svg>, both filling the
+   same plane and sharing the panorama coordinate system, so animals/taps sit exactly over the raster ── */
+let _hiddenDefsCache=null, _lastStaticInner='';
+function hiddenDefs(){ if(_hiddenDefsCache==null){ const d=document.querySelector('svg[aria-hidden="true"] defs'); _hiddenDefsCache=d?d.innerHTML:''; } return _hiddenDefsCache; }
+function ensureSceneLayers(){
+  const wrap=document.getElementById('sceneWrap');
+  let plane=wrap.querySelector('.scene-plane');
+  if(!plane){
+    plane=document.createElement('div'); plane.className='scene-plane';
+    const cv=document.createElement('canvas'); cv.className='scene-canvas'; cv.setAttribute('aria-hidden','true');
+    const NS='http://www.w3.org/2000/svg';
+    const svg=document.createElementNS(NS,'svg');
+    svg.setAttribute('class','scene-svg'); svg.setAttribute('viewBox','0 0 '+PANO_W+' '+PANO_H);
+    svg.setAttribute('preserveAspectRatio','xMidYMid meet'); svg.setAttribute('xmlns',NS); svg.setAttribute('role','img');
+    plane.appendChild(cv); plane.appendChild(svg); wrap.appendChild(plane);
   }
-  if(glw) glw.innerHTML=glowSparkles(st,scale,a.accent,f);
-  lastSceneSig=sceneSig();   // keep the cache current so the ambient tick won't rebuild (and flash)
+  return {wrap, plane, canvas:plane.querySelector('canvas.scene-canvas'), svg:plane.querySelector('svg.scene-svg')};
+}
+/* rasterise the current static scene string onto the canvas. crossfade=true fades the new bitmap in
+   over the old (used on tend, so a growing tree/flora dissolves smoothly instead of popping). */
+function rasterScene(crossfade){
+  const L=ensureSceneLayers(); const plane=L.plane, canvas=L.canvas;
+  const rect=plane.getBoundingClientRect();
+  if(rect.width<2||rect.height<2) return;    // not laid out (e.g. meadow hidden) — a later render will raster
+  const dpr=Math.max(1,Math.min(3,window.devicePixelRatio||1));
+  let cw=Math.round(rect.width*dpr), ch=Math.round(rect.height*dpr);
+  const MAXPIX=16000000;                      // stay under iOS' ~16M-px canvas ceiling (≈4096²)
+  if(cw*ch>MAXPIX){ const k=Math.sqrt(MAXPIX/(cw*ch)); cw=Math.round(cw*k); ch=Math.round(ch*k); }
+  const doc=`<svg xmlns="http://www.w3.org/2000/svg" width="${cw}" height="${ch}" viewBox="0 0 ${PANO_W} ${PANO_H}" preserveAspectRatio="none">${_lastStaticInner}</svg>`;
+  const soft = crossfade && store.settings.motion==='full' && !reduceMotion() && canvas.width>1;
+  const url=URL.createObjectURL(new Blob([doc],{type:'image/svg+xml'}));
+  const img=new Image();
+  img.onload=()=>{ URL.revokeObjectURL(url);
+    try{
+      if(soft){
+        plane.querySelectorAll('canvas.scene-fade').forEach(o=>o.remove());   // never let temp layers pile up
+        const t=document.createElement('canvas'); t.className='scene-canvas scene-fade';
+        t.width=cw; t.height=ch; t.getContext('2d').drawImage(img,0,0,cw,ch);
+        t.style.opacity='0'; t.style.transition='opacity .85s var(--ease)';
+        plane.appendChild(t);
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{ t.style.opacity='1'; }));
+        setTimeout(()=>{ if(!t.isConnected) return; if(canvas.width!==cw||canvas.height!==ch){ canvas.width=cw; canvas.height=ch; } canvas.getContext('2d').drawImage(t,0,0); t.remove(); }, 920);
+      } else {
+        if(canvas.width!==cw||canvas.height!==ch){ canvas.width=cw; canvas.height=ch; }   // resize+draw in one sync tick → no visible clear
+        canvas.getContext('2d').drawImage(img,0,0,cw,ch);
+      }
+    }catch(_){}
+  };
+  img.onerror=()=>{ URL.revokeObjectURL(url); };
+  img.src=url;
+}
+
+/* grow ONE habitat on tend: the tree + its flora live on the canvas now, so re-raster the static
+   bitmap with a gentle cross-fade (only the tended corner visibly changes) and light its overlay
+   glow sparkles — no full scene rebuild, no flash, animals keep walking uninterrupted. */
+function growHabitat(id){
+  renderMeadow(true,{staticOnly:true,crossfade:true});   // sets lastSceneSig + cross-fade re-rasters the canvas
+  patchGlow(id);                                          // freshly-tended rising sparkles on the overlay
 }
 /* refresh just a tree's rising sparkles as the glow gently fades (no rebuild) */
 function patchGlow(id){
@@ -3304,29 +3330,6 @@ function patchGlow(id){
   const st=stageOf(careOf(id));
   glw.innerHTML=glowSparkles(st,treeScale(id),AREA[id].accent,glowStrength(id));
 }
-/* cross-fade just one habitat's flora as it grows on tend — mirrors patchTree, no full scene rebuild/flash */
-function patchEnv(id){
-  const svg=document.querySelector('#sceneWrap svg');
-  const host=svg&&svg.querySelector('#env-'+id);
-  if(!host){ lastSceneSig=''; renderMeadow(true); return; }
-  const phase=dayPhase(), dusky=DUSKY(phase); _phase=phase;   // flora helpers read _phase
-  const cx=HABX[id], by=HABY[id], gr=growthOf(id);
-  const html = id==='body'?envMeadow(cx,by,gr)
-    : id==='home'?envHome(cx,by,phase,gr)
-    : id==='connection'?envThicket(cx,by,phase,gr)
-    : id==='meaning'?envKnoll(cx,by,phase,gr)
-    : id==='craft'?envCraft(cx,by,phase,gr)
-    : id==='future'?envStream(cx,by,dusky,gr)
-    : envPool(cx,by,dusky,gr);
-  if(store.settings.motion==='full'){
-    const layer=document.createElementNS('http://www.w3.org/2000/svg','g');
-    layer.innerHTML=html; layer.style.opacity='0'; layer.style.transition='opacity .85s var(--ease)';
-    [...host.children].forEach(o=>{ o.style.transition='opacity .85s var(--ease)'; o.style.opacity='0'; setTimeout(()=>o.remove(),900); });
-    host.appendChild(layer);
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{ layer.style.opacity='1'; }));
-  } else { host.innerHTML=html; }
-}
-
 /* pan the camera to centre a habitat */
 function scrollToHabitat(id,smooth){
   const wrap=document.getElementById('sceneWrap'); const svg=wrap&&wrap.querySelector('svg'); if(!svg) return;
@@ -3968,7 +3971,7 @@ function doTend(){
   const area=sheetArea, a=AREA[area];
   const res=tend(area, text, custom);
   closeTend();
-  patchTree(area); patchEnv(area); renderCards();   // smooth cross-fade: the tree AND its habitat's flowers grow — no scene rebuild/flash
+  growHabitat(area); renderCards();   // smooth cross-fade re-raster: the tree AND its habitat's flowers grow — no full rebuild/flash
   showTendToast(a, res);
 }
 let lastToast={area:null,t:0};
@@ -4220,6 +4223,8 @@ function init(){
     const ratio=z/prev;
     wrap.scrollLeft=Math.max(0, cx*ratio - wrap.clientWidth/2);
     wrap.scrollTop=Math.max(0, cy*ratio - wrap.clientHeight/2);
+    invalidateSceneScale();                                 // svg height changed → recompute the cull scale
+    if(typeof rasterScene==='function') rasterScene(false);  // re-raster the static bitmap crisp at the new zoom
     document.getElementById('zoomIn').disabled = zoomIdx>=ZOOMS.length-1;
     document.getElementById('zoomOut').disabled = zoomIdx<=0;
   }
