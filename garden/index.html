@@ -4462,13 +4462,18 @@ function renderMeadow(force,opt){
     {id:'demoiselle',mid:'roost', x:HABX.calm-158,  y:HABY.calm+26,  sc:.48, off:.60, flt:28, fltAmp:2, fltSeed:304}    // asleep on the lavender
     );
   }
-  if(dusky) CAST.push({id:'owl',mid:'perch',x:1560,y:320,sc:.45,off:.5,amp:0,yd:0,extra:' opacity=".85"'});   // in the Meaning frame, over the knoll treeline
+  if(dusky) CAST.push({id:'owl',mid:'perch',x:1600,y:320,sc:.45,off:.5,amp:0,yd:0,extra:' opacity=".85"'});   // in the Meaning frame, on the dead snag over the knoll treeline
   if(!night && total>=12) CAST.push({id:'swallowtail',mid:'flit',x:HABX.meaning-90,y:HABY.meaning-150,sc:.5,off:.33,flt:20});
   if(!night && total>=20) CAST.push({id:'peacock',mid:'flutter',x:HABX.future-60,y:HABY.future-130,sc:.5,off:.5,flt:21,fltAmp:24});
   if(!night && total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-170,y:HABY.calm-170,sc:.52,off:.66,flt:22});   // over the pond's west edge, clear of the pine crown
-  // the dusk owl gets a bare perch-branch reaching out of the treeline (drawn BEFORE the birds,
-  // so the owl sits on it) — it was floating on the canopy texture
-  if(dusky) lv+=`<g opacity=".8" pointer-events="none"><path d="M1516 340 C 1536 335 1556 333 1572 334" stroke="#241E38" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M1532 337 C 1540 331 1549 328 1558 327" stroke="#241E38" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>`;
+  // the dusk owl's perch: a dead snag ROOTED in the treeline band — a visible trunk stub rises out
+  // of the forest silhouette and forks into the branch the owl sits on (no more branch-in-mid-air)
+  if(dusky) lv+=`<g opacity=".85" pointer-events="none">`
+    +`<path d="M1564 352 C 1566 346 1568 340 1572 336" stroke="#241E38" stroke-width="7" fill="none" stroke-linecap="round"/>`
+    +`<path d="M1570 338 C 1584 334.5 1598 333.5 1614 334.5" stroke="#241E38" stroke-width="4.4" fill="none" stroke-linecap="round"/>`
+    +`<path d="M1574 337 C 1568 332 1563 327 1560 322" stroke="#241E38" stroke-width="2.6" fill="none" stroke-linecap="round"/>`
+    +`<path d="M1602 334 C 1608 331 1613 327 1616 323" stroke="#241E38" stroke-width="2" fill="none" stroke-linecap="round"/>`
+    +`</g>`;
   // painter's order: farther (smaller y) first, nearer last — a nearer animal always crosses IN FRONT
   // (deterministic, so fableCollect's id|x|off snapshot keys survive every rebuild unchanged)
   CAST.slice().sort((a,b)=>a.y-b.y).forEach(o=>{ lv+=FB(o); });

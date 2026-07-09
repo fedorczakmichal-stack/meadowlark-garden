@@ -501,4 +501,8 @@ najświeższy art; bundle nie ma też ogrodowych patchy).
   = w kadrze Meaning (od v49 wisiała MIĘDZY kadrami!); dereń → (`future-96`,510) zachodni brzeg = pełny kadr Future;
   samotna kalina USUNIĘTA. Nocna ryba y520 op .3. ⚠ REGUŁA: snap-kadry to ~±138 j. wokół HABX — obiekty-bohaterowie
   lądują W oknach kadrów, nie w martwych strefach między nimi.
+**v74** (2026-07-09, feedback Michała): **sowa siedziała na gałęzi „w powietrzu"** → perch = martwy SNAG zakotwiczony
+w linii lasu (pień 7px wyrasta z pasa mgły/lasu y352 → rozwidlenie → gałąź główna + 2 tipy; owl x 1560→1600, snag
+1564-1616 — całość głęboko W kadrze Meaning). Lis nocą CELOWO czuwa (nokturnalny — nocna zmiana ogrodu); jeśli Michał
+zechce pełnego snu — uśpić w night-cast. CACHE `v74`.
 
