@@ -489,6 +489,32 @@
     .set-row .seg{flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
     .set-row .btn-quiet{margin-left:auto}
   }
+  /* wide segmented controls (Season = 5, Meadow preview = 4): full-width row, buttons share the width evenly */
+  .set-row.stack .seg{width:100%;flex-wrap:nowrap;background:var(--bg-2)}
+  .set-row.stack .seg button{flex:1 1 0;padding:7px 5px;text-align:center;white-space:nowrap}
+  @media(max-width:360px){ .set-row.stack .seg{flex-wrap:wrap} .set-row.stack .seg button{flex:1 1 28%} }
+
+  /* dev/test strip under the meadow — a quick Season + development preview (mirrors the controls in More) */
+  .test-bar{margin:8px 14px 2px;padding:7px 10px 9px;background:var(--bg-2);border:1px solid var(--hairline);border-radius:15px}
+  .test-bar>summary{cursor:pointer;list-style:none;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .test-bar>summary::-webkit-details-marker{display:none}
+  .test-bar>summary::before{content:"▸";font-size:10px;transition:transform .2s var(--ease)}
+  .test-bar[open]>summary::before{transform:rotate(90deg)}
+  .test-bar[open]>summary{margin-bottom:7px}
+  .tb-row{display:flex;align-items:center;gap:9px}
+  .tb-row+.tb-row{margin-top:6px}
+  .tb-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);flex:0 0 56px}
+  .tb-row .seg{flex:1 1 auto;background:var(--surface);flex-wrap:nowrap;padding:2px}
+  .tb-row .seg button{flex:1 1 0;padding:6px 3px;font-size:11px;min-height:34px}
+  @media(hover:none),(max-width:560px){ .tb-row .seg button{min-height:38px} }
+
+  /* More sub-tabs — show one section at a time so the page isn't a wall of text */
+  .subtabs{display:flex;gap:4px;background:var(--bg-2);border:1px solid var(--hairline);border-radius:999px;padding:3px;margin:4px 0 18px}
+  .subtabs button{flex:1 1 0;background:none;border:0;border-radius:999px;padding:8px 6px;font-size:12.5px;font-weight:600;color:var(--muted);min-height:38px;cursor:pointer}
+  .subtabs button.on{background:var(--surface);color:var(--ink);box-shadow:0 2px 8px -4px rgba(58,52,80,.3)}
+  @media(hover:none),(max-width:560px){ .subtabs button{min-height:44px} }
+  .subpane{display:none}
+  .subpane.on{display:block;animation:viewIn .35s var(--ease)}
 
   /* ── tend bottom sheet ── */
   .scrim{position:fixed;inset:0;z-index:60;background:rgba(58,52,80,.34);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .3s var(--ease)}
@@ -828,6 +854,13 @@
       <div class="scene-cap" id="sceneCap"></div>
       <div id="habDots" aria-label="Wander to a habitat"></div>
       <div class="scene-hint">← swipe to wander · tap a place to tend →</div>
+      <details class="test-bar" id="testBar" open>
+        <summary>Preview · season &amp; growth</summary>
+        <div class="tb-row"><span class="tb-label">Season</span>
+          <div class="seg" data-seg="season"><button data-v="auto">Auto</button><button data-v="spring">Spring</button><button data-v="summer">Summer</button><button data-v="autumn">Autumn</button><button data-v="winter">Winter</button></div></div>
+        <div class="tb-row"><span class="tb-label">Meadow</span>
+          <div class="seg" data-seg-demo><button data-v="">Mine</button><button data-v="12">Young</button><button data-v="35">Middle</button><button data-v="70">Full</button></div></div>
+      </details>
       <div id="craftSlot" class="craft-slot"></div>
       <div class="cards-head">
         <h2 id="cardsHeadTitle">Tend one small thing</h2>
@@ -879,99 +912,110 @@
     <!-- ░░ MORE: PROMISE / SAFETY / SETTINGS ░░ -->
     <section class="view" id="view-more" aria-label="More">
       <div class="pad">
-        <div class="eyebrow">Calm by design</div>
-        <h1 class="lead-h">What Meadowlark promises</h1>
-        <p class="sub">These aren't features we toggle — they're how the garden is built. Nothing you tend is ever lost. Care only ever adds up, even after a long quiet.</p>
+        <div class="eyebrow">More</div>
+        <h1 class="lead-h">Settings &amp; support</h1>
+        <div class="subtabs" id="moreSubtabs" role="tablist" aria-label="More sections">
+          <button data-sub="settings" class="on" role="tab" aria-selected="true">Settings</button>
+          <button data-sub="promise" role="tab" aria-selected="false">Promise</button>
+          <button data-sub="support" role="tab" aria-selected="false">Support</button>
+          <button data-sub="garden" role="tab" aria-selected="false">Garden</button>
+        </div>
 
-        <div class="panel">
-          <div style="font-weight:600;font-size:14px">You'll never find</div>
-          <div class="chips">
-            <span class="chip-no">Streaks to keep alive</span>
-            <span class="chip-no">Guilt for days away</span>
-            <span class="chip-no">Red warnings</span>
-            <span class="chip-no">Counting missed days</span>
-            <span class="chip-no">Pressure to catch up</span>
-          </div>
-          <div style="font-weight:600;font-size:14px;margin-top:16px">What stays</div>
-          <div class="chips">
-            <span class="chip-yes">Care that only adds up</span>
-            <span class="chip-yes">Rest is part of growing</span>
-            <span class="chip-yes">A warm welcome back</span>
-            <span class="chip-yes">Plain words for a tired day</span>
+        <!-- ░ SETTINGS ░ -->
+        <div class="subpane on" data-sub="settings" role="tabpanel">
+          <div class="panel" id="settingsPanel">
+            <div class="set-row">
+              <div><div class="s-label">Motion</div><div class="s-desc">Calm stills the swaying and drifting.</div></div>
+              <div class="seg" data-seg="motion"><button data-v="full">Full</button><button data-v="calm">Calm</button></div>
+            </div>
+            <div class="set-row">
+              <div><div class="s-label">Text size</div><div class="s-desc">A little larger, for tired eyes.</div></div>
+              <div class="seg" data-seg="textScale"><button data-v="normal">Normal</button><button data-v="large">Larger</button></div>
+            </div>
+            <div class="set-row">
+              <div><div class="s-label">Half of the world</div><div class="s-desc">So the seasons match your sky.</div></div>
+              <div class="seg" data-seg="hemisphere"><button data-v="north">North</button><button data-v="south">South</button></div>
+            </div>
+            <div class="set-row">
+              <div><div class="s-label">Scene</div><div class="s-desc">Follow your clock, or settle on one.</div></div>
+              <div class="seg" data-seg="theme"><button data-v="auto">Clock</button><button data-v="day">Day</button><button data-v="evening">Evening</button></div>
+            </div>
+            <div class="set-row stack">
+              <div><div class="s-label">Season</div><div class="s-desc">Let the year turn on its own, or keep the one you love.</div></div>
+              <div class="seg" data-seg="season"><button data-v="auto">Auto</button><button data-v="spring">Spring</button><button data-v="summer">Summer</button><button data-v="autumn">Autumn</button><button data-v="winter">Winter</button></div>
+            </div>
+            <div class="set-row">
+              <div><div class="s-label">Your craft</div><div class="s-desc">Pick from 860+ crafts, and where you stand on its road.</div></div>
+              <button class="btn btn-quiet" id="craftOccBtn" style="max-width:190px;text-align:right"></button>
+            </div>
+            <div class="set-row stack">
+              <div><div class="s-label">Meadow preview</div><div class="s-desc">For showing the garden around — your real growth stays untouched.</div></div>
+              <div class="seg" id="demoSeg" data-seg-demo><button data-v="">Mine</button><button data-v="12">Young</button><button data-v="35">Middle</button><button data-v="70">Full</button></div>
+            </div>
           </div>
         </div>
 
-        <div class="panel">
-          <div class="promise-line"><svg class="pl-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4-4 7-7 7-12a7 7 0 0 0-14 0c0 5 3 8 7 12z"/><path d="M12 11v8"/></svg><p>Rest is part of growing. Winter isn't falling behind, and a quiet week isn't a gap to close.</p></div>
-          <div class="promise-line"><svg class="pl-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16"/><path d="M14 6l6 6-6 6"/></svg><p>Connection and Future are invitations, never obligations — a step on the days you have it in you, nothing owed on the days you don't.</p></div>
-          <div class="promise-line"><svg class="pl-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg><p>Everything you tend stays on this device — no account, nothing to sign up for. The only thing that ever leaves is a one-time lookup of a craft's public steps, and only when you open one.</p></div>
-        </div>
-
-        <div class="eyebrow" style="margin-top:26px">If today is heavy</div>
-        <h2 class="lead-h" id="safety" style="font-size:22px">A calm garden — not medical care</h2>
-        <p class="sub">Meadowlark isn't therapy, treatment, or a substitute for talking to someone — and it will never claim to be. If you're struggling and need someone now, please reach out. These lines are free, any time.</p>
-        <div class="safe-lines" id="safeLines">
-          <div class="safe-line"><span class="reg">Any hour</span><span><a href="tel:988" class="safe-tel">Call 988</a> or <a href="sms:988" class="safe-tel">text 988</a> — the Suicide &amp; Crisis Lifeline, free and confidential</span></div>
-          <div class="safe-line"><span class="reg">Prefer to text</span><span>Crisis Text Line — <a href="sms:741741" class="safe-tel">text HOME to 741741</a></span></div>
-          <div class="safe-line"><span class="reg">Outside the US</span><span>Find a line near you at <a href="https://findahelpline.com" target="_blank" rel="noopener">findahelpline.com</a></span></div>
-        </div>
-        <p class="sub" style="font-size:13px">Crisis help is always free — never behind a paywall or a sign-up. In an emergency, contact your local emergency services.</p>
-
-        <div class="eyebrow" style="margin-top:26px">A moment, if you want one</div>
-        <h2 class="lead-h" style="font-size:22px">Breathe for a minute</h2>
-        <p class="sub">Optional and private — a slow box breath. Follow the circle, or close your eyes and just be here. Nothing is counted; stop whenever.</p>
-        <div class="breathe" id="breathe">
-          <button class="breathe-start" id="breatheStart">Begin</button>
-          <div class="breathe-stage" id="breatheStage" hidden>
-            <div class="breathe-orb" id="breatheOrb"><span id="breatheLabel">Breathe in</span></div>
-            <button class="breathe-stop" id="breatheStop">I'm done</button>
+        <!-- ░ PROMISE ░ -->
+        <div class="subpane" data-sub="promise" role="tabpanel">
+          <p class="sub">These aren't features we toggle — they're how the garden is built. Nothing you tend is ever lost. Care only ever adds up, even after a long quiet.</p>
+          <div class="panel">
+            <div style="font-weight:600;font-size:14px">You'll never find</div>
+            <div class="chips">
+              <span class="chip-no">Streaks to keep alive</span>
+              <span class="chip-no">Guilt for days away</span>
+              <span class="chip-no">Red warnings</span>
+              <span class="chip-no">Counting missed days</span>
+              <span class="chip-no">Pressure to catch up</span>
+            </div>
+            <div style="font-weight:600;font-size:14px;margin-top:16px">What stays</div>
+            <div class="chips">
+              <span class="chip-yes">Care that only adds up</span>
+              <span class="chip-yes">Rest is part of growing</span>
+              <span class="chip-yes">A warm welcome back</span>
+              <span class="chip-yes">Plain words for a tired day</span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="promise-line"><svg class="pl-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4-4 7-7 7-12a7 7 0 0 0-14 0c0 5 3 8 7 12z"/><path d="M12 11v8"/></svg><p>Rest is part of growing. Winter isn't falling behind, and a quiet week isn't a gap to close.</p></div>
+            <div class="promise-line"><svg class="pl-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16"/><path d="M14 6l6 6-6 6"/></svg><p>Connection and Future are invitations, never obligations — a step on the days you have it in you, nothing owed on the days you don't.</p></div>
+            <div class="promise-line"><svg class="pl-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg><p>Everything you tend stays on this device — no account, nothing to sign up for. The only thing that ever leaves is a one-time lookup of a craft's public steps, and only when you open one.</p></div>
           </div>
         </div>
 
-        <div class="eyebrow" style="margin-top:26px">Gentle settings</div>
-        <h2 class="lead-h" style="font-size:22px">Make it gentler if you need to</h2>
-        <div class="panel" id="settingsPanel">
-          <div class="set-row">
-            <div><div class="s-label">Motion</div><div class="s-desc">Calm stills the swaying and drifting.</div></div>
-            <div class="seg" data-seg="motion"><button data-v="full">Full</button><button data-v="calm">Calm</button></div>
+        <!-- ░ SUPPORT ░ -->
+        <div class="subpane" data-sub="support" role="tabpanel">
+          <h2 class="lead-h" id="safety" style="font-size:22px">A calm garden — not medical care</h2>
+          <p class="sub">Meadowlark isn't therapy, treatment, or a substitute for talking to someone — and it will never claim to be. If you're struggling and need someone now, please reach out. These lines are free, any time.</p>
+          <div class="safe-lines" id="safeLines">
+            <div class="safe-line"><span class="reg">Any hour</span><span><a href="tel:988" class="safe-tel">Call 988</a> or <a href="sms:988" class="safe-tel">text 988</a> — the Suicide &amp; Crisis Lifeline, free and confidential</span></div>
+            <div class="safe-line"><span class="reg">Prefer to text</span><span>Crisis Text Line — <a href="sms:741741" class="safe-tel">text HOME to 741741</a></span></div>
+            <div class="safe-line"><span class="reg">Outside the US</span><span>Find a line near you at <a href="https://findahelpline.com" target="_blank" rel="noopener">findahelpline.com</a></span></div>
           </div>
-          <div class="set-row">
-            <div><div class="s-label">Text size</div><div class="s-desc">A little larger, for tired eyes.</div></div>
-            <div class="seg" data-seg="textScale"><button data-v="normal">Normal</button><button data-v="large">Larger</button></div>
-          </div>
-          <div class="set-row">
-            <div><div class="s-label">Half of the world</div><div class="s-desc">So the seasons match your sky.</div></div>
-            <div class="seg" data-seg="hemisphere"><button data-v="north">North</button><button data-v="south">South</button></div>
-          </div>
-          <div class="set-row">
-            <div><div class="s-label">Scene</div><div class="s-desc">Follow your clock, or settle on one.</div></div>
-            <div class="seg" data-seg="theme"><button data-v="auto">Clock</button><button data-v="day">Day</button><button data-v="evening">Evening</button></div>
-          </div>
-          <div class="set-row stack">
-            <div><div class="s-label">Season</div><div class="s-desc">Let the year turn on its own, or keep the one you love.</div></div>
-            <div class="seg" data-seg="season"><button data-v="auto">Auto</button><button data-v="spring">Spring</button><button data-v="summer">Summer</button><button data-v="autumn">Autumn</button><button data-v="winter">Winter</button></div>
-          </div>
-          <div class="set-row">
-            <div><div class="s-label">Your craft</div><div class="s-desc">Pick from 860+ crafts, and where you stand on its road.</div></div>
-            <button class="btn btn-quiet" id="craftOccBtn" style="max-width:190px;text-align:right"></button>
-          </div>
-          <div class="set-row">
-            <div><div class="s-label">Meadow preview</div><div class="s-desc">For showing the garden around — your real growth stays untouched.</div></div>
-            <div class="seg" id="demoSeg"><button data-v="">Mine</button><button data-v="12">Young</button><button data-v="35">Middle</button><button data-v="70">Full</button></div>
+          <p class="sub" style="font-size:13px">Crisis help is always free — never behind a paywall or a sign-up. In an emergency, contact your local emergency services.</p>
+          <h2 class="lead-h" style="font-size:22px;margin-top:28px">Breathe for a minute</h2>
+          <p class="sub">Optional and private — a slow box breath. Follow the circle, or close your eyes and just be here. Nothing is counted; stop whenever.</p>
+          <div class="breathe" id="breathe">
+            <button class="breathe-start" id="breatheStart">Begin</button>
+            <div class="breathe-stage" id="breatheStage" hidden>
+              <div class="breathe-orb" id="breatheOrb"><span id="breatheLabel">Breathe in</span></div>
+              <button class="breathe-stop" id="breatheStop">I'm done</button>
+            </div>
           </div>
         </div>
 
-        <div class="panel">
-          <div class="s-label" style="margin-bottom:2px">Your garden's yours</div>
-          <div class="s-desc" style="margin-bottom:14px">It lives only on this device. Save a copy any time, or carry one in.</div>
-          <button class="btn btn-quiet full" id="exportBtn" style="margin-bottom:10px">Save a copy of my garden</button>
-          <button class="btn btn-quiet full" id="importBtn" style="margin-bottom:10px">Bring in a saved copy</button>
-          <input type="file" id="importFile" accept="application/json,.json" hidden>
-          <button class="btn btn-quiet full" id="resetBtn" style="color:var(--muted)">Start the garden over</button>
-          <p class="s-desc" id="storageNote" style="display:none;color:var(--gold-text);margin-top:14px">This device isn't letting the garden save right now — your tending still counts for this visit.</p>
+        <!-- ░ GARDEN ░ -->
+        <div class="subpane" data-sub="garden" role="tabpanel">
+          <div class="panel">
+            <div class="s-label" style="margin-bottom:2px">Your garden's yours</div>
+            <div class="s-desc" style="margin-bottom:14px">It lives only on this device. Save a copy any time, or carry one in.</div>
+            <button class="btn btn-quiet full" id="exportBtn" style="margin-bottom:10px">Save a copy of my garden</button>
+            <button class="btn btn-quiet full" id="importBtn" style="margin-bottom:10px">Bring in a saved copy</button>
+            <input type="file" id="importFile" accept="application/json,.json" hidden>
+            <button class="btn btn-quiet full" id="resetBtn" style="color:var(--muted)">Start the garden over</button>
+            <p class="s-desc" id="storageNote" style="display:none;color:var(--gold-text);margin-top:14px">This device isn't letting the garden save right now — your tending still counts for this visit.</p>
+          </div>
+          <p class="sub" style="font-size:12.5px;text-align:center">A calm garden for hard seasons · not medical care or therapy · built quietly with care · © 2026 Meadowlark</p>
         </div>
-
-        <p class="sub" style="font-size:12.5px;text-align:center">A calm garden for hard seasons · not medical care or therapy · built quietly with care · © 2026 Meadowlark</p>
       </div>
     </section>
   </main>
@@ -3186,11 +3230,14 @@ function stoneAndPebble(cx,by,seed,sc,kind,side){ side=side||1; const T=GA.STONE
    NEAR: the knoll cairn + a SPARSE, well-spaced scatter of single rocks in the open LOW foreground (below the
    plant roots, in front of them), avoiding every tree, water body and path. No overlapping clusters. ══ */
 function drawFarStones(W,dusky){ let g='';
-  for(let i=0;i<12;i++){ const dsx=(i*337+120)%(W-140)+70;
+  const cores=HAB.map(id=>HABX[id]+(HAB_TX[id]||0));
+  for(let i=0;i<8;i++){ const dsx=(i*389+200)%(W-170)+90;
+    if(cores.some(c=>Math.abs(dsx-c)<74)) continue;      // sit in the open inter-habitat gaps, never under a tree
     const r=v=>{ const t=Math.sin(dsx*0.043+i*6.7+v*3.1)*43758.5; return t-Math.floor(t); };
-    const dy=372+((i*29)%44), sc=0.07+r(1)*0.075;   // truly small; low opacity lets the hill show through = distance
-    // rounded, lighter rocks only — the dark layered slate / crystals read too sharp at distance
-    g+=`<g opacity="${dusky?0.34:0.5}">${gaStone(dsx,dy,sc,['granite','flint','sandstone'][Math.floor(r(2)*3)],(i*617+11)>>>0)}</g>`;
+    // grounded on the meadow floor in the MIDDLE distance — env plants (drawn AFTER) sit in front, so these read
+    // as small distant rocks resting ON the ground, not floating on a hillside. Lighter rounded kinds only.
+    const dy=432+((i*11)%14), sc=0.1+r(1)*0.07;
+    g+=`<g opacity="${dusky?0.62:0.85}">${gaStone(dsx,dy,sc,['granite','flint','sandstone'][Math.floor(r(2)*3)],(i*617+11)>>>0)}</g>`;
   }
   return g; }
 function drawNearStones(W,dusky){ let g='';
@@ -3791,7 +3838,6 @@ function renderMeadow(force,opt){
   st+=drawForest(W,dusky);
   { let mist=''; for(let x=60;x<W;x+=300){ mist+=`<ellipse cx="${x}" cy="${336+((x*7)%18)}" rx="190" ry="14" fill="#FFFFFF" opacity="${dusky?.10:.2}" filter="url(#glDof)"/>`; } st+=`<g>${mist}</g>`; }
   st+=`<path d="${wavy(362,22)}" fill="${hills[2]}"/>`;
-  st+=drawFarStones(W,dusky);                       // STONES · far layer — small hazy rocks on the slope (depth), nearer layers occlude them
   st+=`<path d="${wavy(432,18)}" fill="${hills[3]}"/>`;
   st+=drawMidground(W,dusky);
   // ── SEASON on the ground: a calm winter snow-blanket, or a drift of autumn leaves. A rest season, never loss.
@@ -3800,8 +3846,9 @@ function renderMeadow(force,opt){
     st+=`<path d="${wavy(424,16)}" fill="#EAF2F7" opacity="${dusky?.5:.9}"/>`;      // meadow floor under snow
     st+=`<path d="${wavy(430,13)}" fill="#F7FBFD" opacity="${dusky?.42:.82}"/>`;     // brighter fresh layer on top
   }
-  // (STONES were reworked into two coherent layers: drawFarStones() up on the slope above, and drawNearStones()
-  //  in the low foreground below — so rocks build depth without ever piling up on or hiding a plant.)
+  // STONES · middle-distance layer — grounded on the meadow floor (after the snow blanket so they rest ON snow in
+  // winter), BEHIND the env plants which draw next and sit in front of them. Foreground layer comes later.
+  st+=drawFarStones(W,dusky);
   // per-habitat environments (kept in id'd groups so they read the same as before)
   const gG={}; HAB.forEach(id=>gG[id]=growthOf(id));
   st+=`<g id="env-body">${envMeadow(HABX.body,HABY.body,gG.body)}</g>`;
@@ -4732,17 +4779,31 @@ function wireSettings(){
       lastSceneSig=''; renderGreeting(); renderMeadow(true); renderCards();
     }));
   });
-  const ds=document.getElementById('demoSeg');
-  if(ds){
+  // meadow-preview / development segs (one in More, one in the under-meadow test bar) — kept in sync
+  document.querySelectorAll('[data-seg-demo]').forEach(ds=>{
     ds.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
       demoCare = b.dataset.v===''?null:Number(b.dataset.v);
-      ds.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+      syncDemoSegs();
       lastSceneSig=''; renderMeadow(true); renderCards();
     }));
-    ds.querySelector('button').classList.add('on');
-  }
+  });
+  syncDemoSegs();
+  wireMoreSubtabs();
   const ob=document.getElementById('craftOccBtn');
   if(ob){ ob.addEventListener('click',openCraftPick); }
+}
+function syncDemoSegs(){ const v = demoCare==null?'':String(demoCare);
+  document.querySelectorAll('[data-seg-demo]').forEach(ds=>ds.querySelectorAll('button').forEach(b=>{
+    const on=b.dataset.v===v; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on?'true':'false'); })); }
+// More sub-tabs (Settings · Promise · Support · Garden) — show one section at a time
+function showMoreSub(k){ const nav=document.getElementById('moreSubtabs'); if(!nav) return;
+  nav.querySelectorAll('button').forEach(x=>{ const on=x.dataset.sub===k; x.classList.toggle('on',on); x.setAttribute('aria-selected',on?'true':'false'); });
+  document.querySelectorAll('#view-more .subpane').forEach(p=>p.classList.toggle('on',p.dataset.sub===k)); }
+function wireMoreSubtabs(){ const nav=document.getElementById('moreSubtabs'); if(!nav) return;
+  nav.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    showMoreSub(b.dataset.sub);
+    const v=document.getElementById('view-more'); if(v) v.scrollIntoView({block:'start',behavior:'instant'in window?'instant':'auto'});
+  }));
 }
 /* ── craft picker: search 860+ crafts, anchor your stage ── */
 let pickOcc=null, pickTitle='', pickStage=null;
@@ -4887,7 +4948,7 @@ function init(){
 
   document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
   document.getElementById('brandBtn').addEventListener('click',()=>go('meadow'));
-  document.getElementById('heavyLink').addEventListener('click',e=>{ e.preventDefault(); go('more'); setTimeout(()=>document.getElementById('safety').scrollIntoView({behavior:'smooth',block:'start'}),120); });
+  document.getElementById('heavyLink').addEventListener('click',e=>{ e.preventDefault(); go('more'); showMoreSub('support'); setTimeout(()=>document.getElementById('safety').scrollIntoView({behavior:'smooth',block:'start'}),120); });
   document.getElementById('scrim').addEventListener('click',()=>{ closeCraftPick(); closeCraftPath(); closeTend(); });
   document.getElementById('closeBtn').addEventListener('click',closeTend);
   document.getElementById('craftPathClose').addEventListener('click',closeCraftPath);
