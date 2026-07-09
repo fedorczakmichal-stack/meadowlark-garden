@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v64 (2026-07-08) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v70 (2026-07-09) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -64,11 +64,27 @@ Dane: 1 klucz localStorage `meadowlark.garden` (+ osobne klucze: `meadowlark.pre
 - **Pory dnia**: `dayPhase()` (theme/godzina) → 'dawn/day/golden/dusk/night'. **`phaseBlend()`** =
   ciągły cross-fade nieba+wzgórz w ~45min przed każdą granicą (sampleGrad+mix); `phaseBlendKey()` w
   `sceneSig` + `tick()` (60s) → scena re-renderuje kilka razy w oknie przejścia. dayPhase i phaseBlend
-  MUSZĄ czytać ten sam czas/theme (czytają) — inaczej niebo≠logika.
-- **Sezony (`drawSeasonOverlay`)**: additive (nie walczy z atlasem drzew o stałych kolorach) — zima:
-  chłodny wash+śnieg osiadły+padający; jesień: złoto+liście; wiosna: płatki. Cząstki `.fall`/`.spin` motion-gated.
-- **GROWTH ATLAS** (`GA` w pliku, port verbatim „The Growth Atlas"): drzewa/kwiaty o STAŁYCH kolorach koron
-  (dlatego sezony robimy overlayem, nie przez korony). `tree()`/`wildflower()` — stare sygnatury, w środku GA.
+  MUSZĄ czytać ten sam czas/theme (czytają) — inaczej niebo≠logika. **v69: `store.settings.theme` rozszerzony
+  do {auto,morning,day,evening,night}** (dayPhase+phaseBlend mapują morning→dawn, night→night; `coerce` akceptuje).
+- **GROWTH ATLAS (od v65 = przełom; `GA` = INSTANCJA KLASY, port silnika z paczki „The Growth Atlas Popr3")**:
+  bogate drzewa (`crown`/`limb`/`barkTexture`/`canopy` z puffami, `TREE_FORM`/`CROWN`/`BARK`), kwiaty (17 gat.),
+  trawy, **6 typów KAMIENI** (flint/granite/quartz/amethyst/slate/sandstone: `STONE`/`oneStone`/`blobPath`),
+  fenologia. **KLUCZ: wszystko jest SEZONOWE przez param `S`** — `flowerAbove(sp,g,S)`/`treeAbove(sp,g,S)`/
+  `grassAbove`/`canopy(...,S)`/`oneStone(...,S)`; gradienty `defs(S)` (`ga*` id, night = `gaTint` przełącza `url(#ga→#gaN`).
+  **`mdwSeason(name)`** = wrapper: bierze `GA.SEASONS[key]` + nadpisuje kontrakt duszy — **`forceBloom:true`** (kwiaty
+  NIGDY nie więdną/nie dormują) i **`bare: key==='Winter'`** (drzewa liściaste zimą = gałęziasty ośnieżony szkielet,
+  „te z gałęziami"; sosna=coniferAbove wieczniezielona). `_gaSeason` = globalna (jak `_phase`) ustawiana na górze
+  `renderMeadow`. Glue: `tree()`→`GA.*Above(sp,g,mdwSeason(seasonName))`, `wildflower()`→`GA.flowerAbove(sp,gr,_gaSeason)`.
+  ⚠ canopy shade `dk` cieniuje ku `S.vein` (NIE stałej zieleni — inaczej jesienna korona ma „dziurę"/oliwkowy placek).
+- **Sezony na scenie**: (a) FLORA/DRZEWA/TRAWA/KAMIENIE sezonowe przez atlas (wyżej); (b) `seasonGrass()` = tint
+  `grassClump`; (c) **`frost(c)`** = szron zimą (jesień=złoto) na DEKORACJACH: żywopłot Home, krzewy `drawMidground`,
+  gąszcz Connection, kępy „głowy drogi"/„źródła rzeki" (v70); (d) **ZIMA-dalszy plan (v68)**: `hills` frostowane
+  (`mix(...,'#E9F1F6',...)`), `drawForest(W,dusky,winter)` frostuje las + czapy śniegu na treeline, `wavy(176)` biały;
+  koc śniegu `wavy(424/430)` na przodzie; (e) `drawSeasonOverlay` = wash + spadające cząstki `.fall`/`.spin` (motion-gated).
+- **KAMIENIE (2 warstwy, ugruntowane, nie zasłaniają roślin)**: `gaStone(x,y,sc,kind,seed)` (+cień/czapa) i moje
+  `myPebble()` (małe własne) + `stoneAndPebble()`. **`drawFarStones`** (16, na podłodze łąki y~430 w ŚREDNIM planie,
+  PRZED env=zasłonięte z przodu=nie lewitują) po pasku śniegu; **`drawNearStones`** (cairn ŁUPEK na knollu Meaning +
+  rzadki scatter pojedynczych w NISKIM froncie y~520, PO env=w froncie roślin) — `clear()` omija drzewa/wodę/ścieżki.
 - **MOTION ATLAS + walker** (`FABLE_BEHAV` + `fableTickNow`/`fableLoop`): każde zwierzę = mała maszyna
   stanów (idzie po rewirze `f.lo/f.hi` clamped do panoramy → przystaje → gra zachowanie z paczki). **Zwrot =
   znak prędkości; flip TYLKO na postoju** (nigdy interpolowany). Klatki chodu = flipbook (frame-set cache,
@@ -90,6 +106,12 @@ Dane: 1 klucz localStorage `meadowlark.garden` (+ osobne klucze: `meadowlark.pre
 - **Look Back**: `renderPath` → `renderThenNow` + `renderMemoryCard` + **`renderCompass`** (kompas tygodnia,
   rotacja `isoWeek`, write-back przez `tend('meaning',...)`) + **`renderPressed`** (zasuszone kwiaty z dziennika) + `renderChapters`.
 - **Heavy panel** (w „More"): linie kryzysowe tappable (tel:/sms:) + **`wireBreathe`** (box-breath 4-4-4-4, opt-in).
+- **Narzędzia testowe / UI (v67+v69)**: **pasek pod łąką** `#testBar` (`<details open>` „Preview…", po `.scene-hint`)
+  = Sezon (`data-seg="season"`) · Pora dnia (`data-seg="theme"`) · Rozwój łąki (`data-seg-demo`, steruje `demoCare`).
+  **Segi auto-wiring**: `applySettings()`/`wireSettings()` iterują WSZYSTKIE `.seg[data-seg]` → druga kopia segu (np. w More)
+  synchronizuje się sama; demo przez `[data-seg-demo]`+`syncDemoSegs()`. **More = pod-zakładki** `#moreSubtabs`
+  (`showMoreSub()`): Settings·Promise·Support·Garden (jedna sekcja naraz = koniec ściany tekstu); „If today is heavy" → Support.
+  Szerokie segi (Season/Time/preview) = `.set-row.stack` pełna szerokość, równe przyciski.
 
 ## 4. Weryfikacja (reguła: bez live-servera, `file://`)
 
@@ -98,12 +120,17 @@ Dane: 1 klucz localStorage `meadowlark.garden` (+ osobne klucze: `meadowlark.pre
 - **Harness inwariantów ruchu** (`verify_motion.mjs`): `window.__FABLE_TEST=1` + `__fableTest.tick(ms)`/`.state()`
   → 120 symulowanych sekund; asercje: 0 moonwalku, flip tylko na postoju, nie wychodzi z rewiru, brak NaN.
 - Seed sceny: mutuj `store` + `applySettings(); lastSceneSig=''; renderMeadow(true)`. Do wymuszenia pory dnia
-  ustaw `store.settings.theme='day'/'evening'` (obie funkcje to honorują) — NIE patchuj samego `dayPhase`
-  (phaseBlend go nie widzi → niebo≠logika).
-- Zrzuty zawsze DSF 2; miękkie SVG w 1× spłaszcza kolory.
+  ustaw `store.settings.theme='morning'/'day'/'evening'/'night'` (od v69; NIE patchuj `dayPhase` — phaseBlend go nie widzi).
+  Do sezonu `store.settings.season='winter'` itd. Do rozwoju `demoCare=NN`.
+- **Sterownik CDP (sesyjny `drive.js`)**: node 22 ma globalny `WebSocket` → połącz z `page.webSocketDebuggerUrl`,
+  `Runtime.evaluate` seeduje store + klika segi/nawigację (`scrollToHabitat(id,false)`, `#zoomIn`), `Page.captureScreenshot`.
+  Chrome z `--remote-debugging-port=9322`. Wygodne do faz/sezonów/pór dnia + sprawdzania synchronizacji segów.
+- Zrzuty zawsze DSF 2; miękkie SVG w 1× spłaszcza kolory. Mobile portret = `--window-size=390,844 --force-device-scale-factor=3`.
 - ⚠ `captureBeyondViewport` NIE dociąga `loading="lazy"` — weryfikować scroll-testem.
+- ⚠ **Pages BYWA WISI** „building" (zator GitHub, 3–10 min) — kod trafia na main OK, live się opóźnia; nudge `gh api POST
+  …/pages/builds`; monitor w tle (curl sw.js do `garden-vNN`) potwierdza wejście na żywo.
 
-## 5. Otwarte / odłożone (stan po v64)
+## 5. Otwarte / odłożone (stan po v70)
 
 - **Prywatność (audyt HIGH):** wybór zawodu z KATALOGU → `fetchStageTasks` wysyła kod SOC na Supabase
   (`ozrxmahmzknojdjvbxnm`, l.~1294). Copy jest UCZCIWE od v55, ale to nie zero-request. Absolutne zero =
@@ -115,7 +142,12 @@ Dane: 1 klucz localStorage `meadowlark.garden` (+ osobne klucze: `meadowlark.pre
   ale gdyby Michał chciał ZERO różu, zmienić akcent na koralowy/zielony (1 miejsce, kaskaduje do glow/kart).
 - **Nowy pakiet zwierząt** `Grafiki zwierząt do animacji5.zip` ma NIEUŻYTE gatunki: cat/dog/horse/boar/heron/swallow/
   kestrel + więcej motyli — do ew. dodania do CAST (format modułowy, konwersja jak w v62).
-- Habitat distinction / golden-hour: działają „lekko", można pogłębić. Zimowy wariant koron drzew (atlas = stałe kolory).
+- ~~Zimowy wariant koron drzew (atlas = stałe kolory)~~ **ZROBIONE v65+**: atlas jest sezonowy przez `S` (mdwSeason);
+  zima = drzewa gałęziaste+śnieg, jesień=złoto, wiosna=kwiecie. Sezony NIE są już tylko overlayem.
+- **Staw Calm zimą zostaje teal** (nie zamarza — celowo, żeby nie czytał się jak „strata"); do ew. decyzji: oszronić/zamarznąć.
+- Habitat distinction / golden-hour: działają, można pogłębić.
+- **Pasek testowy pod łąką** jest tuż POD sceną-hero, więc na telefonie widać go po małym scrollu (nad „THE HEART…") —
+  gdyby Michał chciał od razu, skrócić `--scene-h` lub przypiąć pasek.
 - **Landing `/comeback` (repo-root `index.html`)** ma WŁASNĄ kopię `renderTrail` (konstelacja od v54) — jeśli zmieniasz
   craft-scenę w apce, rozważ spójność z landingiem (osobny plik, źródła `Meadowlark-v3/{comeback,root-index}.html`).
 - Pełna pamięć projektu: `~/.claude/.../memory/project_meadowlark_calm_garden_app.md` (historia rund) +
@@ -346,3 +378,24 @@ miska z jabłkami; `envCraft` ma teraz **3 ule** (helper `hive(hx,hy,sc)`) + ło
 `envThicket` = zielony gąszcz z BIAŁYM kwieciem + kwiaty nie-różowe (daisy/lavender/buttercup/bluebell); HAB_DESC
 connection `'a white-blossom thicket'`. ⚠ Akcent Connection nadal różowy `#E68AB0` (tekst-chip/glow, NIE drzewo). Zweryf.
 DSF2 (`v64.mjs`): białe drzewo, 3 ule+pszczoły, trawa poza wodą + warianty, 0 błędów, motion_probe 0 resetów. CACHE `sw.js` `v64`.
+
+**v65** (2026-07-09): **PRZEŁOM ATLASU — paczka „The Growth Atlas Popr3".** Cały silnik `GA` przeportowany NA NOWO jako
+INSTANCJA KLASY (bogate drzewa crown/limb/barkTexture, kwiaty, trawy, **6 typów kamieni**, fenologia) — wszystko SEZONOWE
+przez param `S`. Wpięcie: `mdwSeason()` (forceBloom+bare:false wtedy), `_gaSeason`, `defs(S)` z `ga*` id; kamienie
+rozmieszczone (brzegi/cairn Meaning/brzegi wody), śnieg zimą (koc+czapy), fazy seed→bloom/seed→mature. Review workflow
+(Opus): port 0 findingów, kontrakt OK. CACHE `v65`.
+**v66** (2026-07-09, feedback iPhone): kamienie w 2 warstwy (`drawFarStones`/`drawNearStones`, PO env=nie zasłania, cairn=ŁUPEK);
+**zimowe drzewa GAŁĘZIASTE** (`mdwSeason` winter `bare:true`); **górka Meaning ze śniegiem** (`envKnoll` biały kopiec zimą);
+**`frost()`** = szron na krzewach/żywopłotach/gąszczu. Audyt Opus (5 ag.) potwierdził skargi naprawione. CACHE `v66`.
+**v67** (2026-07-09): fix **lewitacji dalekich kamieni** (na podłodze łąki w średnim planie, za roślinami); **pasek testowy
+pod łąką** `#testBar` (Sezon+Rozwój, sync z More przez `data-seg`/`data-seg-demo`+`syncDemoSegs`); **More w pod-zakładkach**
+(`#moreSubtabs`/`showMoreSub`: Settings·Promise·Support·Garden); szerokie segi `.stack` pełna szerokość. CACHE `v67`.
+**v68** (2026-07-09): **zima zaśnieża DALSZE plany** — `hills` frostowane + `drawForest(...,winter)` (frost + czapy śniegu na
+treeline) + `wavy(176)` biały; **jesienne korony bez „dziury"** — `canopy` cieniuje `dk` ku `S.vein` (nie stałej zieleni);
+**więcej kamieni** (far 8→16, near krok mniejszy). CACHE `v68`.
+**v69** (2026-07-09): **przełącznik pory dnia** pod łąką (Auto·Morning·Day·Evening·Night) — `store.settings.theme` rozszerzony
+o morning/night; `dayPhase`/`phaseBlend` mapują (morning→dawn, night→night); `coerce` akceptuje; ten sam seg w More
+(„Time of day", `.stack`), oba `data-seg="theme"` → auto-sync. CACHE `v69`.
+**v70** (2026-07-09): **korzeń dębu Home nie nachodzi na krzak** (żywopłot `envHome` przesunięty w lewo, najbliższy ~dx-72,
+poza zasięgiem korzeni); **ostatnie zimowe kępy oszronione** — „głowa drogi w las" (`envHome` hc/hl) + „źródło rzeki"
+(`envStream` fc/fl) owinięte w `frost()` → cała zima spójnie ośnieżona. CACHE `v70`.
