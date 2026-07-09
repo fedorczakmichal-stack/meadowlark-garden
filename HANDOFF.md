@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v61 (2026-07-08) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v64 (2026-07-08) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -76,9 +76,17 @@ Dane: 1 klucz localStorage `meadowlark.garden` (+ osobne klucze: `meadowlark.pre
   pod zmieniającym się transformem = duch klatek). **Wszystkie zwierzęta z paczki patrzą natywnie W PRAWO** —
   weryfikować center-line RAW renderem, `fl` nieużywane (0). Perf: `_sceneScale` cache (nie `getBoundingClientRect`
   co klatkę); invalidacja na resize/orientation.
-- **Craft**: `renderTrail()` (WSPÓLNY kod z landingiem — droga: wstęga do słońca, latarnie, etykiety liczą
-  edgeX z szerokości tekstu = nie ucinają, `lblScale`); `craftRoadSVG(p,userIdx)` = wrapper. Płace w karcie
-  drogi za `<details>` domyślnie ZAMKNIĘTYM (etos: pensja = porównanie); wyszukiwarka BEZ płac.
+- **Craft**: **`renderTrail()` = KONSTELACJA (od v53, NIE latarniana droga)** — etapy=gwiazdy na nocnym niebie,
+  bieżący najjaśniejszy, opcjonalny 6. arg `opts={W,H,sz,yPad}` (v61: `.cp-sky` full-bleed w arkuszu, `_craftSkyOpts`+`fitCraftSky()`);
+  `craftRoadSVG(p,userIdx)` = wrapper. **Baner „Your craft" (`#craftSlot`/`renderCraftInvite`) POD sceną na Meadow** (v58,
+  meadow-first; był nad sceną w v56). Płace w karcie za `<details>` ZAMKNIĘTYM (etos); wyszukiwarka BEZ płac. Landing ma
+  WŁASNĄ kopię `renderTrail` (osobny plik).
+- **Powitanie (od v63)**: NIE ma napisu nad sceną — `showSceneGreet()` pokazuje znikającą plakietkę `.scene-greet`
+  NA ŚRODKU sceny (fade-in→hold→fade-out), treść z pory dnia + sezonu (welcome-back ma pierwszeństwo); `renderGreeting()`→`showSceneGreet()`.
+- **Motyle (od v62/63)**: 4 gatunki z pakietu — `butterfly`/`swallowtail`/`commonblue`/`peacock` (w `fable-animals.js`,
+  jako floatery `flt` w CAST). Machają na motionach `flit`/`flutter` (NIE `sail`=szybowanie). **Craft = apiarium** (v64):
+  `envCraft` = 3 ule (`hive()`) + pszczoły, bez grządek/jabłek. **Connection drzewo = BIAŁE kwitnące** (v64, nie różowe).
+  Trawa `grassClump(...,seed)` = 6 wariantów kęp (v64).
 - **Look Back**: `renderPath` → `renderThenNow` + `renderMemoryCard` + **`renderCompass`** (kompas tygodnia,
   rotacja `isoWeek`, write-back przez `tend('meaning',...)`) + **`renderPressed`** (zasuszone kwiaty z dziennika) + `renderChapters`.
 - **Heavy panel** (w „More"): linie kryzysowe tappable (tel:/sms:) + **`wireBreathe`** (box-breath 4-4-4-4, opt-in).
@@ -95,13 +103,21 @@ Dane: 1 klucz localStorage `meadowlark.garden` (+ osobne klucze: `meadowlark.pre
 - Zrzuty zawsze DSF 2; miękkie SVG w 1× spłaszcza kolory.
 - ⚠ `captureBeyondViewport` NIE dociąga `loading="lazy"` — weryfikować scroll-testem.
 
-## 5. Otwarte / odłożone (z audytu 10-soczewkowego, task `w3bs16jdj`)
+## 5. Otwarte / odłożone (stan po v64)
 
-- Habitat distinction: zrobione „lekko" (accent-glow + istniejące env-y); można pogłębić sygnatury per-env.
-- Golden-hour: działa; ewentualnie dostroić okno/krzywą.
-- A11y: dalej można dodać role=radiogroup na segach, focus-trap w arkuszach.
-- NF nie zrobione: (brak — breathing/compass/pressed ZROBIONE w v51). Ewentualne przyszłe: zimowy wariant
-  koron drzew, wiewiórka w stylu fable (usunięta), stary silnik kwiatów v2 (martwy kod do wycięcia).
+- **Prywatność (audyt HIGH):** wybór zawodu z KATALOGU → `fetchStageTasks` wysyła kod SOC na Supabase
+  (`ozrxmahmzknojdjvbxnm`, l.~1294). Copy jest UCZCIWE od v55, ale to nie zero-request. Absolutne zero =
+  zbundlować kroki lokalnie (za duże dla 860+ SOC) → decyzja produktowa.
+- **Perf (odłożone z v60):** (a) kołysanie drzew `.sway` + migot gwiazd `.twinkle` ZAMROŻONE na canvasie
+  (klatka statyczna identyczna; żywy klimat niosą zwierzęta/pyłki) — gdyby brakowało sway, drzewa na osobny overlay-SVG;
+  (b) boot 300KB inline JS parsowane przed 1. paintem — dalsza optymalizacja startu.
+- **Connection accent** nadal różowy `#E68AB0` (chip nazwy + poświata drzewa nocą) — drzewo jest już białe (v64),
+  ale gdyby Michał chciał ZERO różu, zmienić akcent na koralowy/zielony (1 miejsce, kaskaduje do glow/kart).
+- **Nowy pakiet zwierząt** `Grafiki zwierząt do animacji5.zip` ma NIEUŻYTE gatunki: cat/dog/horse/boar/heron/swallow/
+  kestrel + więcej motyli — do ew. dodania do CAST (format modułowy, konwersja jak w v62).
+- Habitat distinction / golden-hour: działają „lekko", można pogłębić. Zimowy wariant koron drzew (atlas = stałe kolory).
+- **Landing `/comeback` (repo-root `index.html`)** ma WŁASNĄ kopię `renderTrail` (konstelacja od v54) — jeśli zmieniasz
+  craft-scenę w apce, rozważ spójność z landingiem (osobny plik, źródła `Meadowlark-v3/{comeback,root-index}.html`).
 - Pełna pamięć projektu: `~/.claude/.../memory/project_meadowlark_calm_garden_app.md` (historia rund) +
   `project_meadowlark_healthcare_landing.md` (strona/repo).
 
@@ -299,3 +315,34 @@ then-now/keepsake); nocne niebo Look Back sezonu nie renderuje (świadomie); `.s
 od 320px. Hardening: `loadCraftIndex` nie fetchuje na file:// (koniec błędu CORS w konsoli). Zweryf. DSF2 (`v61_*.mjs`):
 droga+picker z 4 wejść scrollTop=0 (mobile+desktop), 3/5/6 etapów, 0 błędów konsoli file://+http (pełna tura), Look Back
 hero 76% bez regresji, motion_probe bez regresji, 320/390 bez h-overflow, SW lokalnie aktywny cache `v61`. CACHE `sw.js` `v61`.
+
+**v62** (2026-07-08): **poprawki sceny z telefonu.** (1) **Gwiazdy łąki rozrzucone** — miały seed `wanderR(i*2.3+11)`
+(banding w rzędy) → hash firmamentu `hs(i,s)=frac(sin(i*127.1+s*311.7+7.71)*43758)` (renderMeadow, pętla gwiazd).
+(2) **Siewki z kwiatkami** — `drawMidground` plant type 1/2 (trawki) dostały `petals(acc)` = 5 małych kropek-kwiatków
+u podstawy. (3) **Motyle różnorodne** z pakietu `Grafiki zwierząt do animacji5.zip` (rozpakowany `/tmp/zoo5`; format
+modułowy `export default`+`import {..} from frig.js`, helpery IDENTYCZNE jak w `fable-animals.js`) — **+3 gatunki
+swallowtail/commonblue/peacock** (python-konwersja modułów → `__REG["id"]=(function(){...})()`, wstrzyknięte przed
+`window.__FABLE_ANIMALS`; każdy motion zweryfikowany). Skala z ~1.0 na 0.46-0.68. (4) **Tend-sheet ciaśniejszy** —
+`.sheet` max-height 90→80vh, `.quick button` min-height 58→48, mniejsze paddingi (mniej zasłania łąki). (5) **Sidecar cache**
+= bez zmian. CACHE `sw.js` `v62`.
+
+**v63** (2026-07-08): **łąka jako pierwsze uderzenie + żywsza scena.** (1) **NAPIS POWITALNY nad sceną USUNIĘTY**
+→ scena jest 1. rzeczą po headerze. Powitanie = **znikająca plakietka `.scene-greet` NA ŚRODKU sceny** (`showSceneGreet(force)`:
+`welcomeBackMsg()` || `GREET[dayPhase]`+`SEASON_NOTE[season]`; fade-in→hold 3.4/4.8s→fade-out; debounce 5s). `renderGreeting()`→
+`showSceneGreet()`; `maybeWelcomeBack()`→`showSceneGreet(true)`+stamp lastSeenAt. USUNIĘTO markup `.greeting`+`#welcomeSlot`
+i CSS `.greeting/.hello/.season`. Zmienia się z porą dnia + sezonem (welcome-back ma pierwszeństwo). (2) **MOTYLE MACHAJĄ
+skrzydłami + więcej** — peacock miał `sail`(szybowanie, bez machania) → wszystkie na machające `flit`/`flutter`; **7 motyli**
+(care-gated ≥12/20/28), mniejsze. Grid 4 gatunków × 4 fazy potwierdził cykl open→fold→open (front-view, fold=scale poziomy skrzydła).
+(3) **PSZCZOŁY mniejsze+więcej** (3, sc 0.9→0.46-0.58). (4) **NISKA TRAWA gęstsza** — dywan krótkich `grassClump` (still)
+w foreground do canvas-rastra. CACHE `sw.js` `v63`.
+
+**v64** (2026-07-08): **poprawki sceny (2).** (1) **TRAWA warianty** — `grassClump(x,y,c,still,seed)` = 6 kształtów kęp
+(2-5 źdźbeł), wariant z `seed`/`x` (koniec „zawsze 3 źdźbła z 1 punktu"). (2) **TRAWA rozmieszczenie** — dywan niskiej trawy
+tylko w OTWARTYM dolnym foreground (y~522), z dala od WODY (strumień `HABX.future+34` ±120 + staw `HABX.calm` ±140), ścieżki
+(±80) i rdzeni siedlisk (koniec trawy w wodzie/na roślinach). (3) **CRAFT = APIARIUM** — usunięte grządki (raised beds) +
+miska z jabłkami; `envCraft` ma teraz **3 ule** (helper `hive(hx,hy,sc)`) + łopatę; CAST **+3 pszczoły** przy ulach craftu
+(~7 pszczół w scenie). (4) **DRZEWA RÓŻOWE → BIAŁE** — wiśnia (Connection) przemalowana z różu na kremowo-białą:
+`BLOSSOM` const + cherry `canopy` (w species) + extra-blossom `#FCE3EC→#FFFDF8` + spadające płatki `#F4BED6→#F3E9DA`;
+`envThicket` = zielony gąszcz z BIAŁYM kwieciem + kwiaty nie-różowe (daisy/lavender/buttercup/bluebell); HAB_DESC
+connection `'a white-blossom thicket'`. ⚠ Akcent Connection nadal różowy `#E68AB0` (tekst-chip/glow, NIE drzewo). Zweryf.
+DSF2 (`v64.mjs`): białe drzewo, 3 ule+pszczoły, trawa poza wodą + warianty, 0 błędów, motion_probe 0 resetów. CACHE `sw.js` `v64`.
