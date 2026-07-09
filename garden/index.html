@@ -2018,8 +2018,8 @@ function drawForest(W,dusky){
 // a DENSE MID-GROUND band of mixed plants between the woods and the meadow — two layered rows for depth,
 // closely packed but each plant distinct (back row smaller/hazier, front row larger/richer).
 function drawMidground(W,dusky){
-  const PB=(dusky?['#46584F','#506357','#3C4D45']:['#9DC487','#A9CE93','#8CB877']).map(nightStep);   // back row (atmospheric)
-  const PF=(dusky?['#3C4E45','#47594F','#34453D']:['#7FB263','#8CC06D','#6CA052']).map(nightStep);   // front row (richer)
+  const PB=(dusky?['#46584F','#506357','#3C4D45']:['#9DC487','#A9CE93','#8CB877']).map(c=>nightStep(frost(c)));   // back row (atmospheric)
+  const PF=(dusky?['#3C4E45','#47594F','#34453D']:['#7FB263','#8CC06D','#6CA052']).map(c=>nightStep(frost(c)));   // front row (richer)
   const tr=nightStep(dusky?'#4A4036':'#6E5A36');
   const ACC=['#EF9C7E','#E68AB0','#E8A33E','#9E7CC2','#6FB89A','#5B9BD9'].map(c=>nightTint(c,_phase));   // berries dim with the light too
   // a few little blooms nestled at a seedling's base, so a sprout reads as already in a small patch of flowers
@@ -2103,6 +2103,13 @@ function wavy(baseY,amp){
     d+=` C ${mx.toFixed(0)} ${y.toFixed(0)} ${mx.toFixed(0)} ${ny.toFixed(0)} ${cx.toFixed(0)} ${ny.toFixed(0)}`; x=cx; y=ny; up=!up; }
   d+=` L${PANO_W} ${PANO_H} L0 ${PANO_H} Z`; return d;
 }
+// frost/tint decorative FOLIAGE (hedges, midground shrubs, thicket) to the season — so bushes wear winter snow
+// and autumn gold too, instead of staying summer-green on a white meadow (matches the knoll/grass treatment)
+function frost(c){ const k=_gaSeason&&_gaSeason.key;
+  if(k==='Winter') return mix(c,'#D3E2E4',0.5);
+  if(k==='Autumn') return mix(c,'#C1912F',0.42);
+  if(k==='Spring') return mix(c,'#9AD05A',0.14);
+  return c; }
 // gently shift a grass colour to match the season (fresh in spring, gold in autumn, straw under winter snow)
 function seasonGrass(c){ const k=_gaSeason&&_gaSeason.key;
   if(k==='Spring') return mix(c,'#8FC24C',0.22);
@@ -2975,11 +2982,14 @@ const GA_TREE_KIND={body:'birch',home:'oak',connection:'cherry',meaning:'maple',
 /* ── seasons wired to Meadowlark's own season() switcher ──
    The Atlas has a full 4-season parameter set. We honour it for CLIMATE (leaf/stem/canopy colour,
    snow, blossom, fruit, fallen leaves) but override the soul-contract-sensitive bits:
-   forceBloom → flowers never wilt/die back, bare:false → trees keep their crown (frosted, not stripped).
+   forceBloom → flowers never wilt/die back; in WINTER the deciduous trees wear the Atlas's bare, snow-laden
+   branch skeleton (bare:true, Michał's ask "te z gałęziami"), while pine stays evergreen.
    Winter is a rest season wearing snow, never a regression. Care only ever grows. */
 const _GA_SEASON_KEY={spring:'Spring',summer:'Summer',autumn:'Autumn',winter:'Winter'};
-function mdwSeason(name){ const S=GA.SEASONS[_GA_SEASON_KEY[name]||'Summer'];
-  return Object.assign({}, S, { forceBloom:true, bare:false }); }
+function mdwSeason(name){ const key=_GA_SEASON_KEY[name]||'Summer'; const S=GA.SEASONS[key];
+  // forceBloom → flowers never wilt/die back. In WINTER the deciduous trees keep the Atlas's bare, snow-laden
+  // branch skeleton (Michał's ask: "te z gałęziami") — an elegant rest, not loss; pine stays evergreen.
+  return Object.assign({}, S, { forceBloom:true, bare: key==='Winter' }); }
 let _gaSeason=GA.SEASONS.Summer;   // set each render from season(); flowers/grass/stones read it (like _phase)
 // night-tint a defs string: rename ga* ids → gaN* and darken every colour (matches gaTint's url(#ga→#gaN swap)
 function gaDefsNight(defsStr){ return defsStr.replace(/id="ga([A-Za-z]+)"/g,'id="gaN$1"').replace(/#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\b/g,m=>nightTint(m.length===4?'#'+[...m.slice(1)].map(c=>c+c).join(''):m,'night')); }
@@ -3166,6 +3176,42 @@ function stoneCluster(cx,by,seed,spec){ const arr=spec.map((it,i)=>({dx:it[0],dy
   arr.forEach(it=>{ g+= (typeof it.kind==='string') ? gaStone(cx+it.dx,by+it.dy,it.sc,it.kind,it.seed)
                                                      : myPebble(cx+it.dx,by+it.dy,it.sc,(it.kind||0),it.seed); });
   return g; }
+// a main Atlas stone with ONE small pebble nestled at its base edge — spaced so it touches, never buried inside
+function stoneAndPebble(cx,by,seed,sc,kind,side){ side=side||1; const T=GA.STONE[(GA_SP[kind]||GA_SP.flint).kind];
+  const mainHW=T.w*sc*0.5;
+  return gaStone(cx,by,sc,kind,seed) + myPebble(cx+side*(mainHW*0.72+5), by+3, sc*0.52, ((seed>>>0)%5), (seed*7+53)>>>0); }
+
+/* ══ STONESCAPE (reworked) — two coherent layers so rocks build depth + rhythm, never pile up or hide a plant.
+   FAR: small hazy rocks up on the slope (drawn before the midground, low opacity = aerial perspective).
+   NEAR: the knoll cairn + a SPARSE, well-spaced scatter of single rocks in the open LOW foreground (below the
+   plant roots, in front of them), avoiding every tree, water body and path. No overlapping clusters. ══ */
+function drawFarStones(W,dusky){ let g='';
+  for(let i=0;i<12;i++){ const dsx=(i*337+120)%(W-140)+70;
+    const r=v=>{ const t=Math.sin(dsx*0.043+i*6.7+v*3.1)*43758.5; return t-Math.floor(t); };
+    const dy=372+((i*29)%44), sc=0.07+r(1)*0.075;   // truly small; low opacity lets the hill show through = distance
+    // rounded, lighter rocks only — the dark layered slate / crystals read too sharp at distance
+    g+=`<g opacity="${dusky?0.34:0.5}">${gaStone(dsx,dy,sc,['granite','flint','sandstone'][Math.floor(r(2)*3)],(i*617+11)>>>0)}</g>`;
+  }
+  return g; }
+function drawNearStones(W,dusky){ let g='';
+  // the knoll's cairn — the Atlas's slate is a natural stack of flat slabs; set LOW on the knoll's front, well
+  // below the grass roots (grass roots at meaningY+30 and grow UP; this sits at +58, in front, clear).
+  g+=gaStone(HABX.meaning+120, HABY.meaning+58, 0.5, 'slate', 20001) + myPebble(HABX.meaning+94, HABY.meaning+64, 0.9, 0, 20002);
+  // a sparse scatter of single rocks in the open low foreground — well spaced, never on tree/water/path/plant band
+  const cores=HAB.map(id=>HABX[id]+(HAB_TX[id]||0));
+  const clear=x=> cores.some(c=>Math.abs(x-c)<104)                          // clear of every growth-tree
+    || Math.abs(x-(HABX.future+34))<150 || Math.abs(x-HABX.calm)<176        // clear of stream + pool
+    || Math.abs(x-(HABX.home+124))<70  || Math.abs(x-BEARX)<BEARAMP+18      // clear of the trail + bear clearing
+    || Math.abs(x-(HABX.meaning+120))<70;                                   // clear of the cairn above
+  let sx=190, si=0;
+  while(sx<W-130){ const step=248+((si*67)%118); sx+=step; si++;
+    if(clear(sx)) continue;
+    const r=v=>{ const t=Math.sin(sx*0.037+si*8.1+v*3.3)*43758.5; return t-Math.floor(t); };
+    const yb=522+((si*23)%24), sc=0.22+r(1)*0.15;                           // low foreground band, in front of plants
+    g+= (r(2)<0.5) ? stoneAndPebble(sx,yb,(si*991+7)>>>0,sc,STONE_KINDS[Math.floor(r(3)*STONE_KINDS.length)], r(4)<0.5?-1:1)
+                   : myPebble(sx,yb,0.75+r(1)*0.7,Math.floor(r(3)*5),(si*613+5)>>>0);
+  }
+  return g; }
 
 /* ── distinct habitat environments (drawn around each growth-tree) ── */
 function envMeadow(cx,by,gr){ // Body — a full, healing wildflower meadow (tall poppies, daisies, cosmos, cornflowers)
@@ -3175,14 +3221,11 @@ function envMeadow(cx,by,gr){ // Body — a full, healing wildflower meadow (tal
     [-172,by+18,'poppy',null,.62,72],[-140,by+24,'cornflower',null,.5,60],[-108,by+18,'daisy','cream',.56,76],[-76,by+26,'cosmos',null,.54,58],[-46,by+20,'poppy',null,.6,70],
     [52,by+22,'daisy','gold',.58,72],[86,by+18,'cosmos',null,.56,78],[120,by+26,'poppy',null,.56,60],[152,by+20,'cornflower',null,.5,68],[184,by+26,'buttercup',null,.56,58],
     [-150,by+40,'daisy','cream',.42,40],[-92,by+42,'buttercup',null,.42,40],[-40,by+44,'poppy',null,.42,40],[40,by+44,'daisy','gold',.4,38],[100,by+42,'cosmos',null,.42,40],[150,by+44,'poppy',null,.4,38]],gr);
-  // a couple of lichen-grey stones resting at the meadow's edges (clear of the flower band and the tree)
-  g+=stoneCluster(cx-210,by+28,30001,[[0,0,0.42,'granite'],[15,5,0.3,2],[-12,3,0.28,0]]);
-  g+=gaStone(cx+208,by+34,0.44,'flint',30002)+myPebble(cx+188,by+42,0.7,0,30003);
   return g;
 }
 function envHome(cx,by,phase,gr){ // Home — a tended homestead garden
   // a soft row of individual rounded bushes (varied sizes and tones) instead of the old hedge-block
-  const hgB=nightTint('#5E9A4E',phase), hgL=nightTint('#79B25C',phase), hgD=nightTint('#4C8440',phase);
+  const hgB=nightTint(frost('#5E9A4E'),phase), hgL=nightTint(frost('#79B25C'),phase), hgD=nightTint(frost('#4C8440'),phase);
   let g='<g>';
   [[-196,0,19],[-160,4,24],[-122,-2,21],[-86,3,25],[-52,-1,20],[-22,4,16]].forEach(([dx,dy,r],i)=>{
     const bx=cx+dx, byy=by-2+dy;
@@ -3210,7 +3253,7 @@ function envHome(cx,by,phase,gr){ // Home — a tended homestead garden
   return g;
 }
 function envThicket(cx,by,phase,gr){ // Connection — a green hedgerow thicket in soft WHITE blossom (hawthorn/elder, not pink)
-  let g=''; const tk=nightTint('#6E5A3E',phase), l1=nightTint('#7FB268',phase), l2=nightTint('#8FC078',phase), l3=nightTint('#6BA354',phase), wf=nightTint('#FBF3E8',phase), cf=nightTint('#EAD9C2',phase);
+  let g=''; const tk=nightTint('#6E5A3E',phase), l1=nightTint(frost('#7FB268'),phase), l2=nightTint(frost('#8FC078'),phase), l3=nightTint(frost('#6BA354'),phase), wf=nightTint('#FBF3E8',phase), cf=nightTint('#EAD9C2',phase);
   [[-150,30],[146,26]].forEach(b=>{ const bx=cx+b[0],r=b[1]; g+=`<g transform="translate(${bx} ${by+12})"><rect x="-3" y="-30" width="6" height="36" fill="${tk}"/><ellipse cx="0" cy="-42" rx="${r}" ry="${(r*0.85).toFixed(0)}" fill="${l1}"/><ellipse cx="-8" cy="-48" rx="${(r*0.6).toFixed(0)}" ry="${(r*0.55).toFixed(0)}" fill="${l2}"/><ellipse cx="9" cy="-46" rx="${(r*0.5).toFixed(0)}" ry="${(r*0.45).toFixed(0)}" fill="${l3}"/>`+[[-9,-46],[6,-50],[12,-42],[-4,-38],[-13,-44],[3,-44],[9,-49]].map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="${(1.9-(i%2)*0.5).toFixed(1)}" fill="${i%3?wf:cf}"/>`).join('')+`</g>`; });
   for(let i=0;i<9;i++){ const px=cx-150+i*38, py=by+30+(i%3)*6; g+=`<circle cx="${px}" cy="${py}" r="2" fill="${i%2?wf:l2}" opacity=".8"/>`; }
   g+=scatterFlowers(cx,[[-138,by+24,'daisy','cream',.58],[-92,by+30,'lavender',null,.5,70],[-44,by+30,'buttercup',null,.46],[78,by+26,'daisy','cream',.6],[128,by+22,'bluebell',null,.52,52]],gr);
@@ -3220,15 +3263,17 @@ function envKnoll(cx,by,phase,gr){ // Meaning — a sunlit knoll with a stone ca
   const dusky=phase==='dusk'||phase==='night';
   let g='';
   // after dark the knoll must sink into the night ground, not sit on it like a lit stage (nightStep = extra step at night)
-  g+=`<ellipse cx="${cx}" cy="${by+48}" rx="190" ry="64" fill="${dusky?nightStep(nightStep(nightTint('#86BD66',phase))):'url(#glMound)'}"/>`;
-  g+=`<ellipse cx="${cx-30}" cy="${by+26}" rx="150" ry="40" fill="${nightStep(nightStep(nightTint('#9ECB79',phase)))}" opacity="${phase==='night'?.35:.5}"/>`;
-  // a real cairn of Atlas stones, stacked — granite base, slate mid, a capping pebble (snow-topped in winter)
-  { const kx=cx+128, ky=by+26;
-    g+=gaStone(kx,ky,0.5,'granite',20001);
-    g+=gaStone(kx-2,ky-18,0.42,'slate',20002);
-    g+=myPebble(kx+1,ky-30,1.1,3,20003); }
-  // one companion boulder resting a little apart, so the cairn reads as tended, not dropped
-  g+=gaStone(cx+168,by+30,0.4,'flint',20004);
+  if(_gaSeason.snow){   // in winter the knoll wears snow too — no more bright-green górka on a white meadow
+    g+=`<ellipse cx="${cx}" cy="${by+48}" rx="190" ry="64" fill="#E8F0F6"/>`;
+    g+=`<ellipse cx="${cx-30}" cy="${by+22}" rx="152" ry="42" fill="#F8FBFD" opacity=".92"/>`;
+    g+=`<ellipse cx="${cx+64}" cy="${by+60}" rx="120" ry="24" fill="#D6E3EC" opacity=".45"/>`;   // soft shaded lee slope
+    g+=`<path d="M${cx-186} ${by+40} Q ${cx} ${by+22} ${cx+186} ${by+40}" stroke="#FBFDFF" stroke-width="3" fill="none" opacity=".6"/>`;   // snow crest line
+  } else {
+    g+=`<ellipse cx="${cx}" cy="${by+48}" rx="190" ry="64" fill="${dusky?nightStep(nightStep(nightTint('#86BD66',phase))):'url(#glMound)'}"/>`;
+    g+=`<ellipse cx="${cx-30}" cy="${by+26}" rx="150" ry="40" fill="${nightStep(nightStep(nightTint('#9ECB79',phase)))}" opacity="${phase==='night'?.35:.5}"/>`;
+  }
+  // a cairn — the Atlas's slate renders as a natural stack of flat slabs, so one clean stone reads as a built
+  // cairn; set LOW on the knoll's front, well below the grass roots + a small companion. (see stonescape below)
   g+=`<g stroke="${nightTint('#C9A24E',phase)}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".82">`;
   [-156,-96,96,160].forEach((dx,i)=>{ const x=cx+dx,y=by+30; g+=`<g class="sway" style="animation-duration:${8+i*0.3}s;animation-delay:${-i}s"><path d="M${x} ${y} C ${x-3} ${y-26} ${x-5} ${y-36} ${x-7} ${y-48} M${x} ${y} C ${x} ${y-28} ${x+1} ${y-38} ${x+2} ${y-50} M${x} ${y} C ${x+3} ${y-26} ${x+6} ${y-36} ${x+9} ${y-48}"/></g>`; });
   g+=`</g>`;
@@ -3277,9 +3322,6 @@ function envStream(cx,by,dusky,gr){ // Future — a river springing from the woo
   const fc=nightStep(dusky?'#374B49':'#83AC6B'), fl=nightStep(dusky?'#46585B':'#A6C68E');
   g+=`<g fill="${fc}"><ellipse cx="${cx+36}" cy="${by-120}" rx="26" ry="20"/><ellipse cx="${cx+74}" cy="${by-122}" rx="24" ry="18"/><ellipse cx="${cx+56}" cy="${by-134}" rx="22" ry="18"/></g>`;
   g+=`<g fill="${fl}" opacity=".7"><ellipse cx="${cx+46}" cy="${by-128}" rx="13" ry="10"/><ellipse cx="${cx+68}" cy="${by-118}" rx="11" ry="8"/></g>`;
-  // river-worn stones along the banks — never in the channel, so the water still runs clear
-  g+=stoneCluster(cx-104,by+44,40001,[[0,0,0.42,'slate'],[16,5,0.3,4],[-13,3,0.26,0]]);
-  g+=myPebble(cx-58,by+16,0.7,4,40002)+gaStone(cx+128,by+50,0.4,'flint',40003);
   return g;
 }
 function envPool(cx,by,dusky,gr){ // Calm — a broad still reflecting pool, mist, lavender
@@ -3301,9 +3343,6 @@ function envPool(cx,by,dusky,gr){ // Calm — a broad still reflecting pool, mis
   [[-158,50],[168,44],[-128,60],[132,56]].forEach((p,i)=>{ const x=cx+p[0],y=by+p[1]; g+=`<g class="sway" style="animation-duration:${8.4+i*0.2}s;animation-delay:${-i}s"><g transform="translate(${x} ${y}) scale(${lavS.toFixed(3)})">${wildflower('lavender',null,(0.58+(i%2)*0.08),54,gr)}</g></g>`; });
   // violet wildflowers + bluebells on the banks (clear of the water)
   g+=scatterFlowers(cx,[[-178,by+26,'cosmos','violet',.56],[-120,by+40,'bluebell',null,.5,48],[122,by+40,'cosmos','violet',.5],[176,by+28,'bluebell',null,.52,50]],gr);
-  // smooth wet-edge stones resting on the near shore (clear of the open water)
-  g+=stoneCluster(cx-150,by+54,50001,[[0,0,0.44,'slate'],[16,4,0.32,2]]);
-  g+=gaStone(cx+150,by+56,0.46,'granite',50002)+myPebble(cx+128,by+62,0.7,0,50003)+myPebble(cx-96,by+60,0.6,4,50004);
   // the whole pool sits in the foreground, BELOW the tree — so the trunk stands on the grassy bank, not in the water
   return `<g transform="translate(0 32)">${g}</g>`;
 }
@@ -3752,6 +3791,7 @@ function renderMeadow(force,opt){
   st+=drawForest(W,dusky);
   { let mist=''; for(let x=60;x<W;x+=300){ mist+=`<ellipse cx="${x}" cy="${336+((x*7)%18)}" rx="190" ry="14" fill="#FFFFFF" opacity="${dusky?.10:.2}" filter="url(#glDof)"/>`; } st+=`<g>${mist}</g>`; }
   st+=`<path d="${wavy(362,22)}" fill="${hills[2]}"/>`;
+  st+=drawFarStones(W,dusky);                       // STONES · far layer — small hazy rocks on the slope (depth), nearer layers occlude them
   st+=`<path d="${wavy(432,18)}" fill="${hills[3]}"/>`;
   st+=drawMidground(W,dusky);
   // ── SEASON on the ground: a calm winter snow-blanket, or a drift of autumn leaves. A rest season, never loss.
@@ -3760,29 +3800,8 @@ function renderMeadow(force,opt){
     st+=`<path d="${wavy(424,16)}" fill="#EAF2F7" opacity="${dusky?.5:.9}"/>`;      // meadow floor under snow
     st+=`<path d="${wavy(430,13)}" fill="#F7FBFD" opacity="${dusky?.42:.82}"/>`;     // brighter fresh layer on top
   }
-  // ── STONES (back layer): a quiet rhythm of Atlas rocks + hand-made pebbles across genuinely empty ground.
-  //    Drawn BEFORE the habitat plants so a plant is never hidden; kept clear of trees, water and paths.
-  { const cores=HAB.map(id=>HABX[id]+(HAB_TX[id]||0));
-    const stoneClear=x=> cores.some(c=>Math.abs(x-c)<118)               // never on a growth-tree
-      || Math.abs(x-(HABX.future+34))<128 || Math.abs(x-HABX.calm)<150  // never in the stream / pool
-      || Math.abs(x-(HABX.home+124))<74 || Math.abs(x-BEARX)<BEARAMP+24; // never on the trail / bear clearing
-    let sx=150, si=0;
-    while(sx<W-90){
-      const step=176+((si*53)%150); sx+=step; si++;
-      if(stoneClear(sx)) continue;
-      const yb=452+((si*37)%40);                       // mid-band, tucked behind the env plants
-      const r=(v)=>{ const t=Math.sin((sx*0.0731+si*12.9+v*7.1))*43758.5; return t-Math.floor(t); };
-      const kindPick=r(1); const sc=0.24+r(2)*0.26;
-      if(kindPick<0.34){ // a small cluster: one Atlas stone + a pebble or two
-        const kind=STONE_KINDS[Math.floor(r(3)*STONE_KINDS.length)];
-        st+=stoneCluster(sx,yb,(si*769+7)>>>0,[[0,0,sc,kind],[ -10-r(4)*10, 4+r(5)*4, sc*0.5, Math.floor(r(6)*5)],[ 12+r(7)*10, 3+r(8)*3, sc*0.42, Math.floor(r(9)*5)]]);
-      } else if(kindPick<0.62){ // a lone Atlas boulder
-        st+=gaStone(sx,yb,sc*1.05,STONE_KINDS[Math.floor(r(3)*STONE_KINDS.length)],(si*991+13)>>>0);
-      } else { // a couple of scattered pebbles
-        st+=myPebble(sx,yb,0.6+r(2)*0.7,Math.floor(r(3)*5),(si*613+3)>>>0)+myPebble(sx+9+r(4)*9,yb+4,0.4+r(5)*0.4,Math.floor(r(6)*5),(si*337+5)>>>0);
-      }
-    }
-  }
+  // (STONES were reworked into two coherent layers: drawFarStones() up on the slope above, and drawNearStones()
+  //  in the low foreground below — so rocks build depth without ever piling up on or hiding a plant.)
   // per-habitat environments (kept in id'd groups so they read the same as before)
   const gG={}; HAB.forEach(id=>gG[id]=growthOf(id));
   st+=`<g id="env-body">${envMeadow(HABX.body,HABY.body,gG.body)}</g>`;
@@ -3811,6 +3830,7 @@ function renderMeadow(force,opt){
   // (autumn fallen leaves + spring petals + winter drift are owned by drawSeasonOverlay() on the live layer;
   //  the only ground-season treatment we add on the static canvas is the winter snow blanket up above, which
   //  must sit UNDER the plants/stones — something an on-top overlay cannot do.)
+  st+=drawNearStones(W,dusky);   // STONES · near layer — cairn + sparse foreground rocks, in FRONT of the plants (never hiding them)
   // the six growth-trees: static host (accent tint + contact shadow + tree art). Their transient
   // rising glow sparkles ride on the LIVE overlay (lvGlow) so they animate + fade without re-rastering.
   let lvGlow='';
