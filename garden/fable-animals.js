@@ -106,10 +106,11 @@ function barkTicks(ph, o) {
 }
 
 const __REG = {};
+
+// ── v73: every species rebuilt from the design pack's ESM modules (corrected odonata,
+//    dedicated NIGHT motions sleep/roost/rest, freshest art); garden lane-damping re-applied ──
 __REG["fox"] = (function(){
 // Red Fox — fable style
-
-
 const C = { rust: '#E08A4A', deep: '#DB7E40', shade: '#C56F36', cream: '#F4ECE2', dark: '#5A3A2E', eye: '#2A2326' };
 const GY = 14.6;
 
@@ -203,9 +204,31 @@ return {
     { id: 'pounce', label: 'Mouse pounce', short: 'Pounce', dur: 3.6, env: { t: 'ground' }, speed: 'arc ≈ 1 m high', beat: 'Stalk → arc → pin',
       desc: 'The mousing leap: a frozen stalk, a gathered wiggle, then a high vertical arc ending nose-first in the grass.',
       anim: 'The anticipation is the shot. Hold the crouch, wiggle twice, then commit in six frames — full stretch at the apex, folded to a dart on entry.' }
+    ,{ id: 'sleep', label: 'Sleep', short: 'Sleep', dur: 6.5, env: { t: 'ground' }, night: true, speed: '0 km/h', beat: 'Deep rest · slow breath',
+      desc: 'Curled nose-to-brush on the den floor, the great tail drawn round the body as blanket and pillow at once, ears folded flat to the world.',
+      anim: 'Hold everything still; spend the whole cycle on one long flank-breath and a single drowsy ear-flick to prove it lives.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'sleep') {
+      const br = 1 + 0.02 * Math.sin(TAU * t);
+      const ear = 4 * pulse(t, .58, .63);
+      const inner =
+        `<path d="M-13 8 C -24 4 -23 -11 -7 -13.5 C 5 -15 15 -11 18 -3 C 13 -8 2 -9 -7 -6.5 C -16 -4 -18 3 -13 9 Z" fill="${C.deep}"/>` +
+        `<path d="M-13.5 8.5 C -17 2 -13 -3 -6 -4.6" stroke="${C.shade}" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".5"/>` +
+        `<ellipse cx="-1" cy="4.5" rx="15" ry="9.8" fill="${C.rust}"/>` +
+        `<path d="M-12 10.5 C -15 6.5 -14 1 -11 -1.5 C -8 4 3 7 11 4.5 C 8 10.5 -6 13 -12 10.5 Z" fill="${C.cream}" opacity=".85"/>` +
+        g(rot(-ear, 9, -2),
+          `<path d="M9.6 -1.2 C 6 -4.2 2.6 -5.8 0.8 -5.6 C 2.4 -2.8 5.4 -0.6 8.8 0.4 C 9.6 0.2 9.8 -0.4 9.6 -1.2 Z" fill="${C.rust}"/>` +
+          `<path d="M7.9 -1.7 C 5.4 -3.7 3.4 -4.7 2.1 -4.7 C 3.5 -2.7 5.4 -1.2 7.6 -0.4 Z" fill="${C.dark}" opacity=".5"/>`) +
+        `<path d="M13.8 -2.2 C 10.8 -5.2 8 -6.8 6.2 -6.7 C 8 -4 10.6 -1.8 13.2 -1 C 13.9 -1.1 14 -1.7 13.8 -2.2 Z" fill="${C.rust}"/>` +
+        `<ellipse cx="10.5" cy="3" rx="7.2" ry="6.6" fill="${C.rust}"/>` +
+        `<path d="M4 3.6 C 7 6.8 13 6.8 16 3.4 C 13 8 6.4 8 4 4.2 Z" fill="${C.cream}"/>` +
+        `<ellipse cx="4.4" cy="5.6" rx="1.6" ry="1.1" fill="${C.dark}"/>` +
+        `<path d="M8.8 1.4 C 9.8 2.3 11.4 2.3 12.5 1.5" stroke="${C.eye}" stroke-width=".75" fill="none" stroke-linecap="round"/>` +
+        `<path d="M18 -3 C 19.7 -0.4 18.7 3.8 15.3 5.6 C 15.1 2 16 -0.6 17 -3.2 Z" fill="${C.cream}"/>`;
+      return shadow(-1, GY, 19, 0) + g(scl(1, br, 0, GY), inner);
+    }
     if (mid === 'stand') {
       return draw({
         dy: -0.5 * Math.max(0, osc(t, 3)),
@@ -257,8 +280,6 @@ return {
 })();
 __REG["deer"] = (function(){
 // Red Deer — fable style
-
-
 const C = { coat: '#B08960', dark: '#9C7650', belly: '#E8D3B8', cream: '#F4ECE2', hoof: '#3A2E2A', eye: '#2A2326' };
 const GY = 19.4;
 
@@ -365,9 +386,30 @@ return {
     { id: 'alert', label: 'Alert', short: 'Alert', dur: 3.8, env: { t: 'ground' }, speed: '0 km/h', beat: 'Snap → freeze → stamp',
       desc: 'The freeze: head thrown high in three frames, ears locked forward, then one forefoot stamping the alarm into the ground.',
       anim: 'Snap up with an overshoot, then hold dead still — after the snap, stillness is the performance. The stamp is a single sharp accent, no bounce.' }
+    ,{ id: 'sleep', label: 'Sleep', short: 'Sleep', dur: 6.5, env: { t: 'ground' }, night: true, speed: '0 km/h', beat: 'Deep rest · slow breath',
+      desc: 'Bedded in the bracken, legs folded beneath and the long neck held up in a drowse, antlers tipped, eyes gone to slits.',
+      anim: 'A cud-less doze: only the ribs rise and fall, with a slow half-blink and the odd rotation of one ear.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'sleep') {
+      const br = 1 + 0.016 * Math.sin(TAU * t);
+      const ear = 6 * pulse(t, .5, .55);
+      const inner =
+        `<path d="M4 18 C 6 14 10 13 13 14 C 12 16 9 18 6 18.4 Z" fill="${C.dark}"/>` +
+        `<path d="M-2 18.2 C 0 15 4 14 7 14.6 C 6 16.5 3 18.2 0 18.6 Z" fill="${C.coat}"/>` +
+        `<ellipse cx="-3" cy="11" rx="13" ry="7.5" fill="${C.coat}"/>` +
+        `<ellipse cx="-4" cy="13.5" rx="9" ry="4.4" fill="${C.belly}" opacity=".7"/>` +
+        `<path d="M6 8 C 7 3 10 -1 14 -3 L17 1.5 C 13.5 3.5 11 6.5 10.5 10 C 9 9 7 8.4 6 8 Z" fill="${C.coat}"/>` +
+        g(rot(6, 15, -4),
+          `<g stroke="${C.dark}" fill="none" stroke-linecap="round" stroke-width="1.8"><path d="M13 -6 C 12 -12 12.5 -16 15 -19"/><path d="M12.8 -11 C 11 -12.2 9.2 -12.5 8 -12"/><path d="M17 -6.5 C 18.5 -12 19 -16 17.5 -19.5"/><path d="M17.5 -11 C 19.3 -12.4 21 -12.8 22.2 -12.4"/></g>` +
+          `<circle cx="15" cy="-3.5" r="5" fill="${C.coat}"/>` +
+          `<path d="M17 0 C 20.5 0 22 -2 21.5 -4.5 C 19 -3.5 16 -3.5 14.5 -1.5 C 14.5 -0.4 15.5 0 17 0 Z" fill="${C.belly}"/>` +
+          `<ellipse cx="19.6" cy="-2" rx="1.6" ry="1.2" fill="${C.hoof}"/>` +
+          g(rot(-ear, 10, -5), `<path d="M9 -4.5 C 7 -8 8.5 -10.5 11.5 -10 C 13 -8 12.5 -5.5 10.5 -3.5 Z" fill="${C.dark}"/>`) +
+          `<path d="M12.6 -4 C 13.5 -3.3 14.7 -3.3 15.6 -4" stroke="${C.eye}" stroke-width=".8" fill="none" stroke-linecap="round"/>`);
+      return shadow(-1, GY, 16, 0) + g(scl(1, br, 0, GY), inner);
+    }
     if (mid === 'graze') {
       const K = keys(t, [
         [0.00, { headA: 8, pitch: 0, sprig: 0 }],
@@ -429,8 +471,6 @@ return {
 })();
 __REG["horse"] = (function(){
 // Horse — fable style
-
-
 const C = { coat: '#A9713F', dark: '#8F5E36', light: '#C08B57', mane: '#5A4636', maneHi: '#7A5F4B', cream: '#E8D3B8', hoof: '#4A3B31', eye: '#2A2326' };
 const GY = 20;
 
@@ -506,9 +546,22 @@ return {
     { id: 'stand', label: 'Stand at rest', short: 'Stand', dur: 4.6, env: { t: 'ground' }, speed: '0 km/h', beat: 'Idle · weight shift',
       desc: 'At rest: one hip slack, a hind toe tipped, the tail swishing flies and the head sinking by slow degrees.',
       anim: 'Weight shifts read through the hip and croup, never the legs. One tail swish and an ear flick every few seconds keep a hold alive.' }
+    ,{ id: 'sleep', label: 'Doze', short: 'Doze', dur: 6, env: { t: 'ground' }, night: true, speed: '0 km/h', beat: 'Standing sleep · slow breath',
+      desc: 'Asleep on its feet — one hip dropped, a hind toe tipped, the head hung low and the lower lip gone slack.',
+      anim: 'Sell standing-sleep through stillness: the head sinks by degrees, the ears loll sideways, and only the breath moves the barrel.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'sleep') {
+      return draw({
+        dy: -0.4 * Math.max(0, Math.sin(TAU * t)),
+        neckA: 13 + 0.5 * Math.sin(TAU * t),
+        legs: { ff: 0, fh: 0, nf: 0, nh: -9 },
+        tailA: 5 * osc(t, 1, .2),
+        earA: -0.6 + 0.6 * pulse(t, .6, .66),
+        blink: 1
+      });
+    }
     if (mid === 'stand') {
       const K = keys(t, [
         [0.00, { neckA: 0, pitch: 0, nhA: 0 }],
@@ -554,7 +607,7 @@ return {
     }
     // walk
     return draw({
-      dy: -0.7 * osc(t, 2, .12), pitch: 0.9 * osc(t, 2, .4),
+      dy: laneDy(-0.7 * osc(t, 2, .12)), pitch: lanePitch(0.9 * osc(t, 2, .4)),
       legs: gaitLegs(t, { nh: 0, nf: .25, fh: .5, ff: .75 }, 11),
       neckA: 2.6 * osc(t, 2, .5), tailA: 5 * osc(t, 1, .3),
       blink: pulse(t, .7, .73),
@@ -566,8 +619,6 @@ return {
 })();
 __REG["rabbit"] = (function(){
 // European Rabbit — fable style
-
-
 const C = { coat: '#C9A07A', shade: '#B68A63', light: '#E0BE97', eye: '#3A3450', nose: '#B6826A' };
 const GY = 14.6;
 
@@ -643,9 +694,27 @@ return {
     { id: 'groom', label: 'Groom', short: 'Groom', dur: 3.4, env: { t: 'ground' }, speed: '0 km/h', beat: 'Paw-wash cycles',
       desc: 'Face-washing: the head dips and each forepaw in turn wipes down over ear and muzzle in quick strokes.',
       anim: 'Strokes come in twos and threes, fast (3–4 frames each) with tiny holds between sets. Keep the hindquarters immobile.' }
+    ,{ id: 'sleep', label: 'Sleep', short: 'Sleep', dur: 6, env: { t: 'ground' }, night: true, speed: '0 km/h', beat: 'Deep rest · slow breath',
+      desc: 'Melted into a loaf, feet tucked from sight and the long ears laid flat down the back — a stone that breathes.',
+      anim: 'Keep the outline a smooth dome; the only life is the slow breath and a rare, half-hearted ear-twitch.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'sleep') {
+      const br = 1 + 0.018 * Math.sin(TAU * t);
+      const ear = 3 * pulse(t, .55, .6);
+      const inner =
+        `<path d="M-2 -4 C -12 -5.5 -20 -5 -25 -2.5 C -20 -1 -12 -1.5 -3 -1 Z" fill="${C.coat}"/>` +
+        g(rot(ear, -2, -3), `<path d="M-1 -6 C -11 -8 -19 -7.5 -24 -5 C -19 -3.5 -11 -4 -2 -3.5 Z" fill="${C.coat}"/><path d="M-4 -6 C -11 -7.2 -17 -6.8 -21 -5 C -17 -4 -11 -4.4 -4 -4.2 Z" fill="${C.light}" opacity=".6"/>`) +
+        `<path d="M-16 13.6 C -17 3 -9 -5 3 -5 C 15 -5 19 3 17 10 C 16 13 8 14 -3 14 C -11 14 -16 13.6 -16 13.6 Z" fill="${C.coat}"/>` +
+        `<path d="M-14 12 C -10 13.5 12 13.5 16 9.5 C 15 13 7 14 -3 14 C -10 14 -14 13.4 -14 12 Z" fill="${C.shade}" opacity=".5"/>` +
+        `<ellipse cx="-2" cy="2" rx="12" ry="5.5" fill="${C.light}" opacity=".55"/>` +
+        `<ellipse cx="12" cy="6" rx="6.5" ry="6" fill="${C.coat}"/>` +
+        `<ellipse cx="13" cy="8" rx="3.5" ry="2.4" fill="${C.light}" opacity=".55"/>` +
+        `<path d="M12.5 4.6 C 13.4 5.4 14.6 5.4 15.5 4.7" stroke="${C.eye}" stroke-width=".8" fill="none" stroke-linecap="round"/>` +
+        `<ellipse cx="17.6" cy="6.4" rx="1.2" ry="1" fill="${C.nose}" opacity=".85"/>`;
+      return shadow(2, GY, 19, 0, 18) + g(scl(1, br, 0, GY), inner);
+    }
     if (mid === 'hop' || mid === 'sprint') {
       const K = bound(t, mid === 'sprint');
       if (mid === 'sprint') { K.earA = -26; K.earSoft = -8 + 3 * osc(t, 1, .3); }
@@ -691,8 +760,6 @@ return {
 })();
 __REG["bear"] = (function(){
 // Brown Bear — fable style
-
-
 const C = { fur: '#7A5A42', dark: '#6E4F39', light: '#8F6B4C', muzzle: '#C9B291', nose: '#3A2E2A', paw: '#4E382A', eye: '#2A2326' };
 const GY = 19;
 
@@ -754,9 +821,27 @@ return {
     { id: 'rear', label: 'Rear up', short: 'Rear up', dur: 4.4, env: { t: 'ground' }, speed: '0 km/h', beat: 'Rise → survey → drop',
       desc: 'Rising onto the hind feet is not a threat but a lookout: two metres of bear, forepaws hanging, reading the horizon.',
       anim: 'Take four frames to gather back onto the haunches, then rise in one push with a small overshoot. The drop is faster than the rise.' }
+    ,{ id: 'sleep', label: 'Sleep', short: 'Sleep', dur: 7, env: { t: 'ground' }, night: false, speed: '0 km/h', beat: 'Deep rest · heavy breath',
+      desc: 'Flat out in the leaf-litter, chin on the forepaws, the whole mountain of it rising and falling with each slow breath.',
+      anim: 'Everything is weight and stillness — let one deep breath swell the flank, and hold the muzzle heavy on the paws.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'sleep') {
+      const br = 1 + 0.02 * Math.sin(TAU * t);
+      const inner =
+        `<ellipse cx="-6" cy="9" rx="18" ry="9" fill="${C.fur}"/>` +
+        `<ellipse cx="-9" cy="11" rx="10" ry="5.5" fill="${C.light}" opacity=".5"/>` +
+        `<path d="M8 15.5 C 8 12 12 11 16 11 C 20 11 22 12.5 22 15 C 22 16.5 20 17 16 17 C 12 17 8 17 8 15.5 Z" fill="${C.paw}"/>` +
+        `<path d="M12 12.6 C 12 11 13.5 10.5 15.5 10.5 C 18 10.5 19.5 11.3 19.5 12.9 C 19.5 13.7 18 14 15.5 14 C 13.5 14 12 13.9 12 12.6 Z" fill="${C.dark}"/>` +
+        `<ellipse cx="13" cy="7.5" rx="8" ry="6.6" fill="${C.fur}"/>` +
+        `<circle cx="8" cy="1.6" r="3" fill="${C.fur}"/><circle cx="8" cy="1.6" r="1.5" fill="${C.light}"/>` +
+        `<circle cx="16.5" cy="1" r="3" fill="${C.fur}"/><circle cx="16.5" cy="1" r="1.5" fill="${C.light}"/>` +
+        `<ellipse cx="18.5" cy="10" rx="5" ry="3.6" fill="${C.muzzle}"/>` +
+        `<ellipse cx="22" cy="10" rx="1.5" ry="1.1" fill="${C.nose}"/>` +
+        `<path d="M11 6.6 C 12 7.4 13.4 7.4 14.4 6.6" stroke="${C.eye}" stroke-width=".9" fill="none" stroke-linecap="round"/>`;
+      return shadow(-2, GY, 21, 0) + g(scl(1, br, 0, GY), inner);
+    }
     if (mid === 'sniff') {
       const K = keys(t, [
         [0.00, { headA: 0 }], [0.12, { headA: -16 }], [0.30, { headA: -20 }],
@@ -800,8 +885,6 @@ return {
 })();
 __REG["boar"] = (function(){
 // Wild Boar — fable style (rebuilt silhouette)
-
-
 const C = { hide: '#5E5148', dark: '#4A4038', bristle: '#3A322B', light: '#8A7A6C', legN: '#4A4038', legF: '#39312A', hoof: '#28211C', snout: '#9C8878', snoutD: '#3A2E2A', tusk: '#EFE6D0', eye: '#2A2326' };
 const GY = 16.2;
 
@@ -877,9 +960,28 @@ return {
     { id: 'charge', label: 'Charge', short: 'Charge', dur: 0.55, env: { t: 'ground' }, speed: 'to 40 km/h', beat: '4-beat rush',
       desc: 'Provoked, the boar simply becomes a projectile: a flat-backed rush, astonishing for something built like a barrel.',
       anim: 'No majesty, all momentum — minimal vertical travel, maximum leg cadence, ears pinned along the skull.' }
+    ,{ id: 'sleep', label: 'Sleep', short: 'Sleep', dur: 6.5, env: { t: 'ground' }, night: false, speed: '0 km/h', beat: 'Deep rest · heavy breath',
+      desc: 'Collapsed on its side in the day-nest, legs loose, the bristled back a low ridge and the snout buried in the litter.',
+      anim: 'A heavy, twitching sleep: mostly still, with the odd trotter-paddle or a shiver running down the bristles.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'sleep') {
+      const br = 1 + 0.02 * Math.sin(TAU * t);
+      const leg = 3 * pulse(t, .45, .5);
+      const inner =
+        g(rot(leg, -4, 10), `<path d="M-6 10 L-3 10 L-8 15.5 L-11 15 Z" fill="${C.legF}"/>`) +
+        `<path d="M2 10 L5 10 L1 15.5 L-2 15 Z" fill="${C.legF}"/>` +
+        `<ellipse cx="-2" cy="7" rx="17" ry="8" fill="${C.hide}"/>` +
+        `<path d="M-17 8 C -10 12 12 12 17 6 C 16 11 8 12.5 -4 12.5 C -12 12.5 -17 10.5 -17 8 Z" fill="${C.dark}" opacity=".5"/>` +
+        `<path d="M-14 0.5 L-14.6 -3 M-9 -1 L-9.4 -4.6 M-3 -1.6 L-3.2 -5.4 M3 -1.4 L3.2 -5 M9 -0.4 L9.6 -3.4" stroke="${C.bristle}" stroke-width="1.5" stroke-linecap="round"/>` +
+        `<path d="M9 3 C 14 1.5 19 3 22 6.5 C 24 9 25 12 24 13.5 C 22.5 15 18 15 14 13.5 C 10 12 8 8 9 3 Z" fill="${C.hide}"/>` +
+        `<ellipse cx="23" cy="12.5" rx="2" ry="2.6" fill="${C.snout}" transform="rotate(20 23 12.5)"/>` +
+        `<circle cx="22.6" cy="11.6" r=".5" fill="${C.snoutD}" opacity=".85"/><circle cx="23.4" cy="13.4" r=".5" fill="${C.snoutD}" opacity=".85"/>` +
+        `<path d="M10 1 L12 -5 C 14.5 -3.5 15.2 -0.8 14.2 2 C 12.6 2.6 11 2.2 10 1 Z" fill="${C.dark}"/>` +
+        `<path d="M14.5 5.6 C 15.4 6.3 16.6 6.3 17.4 5.5" stroke="${C.eye}" stroke-width=".8" fill="none" stroke-linecap="round"/>`;
+      return shadow(-2, GY, 19, 0) + g(scl(1, br, 0, GY), inner);
+    }
     if (mid === 'root') {
       const K = keys(t, [
         [0.00, { headA: 8, dy: 0, pitch: 1 }],
@@ -924,8 +1026,6 @@ return {
 })();
 __REG["cat"] = (function(){
 // House Cat — fable style
-
-
 const C = { fur: '#8E93A8', dark: '#767B90', stripe: '#6E7488', belly: '#C6CAD8', pink: '#E7B7BE', nose: '#E7A9B0', paw: '#5F6478', eye: '#2A2326' };
 const GY = 18;
 
@@ -940,9 +1040,14 @@ const leg = (k, a) => {
   return g(rot(a, px, py), `<path d="${d}" fill="${col}"/><ellipse cx="${fx}" cy="${fy}" rx="1.6" ry="1" fill="${C.paw}"/>`);
 };
 
-const tail = (a, tip) => g(rot(a, -11, 1.5) + ' ' + rot(tip || 0, -16, -7),
-  `<path d="M-10.5 2.5 C -16 1 -19 -3.5 -18 -9.5 C -17.6 -11.6 -15.4 -12 -14.9 -9.8 C -14.4 -7.4 -15.8 -4.5 -13.2 -1.4 C -12.3 -0.3 -11.3 0.7 -10.3 1.3 Z" fill="${C.fur}"/>` +
-  `<path d="M-17.9 -9.9 C -17.5 -11.5 -15.8 -11.8 -15.1 -10.4 C -15.5 -9.3 -16.9 -9 -17.9 -9.9 Z" fill="${C.dark}"/>`);
+// Two-segment tail: base rooted deep in the rump (body paints over it), tip
+// segment rotates about a rounded joint so the flick never opens a gap.
+const tail = (a, tip) => g(rot(a, -11, 1.5),
+  `<path d="M-7 4.8 C -12.4 4.4 -16.6 1.8 -17.82 -4.4 L-15.18 -4 C -14.5 -1.6 -12.6 0.3 -10.2 1.1 C -9.1 1.45 -8 1.68 -7 1.78 Z" fill="${C.fur}"/>` +
+  g(rot(tip || 0, -16.5, -4.2),
+    `<circle cx="-16.5" cy="-4.2" r="1.45" fill="${C.fur}"/>` +
+    `<path d="M-17.8 -4.6 C -18.8 -6.3 -18.8 -8.1 -18 -9.5 C -17.6 -11.6 -15.4 -12 -14.9 -9.8 C -14.5 -7.9 -15.4 -5.9 -15.2 -4 Z" fill="${C.fur}"/>` +
+    `<path d="M-17.9 -9.9 C -17.5 -11.5 -15.8 -11.8 -15.1 -10.4 C -15.5 -9.3 -16.9 -9 -17.9 -9.9 Z" fill="${C.dark}"/>`));
 
 // P: headA, earA, blink
 function head(P) {
@@ -952,10 +1057,10 @@ function head(P) {
       `<circle cx="9.8" cy="-8.9" r=".5" fill="#fff"/><circle cx="15.2" cy="-8.9" r=".5" fill="#fff"/>`;
   return g(rot(P.headA || 0, 12, -1),
     g(rot(-14 * (P.earA || 0), 8.5, -13),
-      `<path d="M6.2 -11.6 C 5.9 -14.7 6.1 -17.4 7 -19.5 C 9.5 -18.4 11 -16 11.2 -13.6 C 9.4 -14.3 7.6 -13.6 6.2 -11.6 Z" fill="${C.fur}"/>` +
-      `<path d="M7 -13.1 C 6.9 -15.2 7.1 -16.9 7.7 -18.2 C 9.1 -17.3 10 -15.8 10.2 -14.3 C 9 -14.7 7.9 -14.2 7 -13.1 Z" fill="${C.pink}" opacity=".9"/>`) +
-    `<path d="M17.8 -11.6 C 18.1 -14.7 17.9 -17.4 17 -19.5 C 14.5 -18.4 13 -16 12.8 -13.6 C 14.6 -14.3 16.4 -13.6 17.8 -11.6 Z" fill="${C.fur}"/>` +
-    `<path d="M17 -13.1 C 17.1 -15.2 16.9 -16.9 16.3 -18.2 C 14.9 -17.3 14 -15.8 13.8 -14.3 C 15 -14.7 16.1 -14.2 17 -13.1 Z" fill="${C.pink}" opacity=".9"/>` +
+      `<path d="M6.1 -9 C 5.7 -13.6 6.1 -17.3 7 -19.5 C 9.5 -18.4 11.1 -15.7 11.3 -11.2 C 9.6 -11.6 7.8 -10.6 6.1 -9 Z" fill="${C.fur}"/>` +
+      `<path d="M7 -12.2 C 6.8 -14.9 7.1 -16.9 7.7 -18.2 C 9.1 -17.3 10 -15.8 10.2 -13.6 C 9.1 -13.9 7.9 -13.5 7 -12.2 Z" fill="${C.pink}" opacity=".9"/>`) +
+    `<path d="M17.9 -9 C 18.3 -13.6 17.9 -17.3 17 -19.5 C 14.5 -18.4 12.9 -15.7 12.7 -11.2 C 14.4 -11.6 16.2 -10.6 17.9 -9 Z" fill="${C.fur}"/>` +
+    `<path d="M17 -12.2 C 17.2 -14.9 16.9 -16.9 16.3 -18.2 C 14.9 -17.3 14 -15.8 13.8 -13.6 C 14.9 -13.9 16.1 -13.5 17 -12.2 Z" fill="${C.pink}" opacity=".9"/>` +
     `<path d="M5.5 -6.5 C 5.5 -11.6 8.1 -14.6 12 -14.6 C 15.9 -14.6 18.5 -11.6 18.5 -6.5 C 18.5 -2.9 15.6 -0.4 12 -0.4 C 8.4 -0.4 5.5 -2.9 5.5 -6.5 Z" fill="${C.fur}"/>` +
     `<path d="M10.3 -14.2 C 10.6 -13.2 10.6 -12.3 10.3 -11.4 M12 -14.5 C 12.3 -13.4 12.3 -12.4 12 -11.4 M13.7 -14.2 C 14 -13.2 14 -12.3 13.7 -11.4" stroke="${C.stripe}" stroke-width="1" fill="none" stroke-linecap="round" opacity=".55"/>` +
     `<ellipse cx="12" cy="-4.3" rx="4" ry="2.9" fill="${C.belly}" opacity=".9"/>` +
@@ -998,9 +1103,32 @@ return {
     { id: 'idle', label: 'Sit & tail-talk', short: 'Idle', dur: 4.6, env: { t: 'ground' }, speed: '0 km/h', beat: 'Still · tail 2/s bursts',
       desc: 'The body settles into stillness but the tail keeps thinking — soft flicks of the tip, one ear on every sound.',
       anim: 'Move the tail-tip and the ears on different beats, never together. A slow two-frame blink is the only face animation needed.' }
+    ,{ id: 'sleep', label: 'Sleep', short: 'Sleep', dur: 6.5, env: { t: 'ground' }, night: true, speed: '0 km/h', beat: 'Deep rest · slow breath',
+      desc: 'Wound into a perfect circle, tail curled up over the nose and the ears folded down — the hearth-cat’s deepest economy.',
+      anim: 'The classic curl: breathe through the flank, lift the tail-tip once, and twitch an ear at some remembered mouse.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'sleep') {
+      const br = 1 + 0.02 * Math.sin(TAU * t);
+      const ear = 5 * pulse(t, .56, .6);
+      const inner =
+        `<path d="M-12 9 C -22 6 -21 -6 -6 -8 C 6 -9.5 15 -5 17 3 C 12 -2 1 -2.5 -7 -0.5 C -15 1.5 -16 7 -12 10 Z" fill="${C.dark}"/>` +
+        `<ellipse cx="-1" cy="6" rx="14" ry="9.4" fill="${C.fur}"/>` +
+        `<path d="M-11 11.5 C -14 7.5 -13 2 -10 -0.5 C -7 5 4 8 12 5.5 C 9 11.5 -5 14 -11 11.5 Z" fill="${C.belly}" opacity=".8"/>` +
+        `<path d="M-7 -4 C -6 -1 -6 3 -8 6 M-2 -6 C -1 -3 -1 1 -3 4 M3 -6 C 4 -3.5 4 0.5 2 3.5" stroke="${C.stripe}" stroke-width=".9" fill="none" stroke-linecap="round" opacity=".45"/>` +
+        g(rot(-ear, 8, -4),
+          `<path d="M6.4 -3.6 C 5.2 -7.2 5.4 -9.8 6.6 -11 C 8 -9.6 9.1 -7.2 9.4 -4.2 Z" fill="${C.fur}"/>` +
+          `<path d="M12.8 -3.8 C 13.4 -7 14.4 -9.2 16 -10.2 C 16.6 -8.2 16 -5.8 14.6 -3.8 Z" fill="${C.fur}"/>` +
+          `<path d="M7.1 -4.8 C 6.7 -7 6.9 -8.6 7.6 -9.6 C 8.4 -8.4 8.8 -6.8 8.9 -5.2 Z" fill="${C.pink}" opacity=".6"/>` +
+          `<ellipse cx="10.8" cy="2.6" rx="7" ry="6.2" fill="${C.fur}"/>` +
+          `<ellipse cx="9.4" cy="5" rx="4.4" ry="3" fill="${C.belly}" opacity=".85"/>` +
+          `<path d="M8.4 1.8 C 9.3 2.7 10.6 2.7 11.5 1.9" stroke="${C.eye}" stroke-width=".75" fill="none" stroke-linecap="round"/>` +
+          `<path d="M6.4 3.6 C 4.6 3.4 3 3.6 1.8 4.2" stroke="${C.stripe}" stroke-width=".5" fill="none" stroke-linecap="round" opacity=".6"/>`) +
+        `<path d="M8.5 3.3 L10.3 3.3 L9.4 4.6 Z" fill="${C.nose}"/>` +
+        `<path d="M17 3 C 19 5.5 18 9.5 14.6 11 C 14.4 7.5 15.4 4.8 16 2.8 Z" fill="${C.dark}"/>`;
+      return shadow(-1, GY, 17, 0) + g(scl(1, br, 0, GY), inner);
+    }
     if (mid === 'stretch') {
       const K = keys(t, [
         [0.00, { pitch: 0, dy: 0, lf: 0, lh: 0, headA: 0, tailA: 0, tailTip: 0 }],
@@ -1041,8 +1169,6 @@ return {
 })();
 __REG["dog"] = (function(){
 // Farm Dog — fable style
-
-
 const C = { fur: '#D9A968', dark: '#C08B4A', deep: '#B37C3E', belly: '#F0E3CC', paw: '#96662F', tongue: '#E7899B', tongueD: '#C96A7E', nose: '#3A2E2A', eye: '#2A2326' };
 const GY = 17;
 
@@ -1123,9 +1249,26 @@ return {
     { id: 'zoom', label: 'Zoomies', short: 'Zoomies', dur: 0.45, env: { t: 'ground' }, speed: 'inexplicable', beat: 'Full gallop · no reason',
       desc: 'The evening madness: a flat-out gallop in great circles, tail tucked, ears flat, powered entirely by joy.',
       anim: 'Push the gallop past sense — maximum stretch and fold, body low, a frame of full flight each stride. Comedy lives in commitment.' }
+    ,{ id: 'sleep', label: 'Sleep', short: 'Sleep', dur: 6.5, env: { t: 'ground' }, night: true, speed: '0 km/h', beat: 'Deep rest · slow breath',
+      desc: 'Curled on its side, nose tucked toward the tail and one soft ear folded over — chasing something, feet twitching, in its sleep.',
+      anim: 'Rest the whole frame heavy on the ground; add a rare paw-paddle and one deep breath to keep the sleep alive.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'sleep') {
+      const br = 1 + 0.02 * Math.sin(TAU * t);
+      const inner =
+        `<path d="M-13 8 C -23 5 -22 -7 -7 -9 C 5 -10.5 14 -6.5 16 1 C 11 -4 0 -4.5 -8 -2.5 C -16 -0.5 -17 6 -13 9 Z" fill="${C.dark}"/>` +
+        `<ellipse cx="-1" cy="5.5" rx="14.5" ry="9.6" fill="${C.fur}"/>` +
+        `<path d="M-11 11 C -14 7 -13 1.5 -10 -1 C -7 4.5 5 7.5 13 5 C 10 11 -5 13.5 -11 11 Z" fill="${C.belly}" opacity=".8"/>` +
+        `<ellipse cx="11" cy="3.5" rx="7" ry="6.4" fill="${C.fur}"/>` +
+        `<path d="M4.6 4 C 7.6 7.2 13.6 7.2 16.4 3.8 C 13.6 8.6 6.8 8.6 4.6 4.6 Z" fill="${C.belly}"/>` +
+        `<ellipse cx="4.9" cy="6" rx="1.7" ry="1.2" fill="${C.nose}"/>` +
+        `<path d="M8.6 1.9 C 9.6 2.8 11 2.8 12 2" stroke="${C.eye}" stroke-width=".75" fill="none" stroke-linecap="round"/>` +
+        `<path d="M11.5 -3.4 C 15.5 -3.8 18 -1 17.4 3.2 C 17 6 15.2 7.4 13.6 6.4 C 14 3.4 13 0.2 11 -1.4 C 10.8 -2.2 11 -3 11.5 -3.4 Z" fill="${C.deep}"/>` +
+        `<path d="M12.4 -2.4 C 15.4 -2.7 17.2 -0.4 16.8 3.2 C 15.2 2 13.6 -0.2 12.2 -1.6 Z" fill="${C.dark}" opacity=".55"/>`;
+      return shadow(-1, GY, 18, 0) + g(scl(1, br, 0, GY), inner);
+    }
     if (mid === 'wag') {
       const wag = osc(t, 4, 0);
       return draw({
@@ -1180,8 +1323,6 @@ return {
 })();
 __REG["hedgehog"] = (function(){
 // Hedgehog — fable style
-
-
 const C = { body: '#A6906F', spikeD: '#6E5844', spikeM: '#8B7358', face: '#E8D3B8', nose: '#3A2E2A', foot: '#6E5844', footB: '#5A4636', eye: '#2A2326' };
 const GY = 11.2;
 
@@ -1227,9 +1368,16 @@ return {
     { id: 'curl', label: 'Curl up', short: 'Curl', dur: 4, env: { t: 'ground' }, speed: '0 km/h', beat: 'Startle → ball → peek',
       desc: 'The famous trick: face and feet vanish in a blink and the animal becomes a problem no fox has solved.',
       anim: 'Tuck in two frames flat — the snap is the gag. Hold the ball absolutely still, then let the nose peek out first, suspicious.' }
+    ,{ id: 'sleep', label: 'Sleep', short: 'Sleep', dur: 5.5, env: { t: 'ground' }, night: false, speed: '0 km/h', beat: 'Deep rest · slow breath',
+      desc: 'Rolled into the tight spined ball and simply left there — the day spent as a problem no fox has ever solved.',
+      anim: 'Hold the ball dead still; the only tell that it sleeps rather than hides is the slow, even swell of breath.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'sleep') {
+      const br = 1 + 0.025 * Math.sin(TAU * t);
+      return draw({ faceT: 1, legT: 1, sx: 1, sy: br, pitch: 0, blink: 1, noseA: 0 });
+    }
     if (mid === 'sniff') {
       const sn = pulse(t, .1, .4) + pulse(t, .56, .86);
       return draw({
@@ -1257,7 +1405,7 @@ return {
     }
     // trundle
     return draw({
-      dy: laneDy(-0.5 * Math.abs(osc(t, 2, .05))),
+      dy: -0.5 * Math.abs(osc(t, 2, .05)),
       legA: 22 * osc(t, 2), legB: 22 * osc(t, 2, .5),
       noseA: 4 * osc(t, 2, .25),
       blink: pulse(t, .66, .7),
@@ -1269,8 +1417,6 @@ return {
 })();
 __REG["mouse"] = (function(){
 // Wood Mouse — fable style
-
-
 const C = { fur: '#A89A93', belly: '#C9BDB6', foot: '#8A7C76', pink: '#E7B7BE', nose: '#E7A9B0', eye: '#2A2326', tail: '#C9A6A0' };
 const GY = 9.6;
 
@@ -1315,9 +1461,27 @@ return {
     { id: 'alert', label: 'Freeze & listen', short: 'Alert', dur: 3.4, env: { t: 'ground' }, speed: '0 km/h', beat: 'Freeze · ears up',
       desc: 'At the smallest sound everything stops mid-step — ears cupped wide, nose the only thing still moving.',
       anim: 'The freeze must be absolute; hold longer than comfortable. The nose-twitch during the freeze is what keeps it alive.' }
+    ,{ id: 'sleep', label: 'Sleep', short: 'Sleep', dur: 5.5, env: { t: 'ground' }, night: false, speed: '0 km/h', beat: 'Deep rest · quick breath',
+      desc: 'A thumb-sized ball in the grass-nest, nose to belly and the long tail wound right around like a drawn string.',
+      anim: 'Everything tiny and still; a five-per-second whisker tremor in short bursts is the whole performance.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'sleep') {
+      const br = 1 + 0.025 * Math.sin(TAU * t);
+      const wh = 1.2 * Math.sin(TAU * t * 5) * pulse(t, .4, .72);
+      const inner =
+        `<path d="M-1 8.6 C -12 9 -17.5 3.5 -15 -2.5 C -12.8 -7.6 -5 -9.4 3 -8.6" stroke="${C.tail}" stroke-width="1.5" fill="none" stroke-linecap="round"/>` +
+        `<ellipse cx="0" cy="3" rx="9" ry="6.6" fill="${C.fur}"/>` +
+        `<path d="M-7 7.5 C -9 4.5 -8.5 0.5 -6.5 -1.5 C -4 3 4 4.5 8.5 2.5 C 6.5 7 -3 9 -7 7.5 Z" fill="${C.belly}" opacity=".8"/>` +
+        `<circle cx="6.4" cy="-3.6" r="4" fill="${C.fur}"/>` +
+        `<circle cx="6.6" cy="-3.3" r="2.4" fill="${C.pink}" opacity=".75"/>` +
+        `<ellipse cx="7" cy="3" rx="5" ry="4.4" fill="${C.fur}"/>` +
+        `<ellipse cx="10.6" cy="3.5" rx="1.1" ry=".9" fill="${C.nose}"/>` +
+        `<path d="M5.9 1.7 C 6.6 2.4 7.6 2.4 8.3 1.8" stroke="${C.eye}" stroke-width=".6" fill="none" stroke-linecap="round"/>` +
+        g(rot(wh, 10.6, 3.5), `<path d="M10.6 3 C 13 3.4 15.5 3.2 17 2.6 M10.6 4 C 13 5 15 5.2 16.6 5" stroke="${C.foot}" stroke-width=".35" fill="none"/>`);
+      return shadow(-1, GY, 11.5, 0, 10) + g(scl(1, br, 0, GY), inner);
+    }
     if (mid === 'nibble') {
       const nib = pulse(t, .08, .42) + pulse(t, .56, .9);
       return draw({
@@ -1358,8 +1522,6 @@ return {
 })();
 __REG["owl"] = (function(){
 // Tawny Owl — fable style
-
-
 const C = { body: '#8A6E52', wing: '#755B43', disc: '#C9B291', face: '#F4ECE2', eye: '#2A2326', beak: '#E8943E' };
 const GY = 16;
 
@@ -1426,9 +1588,31 @@ return {
     { id: 'glide', label: 'Glide', short: 'Glide', dur: 2.4, env: { t: 'air' }, speed: '~30 km/h', beat: 'Set wings · drift',
       desc: 'Between beats the owl simply sails: wings set, body rocking a degree or two on the air it cannot be heard crossing.',
       anim: 'Nothing is truly still — give the glide a slow one-degree roll and a breath of lift and sink, or it reads as a freeze-frame.' }
+    ,{ id: 'sleep', label: 'Day-roost', short: 'Roost', dur: 6, env: { t: 'branch', y: 16 }, night: false, speed: '0 km/h', beat: 'Asleep by day · slow breath',
+      desc: 'The night-hunter’s rest: pressed to the bark by daylight, feathers loosened into a soft column, the great eyes shut to thin closed crescents.',
+      anim: 'A held pose, barely breathing. Loosen the outline into a fluffed ball and keep the lids down — let whole seconds pass with only a feather-settle.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'sleep') {
+      const br = 1 + 0.02 * Math.sin(TAU * t);
+      const set = 0.7 * pulse(t, .48, .58);
+      const inner =
+        `<path d="M-12 2 C -13 13 -6 17 0 17 C 6 17 13 13 12 2 C 11 -7 6 -12 0 -12 C -6 -12 -11 -7 -12 2 Z" fill="${C.body}"/>` +
+        `<path d="M0 3 C 3.5 3 6 6.5 6 10 C 6 13.5 3.5 15.5 0 15.5 C -3.5 15.5 -6 13.5 -6 10 C -6 6.5 -3.5 3 0 3 Z" fill="${C.disc}" opacity=".5"/>` +
+        `<path d="M-11 1 C -12.5 9 -10 14 -7 15.5 C -8.5 10 -8.5 3 -7.5 -3 C -9.5 -4 -10.8 -2 -11 1 Z" fill="${C.wing}"/>` +
+        `<path d="M11 1 C 12.5 9 10 14 7 15.5 C 8.5 10 8.5 3 7.5 -3 C 9.5 -4 10.8 -2 11 1 Z" fill="${C.wing}"/>` +
+        g(rot(set, 0, -4),
+          `<circle cx="0" cy="-4" r="10.5" fill="${C.body}"/>` +
+          `<path d="M-8.5 -8 C -10.5 -14 -8.5 -18 -5.5 -18 C -4.5 -14 -4.5 -11 -5.5 -8.5 Z" fill="${C.body}"/>` +
+          `<path d="M8.5 -8 C 10.5 -14 8.5 -18 5.5 -18 C 4.5 -14 4.5 -11 5.5 -8.5 Z" fill="${C.body}"/>` +
+          `<path d="M-8.5 -4 C -8.5 -9.5 -4 -12.5 0 -12.5 C 4 -12.5 8.5 -9.5 8.5 -4 C 8.5 1.5 4 4.5 0 4.5 C -4 4.5 -8.5 1.5 -8.5 -4 Z" fill="${C.disc}"/>` +
+          `<path d="M-6.5 -4 C -5.2 -2.5 -2.8 -2.5 -1.5 -4" stroke="${C.eye}" stroke-width=".9" fill="none" stroke-linecap="round"/>` +
+          `<path d="M1.5 -4 C 2.8 -2.5 5.2 -2.5 6.5 -4" stroke="${C.eye}" stroke-width=".9" fill="none" stroke-linecap="round"/>` +
+          `<path d="M0 -1.5 L1.8 0.8 C 0.8 1.6 -0.8 1.6 -1.8 0.8 Z" fill="${C.beak}"/>`) +
+        `<g stroke="${C.wing}" stroke-width="1.4" stroke-linecap="round"><path d="M-3 16.5 l0 2 M-1 16.6 l0 2 M2 16.6 l0 2 M4 16.5 l0 2"/></g>`;
+      return g(scl(1, br, 0, GY), inner);
+    }
     if (mid === 'headturn') {
       const K = keys(t, [
         [0.00, { headSx: 1, headA: 0, bk: 0 }],
@@ -1484,8 +1668,6 @@ return {
 })();
 __REG["mallard"] = (function(){
 // Mallard — fable style (from the duck)
-
-
 const C = { body: '#F4F1EA', shade: '#DED7C7', bill: '#E8A33E', billD: '#D08F2E', eye: '#2A2E26', water: '#7FB6C9' };
 const GY = 9.5;
 
@@ -1542,9 +1724,26 @@ return {
     { id: 'shake', label: 'Tail-shake', short: 'Shake', dur: 2.2, env: { t: 'water', y: 6 }, speed: '0 km/h', beat: 'Burst · settle',
       desc: 'Surfacing housekeeping: a fast shiver runs stem to stern, flinging water off the oiled feathers, ending in one smug tail-wag.',
       anim: 'The shake is a 12-per-second jitter that decays over half a second. Finish with a clean, slow tail wag — the punctuation mark.' }
+    ,{ id: 'sleep', label: 'Roost', short: 'Roost', dur: 6, env: { t: 'ground' }, night: true, speed: '0 km/h', beat: 'Deep rest · slow breath',
+      desc: 'Settled on the bank as a smooth loaf, feet folded away, the head laid right back and the bill buried in the shoulder feathers.',
+      anim: 'The bill-tuck is the whole pose — head reversed onto the back, one eye shut. Only a slow flank-breath and a rare bill-shuffle move.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'sleep') {
+      const br = 1 + 0.02 * Math.sin(TAU * t);
+      const inner =
+        `<path d="M-17 5 C -16 -3 -3 -6.5 8 -4.5 C 15 -3 16 3.5 11 7 C 3 10.5 -12 10.5 -17 5 Z" fill="${C.body}"/>` +
+        `<path d="M-17 5 C -11 9.5 6 10.5 11 7 C 8 9.8 -12 10.5 -17 5 Z" fill="${C.shade}"/>` +
+        `<path d="M-15 2.5 C -19 0.5 -22 1 -22.5 3.5 C -20 4.8 -17 4 -14.5 3.4 Z" fill="${C.body}"/>` +
+        `<path d="M0 -3.5 C -4 -3 -7.5 -2 -9 -0.5 C -6.5 -0.3 -3 -1 0 -2 Z" fill="${C.bill}"/>` +
+        `<path d="M-9 -0.5 C -7.5 -0.9 -6 -1 -4.5 -1" stroke="${C.billD}" stroke-width=".5" fill="none" opacity=".6"/>` +
+        `<circle cx="1" cy="-4.5" r="5.6" fill="${C.body}"/>` +
+        `<path d="M1 1 C 4.5 0.6 6.6 -1.2 6.8 -4 C 6.8 -1.4 5.2 0.4 1 1 Z" fill="${C.shade}"/>` +
+        `<path d="M-1.6 -5 C -0.7 -4.2 0.7 -4.2 1.6 -5" stroke="${C.eye}" stroke-width=".8" fill="none" stroke-linecap="round"/>` +
+        `<path d="M-8 1 C -3 -1 3 -1.5 8 0" stroke="${C.shade}" stroke-width="1" fill="none" opacity=".6"/>`;
+      return shadow(-1, GY + 0.4, 15, 0, 14) + g(scl(1, br, 0, GY), inner);
+    }
     if (mid === 'swim') {
       return draw({
         dy: -0.8 * osc(t, 1, .1), rock: 1.5 * osc(t, 1, .35),
@@ -1597,8 +1796,6 @@ return {
 })();
 __REG["stork"] = (function(){
 // White Stork — fable style
-
-
 const C = { body: '#F4F1EA', shade: '#DED7C7', black: '#33303B', blackHi: '#4A4655', leg: '#D4694F', legD: '#B85842', eye: '#2A2326' };
 const GY = 23;
 
@@ -1658,7 +1855,7 @@ function draw(P) {
 
 return {
   id: 'stork', view: [-34, -31, 72, 60], groundY: GY,
-  thumb: { m: 'stand', t: 0.12 },
+  thumb: { m: 'stride', t: 0.16 },
   motions: [
     { id: 'stand', label: 'Stand', short: 'Stand', dur: 5.2, env: { t: 'water', y: 8 }, speed: '0 km/h', beat: 'One leg · river watch',
       desc: 'The classic stork at the shallows: weight on one long leg, the other folded against the breast, neck held in slow figure-eights over the water.',
@@ -1675,9 +1872,27 @@ return {
     { id: 'clatter', label: 'Bill-clatter', short: 'Clatter', dur: 2.8, env: { t: 'ground' }, speed: '0 km/h', beat: 'Throw-back + 10/s clap',
       desc: 'The stork\u2019s only voice: head thrown right back along the spine, bill clattering like a wooden rattle.',
       anim: 'The throw-back is one confident arc, 6–8 frames. The clap is a 10-per-second jitter of the lower mandible only — the head stays parked.' }
+    ,{ id: 'sleep', label: 'Roost', short: 'Roost', dur: 7, env: { t: 'ground' }, night: true, speed: '0 km/h', beat: 'One leg · slow sway',
+      desc: 'Asleep on the nest-edge at night: balanced on a single leg, the other drawn up into the belly-down, the long bill laid back along the shoulders.',
+      anim: 'Keep the standing leg a plumb-line and let the whole bird sway a degree or two on it. The tucked bill and folded leg do all the storytelling.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'sleep') {
+      const br = 1 + 0.015 * Math.sin(TAU * t);
+      const sway = 0.35 * Math.sin(TAU * t * 0.5);
+      const inner =
+        legFar(13) + legNear(-11) +
+        `<ellipse cx="-2" cy="0" rx="10.5" ry="6.6" fill="${C.body}"/>` +
+        `<path d="M-11 2.4 C -6 6 2 6.2 7 3.4 C 2 6.8 -8 6.8 -12 1.8 Z" fill="${C.shade}"/>` +
+        foldedWing +
+        `<path d="M3 -2 C 6 -3.6 6 -6.6 3 -8 C 1 -9 -1.6 -8.6 -2.6 -6.8 C -0.6 -6.6 1.4 -5.4 2.4 -3.8 C 2.8 -3.2 2.9 -2.6 3 -2 Z" fill="${C.body}"/>` +
+        `<circle cx="0" cy="-7.6" r="3.3" fill="${C.body}"/>` +
+        `<path d="M-1.6 -8.9 C -7 -9.1 -12.6 -8.1 -15.6 -6.6 C -12.6 -6.4 -7 -7 -1.8 -6.9 C -1.3 -7.7 -1.3 -8.3 -1.6 -8.9 Z" fill="${C.leg}"/>` +
+        `<path d="M-1.8 -6.9 C -6.6 -7.1 -11 -6.7 -14 -6.6" stroke="${C.legD}" stroke-width=".5" fill="none" opacity=".6"/>` +
+        `<path d="M-1.9 -8 C -1.2 -7.3 0 -7.3 0.7 -8" stroke="${C.eye}" stroke-width=".7" fill="none" stroke-linecap="round"/>`;
+      return shadow(0, GY + 0.6, 9, 0, 20) + g(trl(sway, 0) + ' ' + scl(1, br, 0, GY), inner);
+    }
     if (mid === 'flight') {
       const flap = osc(t, 1, .3);
       return draw({
@@ -1720,7 +1935,7 @@ return {
         neckA: 2.5 * osc(t, 1, .06) + 5 * osc(t, 1, .02)
       });
     }
-    // stride
+        // stride
     return draw({
       grounded: true,
       dy: -0.5 * Math.abs(osc(t, 2, .05)), pitch: 0.8 * osc(t, 2, .3),
@@ -1733,10 +1948,165 @@ return {
 };
 
 })();
+__REG["heron"] = (function(){
+// Grey Heron — fable style (side view: grey wings, white head with black crest, tucked neck in flight, dagger strike)
+const C = { grey: '#9AA0A8', greyD: '#7C828C', greyHi: '#AEB4BC', white: '#F2F0EC', black: '#33303B', bill: '#E8B84E', billD: '#C99A34', leg: '#9C7E58', legD: '#7E6444', eye: '#E4C24A', pupil: '#2A2326' };
+const GY = 23;
+
+const legFar = a => g(rot(a, 1.6, 4.5),
+  `<path d="M1 4.5 L2.4 4.5 L2.2 21.8 L1.1 21.8 Z" fill="${C.legD}"/><path d="M0.7 21.8 L3.6 22.9 L0.4 22.9 Z" fill="${C.legD}"/>`);
+const legNear = a => g(rot(a, -0.6, 4.5),
+  `<path d="M-1.2 4.5 L0.2 4.5 L0 21.8 L-1.1 21.8 Z" fill="${C.leg}"/><path d="M-1.5 21.8 L1.4 22.9 L-1.8 22.9 Z" fill="${C.leg}"/>`);
+
+// head + dagger bill (points +x) + trailing black crest, pivot at (hx,hy) rotated by ang
+function headBill(hx, hy, ang) {
+  return g(trl(hx, hy) + ' ' + rot(ang || 0, 0, 0),
+    `<path d="M-2 -3 C -4.6 -4.8 -7.4 -5.2 -9.6 -4.8 C -6.8 -4.1 -4 -3.4 -1.8 -2.2 Z" fill="${C.black}"/>` +
+    `<circle cx="0" cy="0" r="2.8" fill="${C.white}"/>` +
+    `<path d="M-0.4 -2.4 C -2.8 -3.4 -5.2 -3.2 -6.8 -2.2 C -4.8 -2.6 -2.4 -2.4 -0.4 -1.6 Z" fill="${C.black}"/>` +
+    `<path d="M1.8 -1.1 C 6 -1.5 11.6 -0.7 13.8 0 C 11.6 0.8 6 1.1 1.8 0.7 C 1.1 -0.1 1.1 -0.6 1.8 -1.1 Z" fill="${C.bill}"/>` +
+    `<path d="M1.8 0.1 C 6 0.4 10.8 0.6 12.9 0.2 C 10.8 0.9 6 0.9 1.8 0.6 Z" fill="${C.billD}" opacity=".6"/>` +
+    `<circle cx="0.6" cy="-0.6" r="1" fill="${C.eye}"/><circle cx="0.6" cy="-0.6" r=".45" fill="${C.pupil}"/>`);
+}
+
+// extended S-neck for stalk / strike. stab 0 = coiled up, 1 = fired down into the water
+function extNeck(P) {
+  const s = P.stab || 0;
+  const hx = 12 + 9 * s, hy = -15 + 22 * s, cx = 6 - 2 * s, cy = -9 - 1 * s, ang = 8 + 52 * s;
+  const d = `M3 -1.5 Q ${N(cx)} ${N(cy)} ${N(hx)} ${N(hy)}`;
+  return `<path d="${d}" stroke="${C.white}" stroke-width="3.4" fill="none" stroke-linecap="round"/>` +
+    `<path d="${d}" stroke="${C.greyD}" stroke-width=".5" fill="none" opacity=".3"/>` +
+    headBill(hx, hy, ang);
+}
+
+// compact tucked neck for flight — head pulled back onto the shoulders, throat bulge below
+function tuckNeck() {
+  return `<path d="M2 -2 C 5 -3.2 8 -3.6 10 -6 C 11 -7.2 12.6 -7 13 -5.6 C 12 -3 9 -1 5 0 C 2 0.6 0 -0.4 2 -2 Z" fill="${C.white}"/>` +
+    `<path d="M5 0 C 7 1.6 9 1.7 10.6 0.8 C 8.6 2.2 5.6 2 3.6 0.6 Z" fill="${C.greyHi}" opacity=".55"/>` +
+    headBill(11, -6.4, -3);
+}
+
+// broad grey wing with black fingered tip. lift = raise, fold = tip fold on recovery, far = behind
+const spreadWing = (lift, fold, far) => {
+  const col = far ? C.greyD : C.grey;
+  const tip = g(rot(-fold, -15, -5),
+    `<path d="M-15 -6.8 C -19 -7.6 -22.6 -7.2 -25 -5.8 C -26 -5.2 -25.8 -4 -24.8 -3.6 C -21.8 -2.4 -18.4 -2.4 -15 -3.6 Z" fill="${col}"/>` +
+    `<path d="M-15 -3.6 C -18.4 -2.4 -21.8 -2.4 -24.8 -3.6 C -22.2 -1.6 -18 -1.2 -14.6 -2.6 Z" fill="${C.black}"/>` +
+    `<g stroke="${C.black}" stroke-width="1" stroke-linecap="round"><line x1="-22.4" y1="-5.2" x2="-25.4" y2="-4.6"/><line x1="-21.4" y1="-4" x2="-24.2" y2="-3"/><line x1="-20.2" y1="-3.1" x2="-22.6" y2="-1.9"/></g>`);
+  return g(rot(-lift, 1, -3) + (far ? ' ' + trl(1.6, -1.2) : ''),
+    `<path d="M1 -3.6 C -5 -7.4 -12 -8.4 -17.6 -6.8 C -18.8 -6.4 -18.8 -5 -17.6 -4.4 C -13 -1.8 -7 -0.4 -1.6 -0.2 C 1.2 -0.1 2 -1.9 1 -3.6 Z" fill="${col}"/>` +
+    `<path d="M-1.6 -0.2 C -7 -0.4 -13 -1.8 -17.6 -4.4 C -14 -1.2 -8 1.2 -1.4 1.3 C 1 1.4 1.8 0.4 -1.6 -0.2 Z" fill="${C.greyD}"/>` +
+    tip);
+};
+
+const foldedWing =
+  `<path d="M-2 -3 C -8 -1.5 -14 1 -18.5 5 C -13 5.8 -6.5 4.4 -2.5 1.4 C -0.8 0.2 -0.6 -2 -2 -3 Z" fill="${C.grey}"/>` +
+  `<path d="M-16.5 3.6 C -12 2 -7 1 -3 0.8" stroke="${C.greyHi}" stroke-width=".8" fill="none" stroke-linecap="round" opacity=".6"/>` +
+  `<path d="M-17.5 4.6 C -13 3.6 -8 2.6 -4 2.2" stroke="${C.black}" stroke-width="1" fill="none" stroke-linecap="round" opacity=".4"/>`;
+
+function draw(P) {
+  const dx = P.dx || 0, dy = P.dy || 0;
+  let s = P.ticks || '';
+  if (P.grounded) s += shadow(dx + 1, GY + 0.6, 9, 0, 20);
+  const flying = !!P.wings;
+  const neck = P.neck === 'tuck' ? tuckNeck() : extNeck(P);
+  const inner =
+    (flying ? spreadWing(P.wings.lift * 0.9, P.wings.fold, true) : '') +
+    legFar(P.legFarA || 0) + legNear(P.legNearA || 0) +
+    `<ellipse cx="-4" cy="0" rx="11" ry="6.6" fill="${C.grey}"/>` +
+    `<path d="M-13 2.4 C -7 6.2 2 6.4 7 3.6 C 2 7 -8 7 -13 2.4 Z" fill="${C.greyD}"/>` +
+    `<path d="M-6 -4.6 C -1 -6.4 4 -5.6 6.5 -3.4" stroke="${C.greyHi}" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>` +
+    `<path d="M2 -4 C 3 -1 3.4 2 2.6 5" stroke="${C.black}" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".5"/>` +
+    (flying ? '' : foldedWing) +
+    neck +
+    (flying ? spreadWing(P.wings.lift, P.wings.fold, false) : '');
+  return s + g(trl(dx, dy) + ' ' + rot(P.pitch || 0, 0, 0), inner) + (P.over || '');
+}
+
+return {
+  id: 'heron', view: [-38, -33, 78, 64], groundY: GY,
+  thumb: { m: 'stalk', t: 0.1 },
+  motions: [
+    { id: 'flight', label: 'Flight', short: 'Flight', dur: 1.15, env: { t: 'air' }, speed: '~35 km/h', beat: 'Slow deep bowed beats',
+      desc: 'The give-away silhouette: neck folded hard back onto the shoulders, legs trailed straight behind, wings rowing the air in slow, deep, bowed strokes.',
+      anim: 'Everything is in the wing \u2014 deep, arched downstrokes with a real fold on the recovery. Neck stays tucked, legs stay rigid; let the body rise and sink on the beat.' },
+    { id: 'soar', label: 'Soar', short: 'Soar', dur: 3.2, env: { t: 'air' }, speed: '~45 km/h', beat: 'Set wings · circle',
+      desc: 'On a thermal the beats stop: the broad wings set into a shallow bow and the whole bird wheels in slow, patient circles.',
+      anim: 'Sell the circling with a slow roll and heading drift; the fingered wingtips flutter at the smallest amplitude. Neck stays tucked.' },
+    { id: 'stalk', label: 'Stalk', short: 'Stalk', dur: 2.8, env: { t: 'water', y: 20 }, speed: '~1 km/h', beat: 'Freeze · lift · place',
+      desc: 'The shallows hunter: a hunched, motionless wait broken by one impossibly slow lifted step, the neck coiled and ready above the water.',
+      anim: 'Move as little as possible. The step is a single slow lift-and-place; the neck holds its coil and only weaves a fraction, tracking something below.' },
+    { id: 'strike', label: 'Strike', short: 'Strike', dur: 2.4, env: { t: 'water', y: 20 }, speed: '0 km/h', beat: 'Coil · stab · recover',
+      desc: 'The coiled neck released \u2014 the head fires down through the surface in a single frame and lifts with the catch, water flung from the bill.',
+      anim: 'Hold the coil long and still, then fire: two or three frames to full stretch, a beat under water, and a slower, heavier recovery to the coil.' }
+    ,{ id: 'sleep', label: 'Roost', short: 'Roost', dur: 7, env: { t: 'ground' }, night: true, speed: '0 km/h', beat: 'One leg · neck tucked',
+      desc: 'Hunched down for the night on a single leg, the long neck folded right back into the shoulders and the dagger bill laid along the breast.',
+      anim: 'Pull the neck into the tightest S and drop the shoulders; balance the whole grey bundle on one plumb leg and let it sway a hair.' }
+  ],
+  render(mid, t) {
+    t = wrap(t);
+    if (mid === 'sleep') {
+      return draw({
+        neck: 'tuck', grounded: true,
+        legFarA: 120,
+        legNearA: 2 * Math.sin(TAU * t * 0.6),
+        pitch: 2,
+        dx: 0.5 * Math.sin(TAU * t * 0.6),
+        dy: -0.25 * Math.max(0, Math.sin(TAU * t))
+      });
+    }
+    if (mid === 'flight') {
+      const flap = osc(t, 1, .3);
+      return draw({
+        neck: 'tuck', pitch: -4 + 2 * osc(t, 1, .55), dy: -4 * osc(t, 1, .55),
+        wings: { lift: -34 * flap - 8, fold: flap > 0 ? 26 * flap : 0 },
+        legFarA: 66, legNearA: 68,
+        ticks: airTicks(t, { x1: -34, x2: 36, y: -22, h: 20, v: 42, n: 4, s: 1.4 })
+      });
+    }
+    if (mid === 'soar') {
+      return draw({
+        neck: 'tuck', pitch: -3 + 2.5 * osc(t, 1, .3), dy: -2 * osc(t, 1, .55), dx: 2.5 * osc(t, 1, .05),
+        wings: { lift: -8 + 2 * osc(t, 4, .1), fold: 4 + 2 * osc(t, 5, .4) },
+        legFarA: 66, legNearA: 68,
+        ticks: airTicks(t, { x1: -34, x2: 36, y: -22, h: 20, v: 24, n: 4, s: 1.4 })
+      });
+    }
+    if (mid === 'strike') {
+      const K = keys(t, [
+        [0.00, { stab: 0 }],
+        [0.40, { stab: 0 }],
+        [0.49, { stab: 1 }],
+        [0.60, { stab: 1 }],
+        [0.80, { stab: 0.12 }],
+        [1.00, { stab: 0 }]
+      ]);
+      K.neck = 'ext'; K.grounded = true; K.legFarA = 5; K.legNearA = -4;
+      K.pitch = 5 * K.stab;
+      const sp = pulse(t, .5, .64);
+      K.ticks = rippleTicks(t, { y: 20, x1: -34, x2: 36, v: 6, n: 5, s: 1.4, tone: '#85988B' });
+      K.over = sp > 0 ? `<g fill="#9CCBD9" opacity="${N(sp * .8)}"><circle cx="${N(20 + 3 * sp)}" cy="16" r="1"/><circle cx="${N(24 + 2 * sp)}" cy="14.5" r=".8"/><circle cx="18" cy="15.5" r=".7"/></g>` : '';
+      return draw(K);
+    }
+    // stalk
+    const K = keys(t, [
+      [0.00, { ln: 0, dy: 0 }],
+      [0.32, { ln: 0, dy: 0 }],
+      [0.48, { ln: -28, dy: -0.6 }],
+      [0.64, { ln: -12, dy: -0.3 }],
+      [0.74, { ln: 0, dy: 0 }],
+      [1.00, { ln: 0, dy: 0 }]
+    ]);
+    K.neck = 'ext'; K.grounded = true; K.legFarA = 0; K.legNearA = K.ln;
+    K.stab = 0.04 + 0.03 * osc(t, 1, .1);
+    K.ticks = rippleTicks(t, { y: 20, x1: -34, x2: 36, v: 5, n: 5, s: 1.4, tone: '#85988B' });
+    return draw(K);
+  }
+};
+
+})();
 __REG["bird"] = (function(){
 // Nuthatch — fable style
-
-
 const C = { body: '#7BA0C9', wing: '#5E84AD', wingHi: '#6E93BD', wingFar: '#4E749E', wingFarD: '#456690', breast: '#EF9C7E', beak: '#E8943E', beakD: '#C9742A', eye: '#2A2326' };
 const GY = 9;
 
@@ -1810,16 +2180,29 @@ return {
     { id: 'sing', label: 'Perch & sing', short: 'Sing', dur: 3.2, env: { t: 'ground' }, speed: '0 km/h', beat: 'Phrase · pause · phrase',
       desc: 'Head back, beak wide, the whole body thrown into a phrase — then silence, a look around, and the phrase again.',
       anim: 'The song shakes the whole bird: tilt back and quiver through each phrase. The pauses between phrases sell the performance.' }
+    ,{ id: 'sleep', label: 'Roost', short: 'Roost', dur: 6, env: { t: 'branch', y: 9 }, night: true, speed: '0 km/h', beat: 'Fluffed · quick breath',
+      desc: 'Fluffed to a feathered ball on the roost-branch, head screwed right round and the bill pushed down into the back feathers for the night.',
+      anim: 'Round the whole silhouette and bury the bill; a small, quick breath-swell is all that moves through the puffed plumage.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'sleep') {
+      const br = 1 + 0.03 * Math.sin(TAU * t);
+      const inner =
+        `<path d="M-2 -6.5 C -6 -7 -9 -5 -9 -2 C -6 -3 -3 -4 0 -4.5 Z" fill="${C.beak}"/>` +
+        `<path d="M-8 1 C -9 6 -5 9.5 1 9.5 C 7 9.5 10 6 9 0 C 8 -5 4 -7.5 0 -7.5 C -5 -7.5 -8 -4 -8 1 Z" fill="${C.body}"/>` +
+        `<path d="M-3 3 C -3 6 -1 8 1.5 8 C 4 8 6 6 6 3.2 C 6 1 3.5 0 1 0 C -1 0 -3 1 -3 3 Z" fill="${C.breast}" opacity=".9"/>` +
+        `<path d="M-8 0 C -4 -2 3 -2.2 8 -0.4" stroke="${C.wingFarD}" stroke-width=".6" fill="none" opacity=".5"/>` +
+        `<circle cx="1" cy="-4.5" r="4.6" fill="${C.body}"/>` +
+        `<path d="M-1.5 -4.6 C -0.6 -3.8 0.8 -3.8 1.7 -4.6" stroke="${C.eye}" stroke-width=".7" fill="none" stroke-linecap="round"/>` +
+        `<g stroke="${C.beakD}" stroke-width=".9" stroke-linecap="round"><path d="M-1 9.2 l0 1.5 M2 9.2 l0 1.5"/></g>`;
+      return g(scl(1, br, 0, GY), inner);
+    }
     if (mid === 'flit') {
-      const beat = TAU * t * 2;
-      const s = Math.sin(beat);
-      const wing = -6 - 42 * s;
+      const flap = osc(t, 2, 0);
       return draw({
         fold: 0,
-        wingN: wing - 3, wingF: wing + 5 * Math.cos(beat),
+        wingN: -26 * flap - 5, wingF: -28 * osc(t, 2, .07) - 7,
         legTuck: 1,
         dy: -3.4 * osc(t, 1, .3), dx: 2 * osc(t, 1, .05),
         tilt: -6 + 5 * osc(t, 1, .5), tailA: 6 * osc(t, 1, .4),
@@ -1858,10 +2241,257 @@ return {
 };
 
 })();
+__REG["swallow"] = (function(){
+// Barn Swallow — fable style (side view: steel-blue above, cream below, chestnut throat, deep forked tail)
+const C = { blue: '#3B4A6B', blueHi: '#586A94', blueFar: '#32405E', blueFarD: '#28344C', dark: '#2A2E3C', cream: '#F0E7D2', rufous: '#C0673E', eye: '#2A2326', beak: '#23262E' };
+const GY = 9;
+
+// long pointed swept wing (a swallow scythe). lift = raise (deg), fold = primary-tip fold on upstroke, far = behind body
+const wing = (lift, fold, far) => {
+  const col = far ? C.blueFar : C.blue, edge = far ? C.blueFarD : C.dark;
+  // outer primaries — long, sharply pointed, swept back; folds on the upstroke
+  const tip = g(rot(-fold, -10.5, -5),
+    `<path d="M-10 -5.8 C -14.6 -6.8 -18.8 -7 -22 -6.4 C -20.4 -4.9 -16.4 -3.7 -11 -3 C -10.6 -3.9 -10.2 -4.8 -10 -5.8 Z" fill="${col}"/>` +
+    `<path d="M-11 -3 C -16.4 -3.7 -20.4 -4.9 -22 -6.4 C -18.4 -3.9 -12.8 -2.4 -10.4 -2.4 Z" fill="${edge}"/>`);
+  // inner blade — broad root tapering to the primaries, concave trailing edge
+  return g(rot(-lift, 2.4, -2.4) + (far ? ' ' + trl(1.2, -0.8) : ''),
+    `<path d="M2.6 -3.2 C -2.4 -5.3 -7 -6 -10.6 -5.6 C -10.4 -4.5 -10.2 -3.6 -10 -2.6 C -6 -1.7 -1.4 -1.2 2.4 -1.6 C 2 -2.2 2.1 -2.8 2.6 -3.2 Z" fill="${col}"/>` +
+    `<path d="M2.4 -1.6 C -1.4 -1.2 -6 -1.7 -10 -2.6 C -6.2 -0.7 -1.4 0.3 2 0.1 C 3 0.1 3.2 -0.7 2.4 -1.6 Z" fill="${edge}"/>` +
+    `<path d="M0 -2.6 C -3.4 -3.2 -6.6 -4 -9.4 -5" stroke="${far ? C.blueFar : C.blueHi}" stroke-width=".5" fill="none" opacity=".5" stroke-linecap="round"/>` +
+    tip);
+};
+
+const foldedWing =
+  `<path d="M3 -1.6 C -3 -3 -10 -3.1 -16.5 -1.4 C -18.6 -0.8 -18.8 0.7 -16.8 1.2 C -10.5 1.6 -3 0.6 2 -0.6 C 3.4 -0.9 3.8 -1.1 3 -1.6 Z" fill="${C.blue}"/>` +
+  `<path d="M-3 0.2 C -8 0.9 -13 1.2 -16.4 0.9 M-0.5 -0.7 C -5 -0.2 -10.5 0.3 -15.4 0.3" stroke="${C.blueFarD}" stroke-width=".5" fill="none" stroke-linecap="round" opacity=".7"/>`;
+
+// deeply forked tail (extends left), spread 0..1 opens the fork
+const tailFork = (spread) => {
+  const s = spread || 0;
+  const uT = [-21 - 2 * s, -2.2 - 3.2 * s], lT = [-20 - 2 * s, 6.6 + 3.2 * s];
+  return `<path d="M-8 0.8 L${N(uT[0])} ${N(uT[1])} L-13.5 2.2 L${N(lT[0])} ${N(lT[1])} L-8 3.4 Z" fill="${C.blue}"/>` +
+    `<path d="M-8 1.6 L${N(uT[0] + 1)} ${N(uT[1] + 0.7)} M-8 2.6 L${N(lT[0] + 1)} ${N(lT[1] - 0.7)}" stroke="${C.blueHi}" stroke-width=".5" fill="none" opacity=".4"/>`;
+};
+
+function sw(P) {
+  const open = !(P.fold ?? 1);
+  const foot = (x) => `<path d="M${x} 4.6 C ${N(x - 0.2)} 6 ${N(x + 0.2)} 7.1 ${N(x + 0.2)} 7.9"/>` +
+    `<path d="M${N(x + 0.2)} 7.9 q -1.4 0.7 -2.2 1.8 M${N(x + 0.2)} 7.9 q 0.2 1 0.5 1.9 M${N(x + 0.2)} 7.9 q 1.3 0.7 2.2 0.7"/>`;
+  const legs = P.perched
+    ? `<g stroke="${C.beak}" stroke-width=".85" fill="none" stroke-linecap="round" stroke-linejoin="round">${foot(-0.8)}${foot(2.4)}</g>`
+    : '';
+  const eye = `<circle cx="10.6" cy="-2.2" r="1.15" fill="${C.eye}"/><circle cx="11" cy="-2.6" r=".38" fill="#FFFFFF"/>`;
+  return g(rot(P.tilt || 0, 0, 1),
+    g(rot(P.tailA || 0, -8, 2), tailFork(P.spread)) +
+    (open ? wing(P.wings.lift * 0.9, P.wings.fold, true) : '') +
+    legs +
+    `<path d="M-8.5 1.4 C -3 -2.4 4.5 -2.8 9 -0.6 C 10.6 0.3 10.4 2.6 8.2 3.9 C 3 5.2 -4.5 5.2 -9 2.9 C -9.7 2.5 -9.4 1.8 -8.5 1.4 Z" fill="${C.blue}"/>` +
+    `<path d="M-7.6 3.1 C -2 1.9 5 1.9 8.5 3.2 C 6 4.9 -0.6 5.3 -6.6 4.1 C -7.3 3.9 -7.9 3.5 -7.6 3.1 Z" fill="${C.cream}"/>` +
+    `<path d="M-8.5 1.4 C -4.2 -1.4 2.6 -1.8 7 -0.6 C 3.6 -1 -3.4 -0.6 -7.6 1.5 C -8 1.6 -8.3 1.5 -8.5 1.4 Z" fill="${C.blueHi}" opacity=".3"/>` +
+    `<circle cx="9.2" cy="-1.6" r="4.1" fill="${C.blue}"/>` +
+    `<path d="M9.6 -5.5 C 11.7 -5.2 13.1 -3.7 13.3 -1.9 C 11.9 -3.6 10.4 -4.5 8.7 -4.9 Z" fill="${C.blueHi}" opacity=".35"/>` +
+    `<path d="M7.6 0.6 C 9.6 1.5 11.8 1.2 13.2 0.1 C 12.6 2 10 2.6 7.8 1.9 C 7 1.6 7.1 0.9 7.6 0.6 Z" fill="${C.rufous}"/>` +
+    `<path d="M12.7 -2.2 L18.2 -1.5 L12.7 -0.2 C 12.3 -0.9 12.3 -1.6 12.7 -2.2 Z" fill="${C.beak}"/>` +
+    eye +
+    (open ? wing(P.wings.lift, P.wings.fold, false) : foldedWing));
+}
+
+function draw(P) {
+  const dx = P.dx || 0, dy = P.dy || 0;
+  let s = P.ticks || '';
+  if (P.grounded) s += shadow(dx, GY + 0.6, 7, Math.max(0, -dy), 10);
+  return s + g(trl(dx, dy) + ' ' + rot(P.roll || 0, 0, 0), sw(P));
+}
+
+return {
+  id: 'swallow', view: [-34, -24, 66, 44], groundY: GY,
+  thumb: { m: 'flight', t: 0.12 },
+  motions: [
+    { id: 'flight', label: 'Flight', short: 'Flight', dur: 0.5, env: { t: 'air' }, speed: '~35 km/h', beat: 'Fast swept flicks',
+      desc: 'The tireless aerial hunter \u2014 quick, flicked wingbeats stitched to sudden banks and rolls, the forked tail steering every turn.',
+      anim: 'Keep the beats fast and shallow and never let the path run straight; the fork opens in the turns and streams shut on the straights.' },
+    { id: 'glide', label: 'Glide & bank', short: 'Glide', dur: 2.6, env: { t: 'air' }, speed: '~30 km/h', beat: 'Set wings · carve',
+      desc: 'Between bursts it sets the long wings back and carves \u2014 leaning into slow banking arcs low over the meadow.',
+      anim: 'Wings swept and near-still with a whisper of flutter; sell the carve with roll and a long curving drift, the tail fanning into the turn.' },
+    { id: 'perch', label: 'Perch', short: 'Perch', dur: 3.6, env: { t: 'branch', y: 9 }, speed: '0 km/h', beat: 'Settle · look · flick',
+      desc: 'Lined up on a wire between sorties: wings folded to a fine point past the tail, streamers crossed, head turning to mark every passing insect.',
+      anim: 'Small life only \u2014 a shoulder shuffle, a tail flick, a quick head turn. The long folded wingtips and crossed streamers read even in stillness.' }
+    ,{ id: 'sleep', label: 'Roost', short: 'Roost', dur: 6, env: { t: 'branch', y: 9 }, night: true, speed: '0 km/h', beat: 'On the wire · quick breath',
+      desc: 'Perched in the roosting-line at dusk: puffed round, the long forked streamers crossed below, head turned back and the bill sunk into the mantle.',
+      anim: 'Fluff the streamlined body into a ball and hang the fork straight down; only a fast, shallow breath disturbs the plumage.' }
+  ],
+  render(mid, t) {
+    t = wrap(t);
+    if (mid === 'sleep') {
+      const br = 1 + 0.03 * Math.sin(TAU * t);
+      const inner =
+        `<path d="M-7 2 L-18 4 L-12 5 L-19 8 L-6 5.5 Z" fill="${C.blue}"/>` +
+        `<path d="M-8 1 C -9 5.5 -5 9 1 9 C 7 9 10 5.5 9 0 C 8 -5 4 -7 0 -7 C -5 -7 -8 -4 -8 1 Z" fill="${C.blue}"/>` +
+        `<path d="M-4 3 C -4 6 -1 8 2 8 C 5 8 7 6 7 3.4 C 7 1.4 4.5 0.6 2 0.6 C -1 0.6 -4 1 -4 3 Z" fill="${C.cream}"/>` +
+        `<path d="M-1 -5 C -4 -4.5 -6.5 -3.5 -7.5 -2.5 C -5 -3 -2 -3.8 0 -5 Z" fill="${C.beak}"/>` +
+        `<circle cx="1.5" cy="-4" r="4.4" fill="${C.blue}"/>` +
+        `<path d="M3 -2.6 C 5 -1.7 7 -2 8.4 -3.1 C 7.8 -1.1 5.2 -0.5 3.2 -1.2 Z" fill="${C.rufous}"/>` +
+        `<path d="M-0.5 -4 C 0.3 -3.3 1.6 -3.3 2.4 -4" stroke="${C.eye}" stroke-width=".7" fill="none" stroke-linecap="round"/>` +
+        `<g stroke="${C.beak}" stroke-width=".85" stroke-linecap="round"><path d="M-1 9 l0 1.4 M2 9 l0 1.4"/></g>`;
+      return g(scl(1, br, 0, GY), inner);
+    }
+    if (mid === 'flight') {
+      const flap = osc(t, 1, 0);
+      return draw({
+        fold: 0, wings: { lift: -32 * flap - 4, fold: flap > 0 ? 18 * flap : 0 },
+        dy: -2.6 * osc(t, 1, .5), dx: 3 * osc(t, 1, .05),
+        tilt: -6 + 5 * osc(t, 1, .5), roll: 6 * osc(t, 1, .3),
+        tailA: 5 * osc(t, 1, .4), spread: 0.4 + 0.4 * Math.max(0, osc(t, 1, .25)),
+        ticks: airTicks(t, { x1: -30, x2: 32, y: -16, h: 15, v: 40, n: 4, s: 1.1 })
+      });
+    }
+    if (mid === 'glide') {
+      return draw({
+        fold: 0, wings: { lift: -4 + 3 * osc(t, 4, .1), fold: 8 + 3 * osc(t, 5, .3) },
+        dy: -2.4 * osc(t, 1, .3), dx: 4 * osc(t, 1, .02),
+        tilt: -3 + 3 * osc(t, 1, .3), roll: 10 * osc(t, 1, .5),
+        tailA: 4 * osc(t, 1, .5), spread: 0.6 + 0.3 * osc(t, 1, .5),
+        ticks: airTicks(t, { x1: -30, x2: 32, y: -16, h: 15, v: 26, n: 4, s: 1 })
+      });
+    }
+    // perch
+    const look = pulse(t, .2, .3) - pulse(t, .55, .68);
+    return draw({
+      perched: true, dy: 0,
+      tilt: 1.5 * look, tailA: -5 * pulse(t, .4, .52) + 3 * look, spread: 0
+    });
+  }
+};
+
+})();
+__REG["kestrel"] = (function(){
+// Common Kestrel — fable style (side view: rufous back, grey head & tail, the hover as the star)
+const C = { ruf: '#B2743F', rufFar: '#986130', rufFarD: '#7C4E27', tip: '#33303B', grey: '#6E7688', greyHi: '#8A93A6', cream: '#EFE6CF', barD: '#6B5A43', cere: '#E6B93E', beak: '#3A3640', malar: '#3A3640', eye: '#2A2326' };
+const GY = 9;
+
+// paddle-ish pointed wing. lift = raise (deg), fold = tip fold on upstroke, far = behind body
+const wing = (lift, fold, far) => {
+  const col = far ? C.rufFar : C.ruf, edge = far ? C.rufFarD : C.tip;
+  const tip = g(rot(-fold, -13, -5),
+    `<path d="M-12.5 -6.2 C -16.5 -7.6 -20.6 -7.8 -23.4 -6.6 C -24.4 -6.2 -24.2 -4.9 -23.1 -4.5 C -19.2 -3.1 -15 -3 -12.5 -4.2 Z" fill="${col}"/>` +
+    `<path d="M-12.5 -4.2 C -15 -3 -19.2 -3.1 -23.1 -4.5 C -19.6 -2.2 -14.8 -1.8 -12.7 -3 Z" fill="${C.tip}"/>` +
+    `<g stroke="${C.tip}" stroke-width=".85" stroke-linecap="round" opacity=".85"><line x1="-20.4" y1="-5.6" x2="-23.4" y2="-5"/><line x1="-19.2" y1="-4.4" x2="-22.2" y2="-3.6"/></g>`);
+  return g(rot(-lift, 1, -3) + (far ? ' ' + trl(1.6, -1) : ''),
+    `<path d="M1 -3.6 C -4.5 -7 -10.5 -8 -15.5 -6.8 C -16.6 -6.5 -16.6 -5.2 -15.5 -4.7 C -11 -2.3 -5.5 -0.8 -0.6 -0.6 C 2 -0.5 2.4 -2 1 -3.6 Z" fill="${col}"/>` +
+    `<path d="M-0.6 -0.6 C -5.5 -0.8 -11 -2.3 -15.5 -4.7 C -12 -1.6 -6.5 0.6 -0.4 0.8 C 2 0.9 2.6 -0.2 -0.6 -0.6 Z" fill="${edge}"/>` +
+    `<circle cx="-6" cy="-3.8" r=".5" fill="${C.tip}" opacity=".7"/><circle cx="-9" cy="-3.4" r=".5" fill="${C.tip}" opacity=".7"/>` +
+    tip);
+};
+
+const foldedWing =
+  `<path d="M3.5 -2 C -1 -3.4 -7 -3.6 -12.5 -2 C -14.4 -1.4 -14.8 0.2 -13 1 C -8 1.6 -2 0.6 3 -0.8 C 4.4 -1.1 4.4 -1.5 3.5 -2 Z" fill="${C.ruf}"/>` +
+  `<g stroke="${C.rufFarD}" stroke-width=".7" fill="none" stroke-linecap="round" opacity=".8"><path d="M-1 -0.6 C -4 0.2 -7.5 0.6 -11 0.6"/><path d="M0.5 -1.6 C -3 -0.9 -7 -0.5 -10.6 -0.6"/></g>` +
+  `<path d="M-13 1 C -11 0.6 -8.6 0.2 -6.4 -0.4" stroke="${C.tip}" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".6"/>`;
+
+// grey tail fan with a dark subterminal band. fan 0..1 opens it, tailA rotates it
+const tail = (fan, tailA) => {
+  const sp = fan || 0, top = -1.4 - 3.2 * sp, bot = 4.2 + 4 * sp, mid = (top + bot) / 2;
+  return g(rot(tailA || 0, -9, 1.4),
+    `<path d="M-9 -0.2 C -14 -0.9 -18.6 -1.1 -22.4 ${N(top)} C -23 ${N(mid)} -23 ${N(mid)} -22.4 ${N(bot)} C -18.6 3.9 -14 3.3 -9 3 Z" fill="${C.grey}"/>` +
+    `<path d="M-21.2 ${N(top + 1.1)} C -21.7 ${N(mid)} -21.7 ${N(mid)} -21.2 ${N(bot - 1)}" stroke="${C.tip}" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".85"/>` +
+    `<path d="M-9 0.2 C -13.5 -0.4 -17.6 -0.6 -21 ${N(top + 1.4)}" stroke="${C.greyHi}" stroke-width=".5" fill="none" opacity=".4"/>`);
+};
+
+const head = (P) => g(trl(0, P.headDy || 0) + ' ' + rot(P.headA || 0, 8, -3),
+  `<path d="M2 -3 C 5 -5 9 -5 11.6 -3 C 9.5 -1.5 5 -1.5 2 -1.5 Z" fill="${C.ruf}"/>` +
+  `<circle cx="8.5" cy="-4" r="4.3" fill="${C.grey}"/>` +
+  `<path d="M8.5 -8.2 C 10.8 -8 12.4 -6.4 12.6 -4.4 C 11.2 -6.2 9.6 -7.2 7.8 -7.6 Z" fill="${C.greyHi}" opacity=".4"/>` +
+  `<path d="M6 -2.2 C 8 -1.2 10.4 -1.2 12 -2.2 C 11.6 -0.4 9 0.2 6.6 -0.4 Z" fill="${C.cream}"/>` +
+  `<path d="M10.5 -5.2 C 10.6 -3.6 10.1 -2.3 9.3 -1.1" stroke="${C.malar}" stroke-width="1.3" fill="none" stroke-linecap="round"/>` +
+  `<path d="M11.6 -5 C 14.2 -5.2 16.2 -4.4 16.6 -3.4 C 15.4 -3.2 13.8 -3 12.2 -3.2 Z" fill="${C.cere}"/>` +
+  `<path d="M15.4 -4.2 C 16.5 -4 17.1 -3.1 16.4 -2.3 C 15.8 -2.9 15.2 -3.4 14.6 -3.6 C 14.8 -4 15.1 -4.1 15.4 -4.2 Z" fill="${C.beak}"/>` +
+  `<circle cx="9.6" cy="-4.6" r="1.5" fill="${C.eye}"/>` +
+  `<circle cx="10.1" cy="-5.1" r=".45" fill="#FFFFFF"/>`);
+
+function kes(P) {
+  const open = !(P.fold ?? 1);
+  const pivot = [5, -2];
+  const legs = P.perched
+    ? `<g stroke="${C.cere}" stroke-linecap="round"><line x1="1" y1="4.4" x2="1" y2="8.2" stroke-width="1.5"/><line x1="3.4" y1="4.4" x2="3.4" y2="8.2" stroke-width="1.5"/><path d="M-0.8 8.4 L2.2 8.4 M1.4 8.4 L4.6 8.4" stroke-width="1.2"/></g>`
+    : '';
+  const bodyGrp = g(rot(P.pitch || 0, pivot[0], pivot[1]),
+    tail(P.fan, P.tailA) +
+    (open ? wing(P.wings.lift * 0.9, P.wings.fold, true) : '') +
+    legs +
+    `<path d="M-10 0.5 C -4 -3.5 4 -3.8 9.5 -1.2 C 11.4 -0.1 11.2 3 8.5 4.6 C 3 6 -5 6 -10.4 3.4 C -11.2 3 -10.9 1.2 -10 0.5 Z" fill="${C.ruf}"/>` +
+    `<path d="M-8.5 3 C -2.5 1.4 5 1.4 9 3.2 C 6 5.4 -1 6 -7.5 4.4 C -8.3 4.2 -9 3.6 -8.5 3 Z" fill="${C.cream}"/>` +
+    `<g stroke="${C.barD}" stroke-width=".55" fill="none" stroke-linecap="round" opacity=".55"><path d="M-6 3.6 q1.4 .8 2.8 0"/><path d="M-2 4 q1.5 .8 3 0"/><path d="M2 3.9 q1.5 .8 3 0"/></g>` +
+    `<circle cx="-5" cy="-1" r=".55" fill="${C.tip}" opacity=".6"/><circle cx="-1" cy="-1.6" r=".55" fill="${C.tip}" opacity=".6"/><circle cx="3" cy="-1.6" r=".55" fill="${C.tip}" opacity=".6"/>` +
+    (open ? wing(P.wings.lift, P.wings.fold, false) : foldedWing));
+  return bodyGrp + head(P);
+}
+
+function draw(P) {
+  const dx = P.dx || 0, dy = P.dy || 0;
+  let s = P.ticks || '';
+  if (P.grounded) s += shadow(dx, GY + 0.6, 9, Math.max(0, -dy), 14);
+  return s + g(trl(dx, dy) + ' ' + rot(P.roll || 0, 0, 0), kes(P));
+}
+
+return {
+  id: 'kestrel', view: [-36, -28, 76, 54], groundY: GY,
+  thumb: { m: 'hover', t: 0.25 },
+  motions: [
+    { id: 'hover', label: 'Hover', short: 'Hover', dur: 0.26, env: { t: 'air' }, speed: '0 km/h · holding', beat: 'Fast beats · head locked',
+      desc: 'The windhover\u2019s trick: hung on a headwind with the body angled and the tail fanned down, the wings blurring while the head stays nailed to one point of grass.',
+      anim: 'Everything moves but the head. Beat the wings fast and shallow, let the body bob a hair, and counter it exactly so the eye never drifts.' },
+    { id: 'soar', label: 'Glide', short: 'Glide', dur: 2.8, env: { t: 'air' }, speed: '~40 km/h', beat: 'Set wings · bank',
+      desc: 'Off the hover it tips forward and slides away on set wings, tail fanned, carving a long bank across the field.',
+      anim: 'Wings out and near-still with a small tremble at the fingered tips; sell the slide with a slow roll and heading drift.' },
+    { id: 'perch', label: 'Perch', short: 'Perch', dur: 3.6, env: { t: 'branch', y: 9 }, speed: '0 km/h', beat: 'Hold · scan · blink',
+      desc: 'Set on a post with the tail hanging and the wings folded to sharp points \u2014 that same locked stare now sweeping the ground below.',
+      anim: 'Hold the folded silhouette. All the life is in the head: slow deliberate swivels and the odd blink, with a tail-balance flick.' }
+    ,{ id: 'sleep', label: 'Roost', short: 'Roost', dur: 6.5, env: { t: 'branch', y: 9 }, night: true, speed: '0 km/h', beat: 'Fluffed · slow breath',
+      desc: 'The windhover at rest for the night: hunched and fluffed on a post, tail hanging, the grey head turned back with the bill tucked and the fierce eye finally shut.',
+      anim: 'Loosen the sharp daytime outline into a soft ball; keep the head reversed and the eye closed, with only a slow breath in the mantle.' }
+  ],
+  render(mid, t) {
+    t = wrap(t);
+    if (mid === 'sleep') {
+      const br = 1 + 0.025 * Math.sin(TAU * t);
+      const inner =
+        `<path d="M-6 3 C -12 5 -17 8 -19 12 L-16 13 C -14 9 -10 6 -6 5 Z" fill="${C.grey}"/>` +
+        `<path d="M-17 11 l2.6 -.6" stroke="${C.tip}" stroke-width="1.4" stroke-linecap="round"/>` +
+        `<path d="M-9 1 C -10 7 -5 11 1 11 C 8 11 11 6 10 -1 C 9 -6 5 -8 0 -8 C -6 -8 -9 -5 -9 1 Z" fill="${C.ruf}"/>` +
+        `<path d="M-4 3 C -4 7 -1 9.5 2.5 9.5 C 6 9.5 8 7 8 3.6 C 8 1.2 5 0.2 2 0.2 C -1 0.2 -4 0.8 -4 3 Z" fill="${C.cream}"/>` +
+        `<g stroke="${C.barD}" stroke-width=".5" fill="none" opacity=".5"><path d="M-2 4 q2 .8 4 0"/><path d="M-2 6 q2 .8 4 0"/></g>` +
+        `<path d="M0 -3.8 C -3 -3 -6 -1.5 -7 0 C -5 -0.6 -2 -2 0 -2.8 Z" fill="${C.beak}"/>` +
+        `<circle cx="2" cy="-5" r="4.8" fill="${C.grey}"/>` +
+        `<path d="M0 -5 C 0.9 -4.2 2.3 -4.2 3.2 -5" stroke="${C.eye}" stroke-width=".8" fill="none" stroke-linecap="round"/>` +
+        `<g stroke="${C.cere}" stroke-width="1.4" stroke-linecap="round"><path d="M-1 11 l0 1.5 M2.4 11 l0 1.5"/></g>`;
+      return g(scl(1, br, 0, GY), inner);
+    }
+    if (mid === 'hover') {
+      const flap = osc(t, 1, 0), bob = 0.5 * osc(t, 1, .5);
+      return draw({
+        fold: 0, pitch: -30 + 2 * osc(t, 1, .5),
+        wings: { lift: -42 * flap - 2, fold: flap > 0 ? 26 * flap : 4 },
+        fan: 1, tailA: 6, dy: bob, headDy: -bob,
+        ticks: airTicks(t, { x1: -32, x2: 34, y: -14, h: 16, v: 46, n: 5, s: 1.1 })
+      });
+    }
+    if (mid === 'soar') {
+      return draw({
+        fold: 0, pitch: -6 + 3 * osc(t, 1, .3),
+        wings: { lift: -8 + 3 * osc(t, 4, .1), fold: 5 + 3 * osc(t, 5, .3) },
+        fan: 0.7, tailA: 2, dy: -1.6 * osc(t, 1, .3), dx: 3.5 * osc(t, 1, .02), roll: 9 * osc(t, 1, .5),
+        ticks: airTicks(t, { x1: -32, x2: 34, y: -14, h: 16, v: 26, n: 4, s: 1 })
+      });
+    }
+    // perch
+    const scan = pulse(t, .15, .3) - pulse(t, .55, .72);
+    return draw({ perched: true, fold: 1, pitch: -6, fan: 0, tailA: 0, headA: 8 * scan, blink: 0 });
+  }
+};
+
+})();
 __REG["butterfly"] = (function(){
 // Red Admiral — fable style (front view, true colors: velvet black + red bands + white apex spots)
-
-
 const C = { dark: '#3A3440', dark2: '#2A2530', band: '#D2503E', pale: '#FBF7F2', body: '#2A2530' };
 const GY = 8.5;
 
@@ -1915,23 +2545,27 @@ return {
     { id: 'sail', label: 'Sail', short: 'Sail', dur: 2.8, env: { t: 'air' }, speed: '~12 km/h', beat: 'Set wings · drift',
       desc: 'Between bursts the red admiral sets its wings flat and simply rides, losing height by lazy degrees.',
       anim: 'Wings barely above horizontal with a whisper of flutter; sell the drift with a slow roll and a long sinking curve.' }
+    ,{ id: 'roost', label: 'Roost', short: 'Roost', dur: 6, env: { t: 'reed', x: -2, y: -10 }, night: true, speed: '0 km/h', beat: 'Wings shut · slow sway',
+      desc: 'Wings shut tight over the back for the night, the velvet underside turned out — a dead leaf on a stem no bird looks at twice.',
+      anim: 'Hold the closed-wing sliver dead still; a breath-slow sway and a settling of the antennae are the only signs of life.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'roost') {
+      return draw({ grounded: false, dy: 0, wA: 72 + 2 * Math.sin(TAU * t), antA: 2 * Math.sin(TAU * t * 0.5) });
+    }
     if (mid === 'flutter') {
-      const beat = TAU * t * 4;
-      const s = Math.sin(beat);
+      const flap = osc(t, 2, 0);
       return draw({
-        wA: 22 + 44 * Math.abs(s),
+        wA: 34 + 30 * flap,
         dy: -3 * osc(t, 1, .28) - 1.2 * osc(t, 2, .1), dx: 2.6 * osc(t, 1, .05),
         roll: 7 * osc(t, 1, .4), antA: 3 * osc(t, 2, .3),
         ticks: airTicks(t, { x1: -27, x2: 29, y: -16, h: 14, v: 34, n: 4, s: 1 })
       });
     }
     if (mid === 'sail') {
-      const beat = TAU * t * 3;
       return draw({
-        wA: -4 + 8 * osc(t, 4, .1) + 18 * Math.abs(Math.sin(beat)),
+        wA: -6 + 3 * osc(t, 4, .1),
         dy: -3.5 * osc(t, 1, .3), dx: 4 * osc(t, 1, .02),
         roll: 5 * osc(t, 1, .5), antA: 2 * osc(t, 2, .2),
         ticks: airTicks(t, { x1: -27, x2: 29, y: -16, h: 14, v: 20, n: 4, s: 1 })
@@ -1956,34 +2590,432 @@ return {
 };
 
 })();
+__REG["swallowtail"] = (function(){
+// Swallowtail — fable style (front view: cream-yellow wings, dark tip bands + veins, blue lunules, red eyespots, tailed hindwings)
+const C = { yellow: '#E8CF7E', dark: '#3A3440', blue: '#7BA0C9', red: '#D2503E', body: '#2A2530', pale: '#FBF7F2' };
+const GY = 8.5;
+
+const fold = a => Math.max(0.12, Math.cos(Math.min(88, Math.abs(a)) * Math.PI / 180));
+
+const wingL = a => g(scl(fold(a), 1, -1, 0) + ' ' + rot(a * 0.55, -1, -2),
+  `<path d="M-0.8 -4.6 C -4.6 -7.6 -9.4 -12.1 -13.8 -14.9 L-16.3 -10.3 C -15.1 -6.3 -11.5 -3.1 -7.4 -1.8 C -4.4 -0.9 -1.8 -1.8 -0.8 -3.2 Z" fill="${C.yellow}"/>` +
+  `<path d="M-13.8 -14.9 L-16.3 -10.3 C -15.7 -8.4 -14.7 -6.7 -13.4 -5.3 C -14 -8 -14.2 -10.9 -12.6 -13.9 Z" fill="${C.dark}" opacity=".92"/>` +
+  `<path d="M-2.2 -4.2 C -5.2 -6.2 -8.2 -8.8 -11.2 -11.6 M-3.4 -3.2 C -6.6 -4.7 -9.6 -6.7 -12.4 -9 M-5 -2.4 C -7.8 -3.4 -10.4 -4.9 -12.6 -6.7" stroke="${C.dark}" stroke-width=".55" fill="none" opacity=".7" stroke-linecap="round"/>` +
+  `<path d="M-1 -1 C -4 0 -8.5 1.5 -9.5 5.5 C -10 8.4 -7.8 10.2 -4.8 9.2 C -2.4 8.4 -1 5.8 -0.6 3 Z" fill="${C.yellow}"/>` +
+  `<path d="M-9.1 5.7 C -8.7 8.1 -6.7 9.3 -4.7 8.7 C -3 8.1 -1.8 6.6 -1.2 4.5" stroke="${C.dark}" stroke-width="2.3" fill="none" stroke-linecap="round"/>` +
+  `<circle cx="-7.6" cy="7.3" r=".62" fill="${C.blue}"/><circle cx="-5.4" cy="8.1" r=".62" fill="${C.blue}"/><circle cx="-3.3" cy="7.4" r=".62" fill="${C.blue}"/>` +
+  `<circle cx="-1.7" cy="5.2" r=".85" fill="${C.red}"/><circle cx="-1.7" cy="5.2" r=".32" fill="${C.dark}" opacity=".7"/>` +
+  `<path d="M-5.9 8.3 C -6.1 9.5 -6.6 10.4 -7.4 11.2 C -7.7 10.2 -7.3 9.2 -6.5 8 Z" fill="${C.dark}"/>`);
+
+const wingR = a => g(scl(fold(a), 1, 1, 0) + ' ' + rot(-a * 0.55, 1, -2),
+  `<path d="M0.8 -4.6 C 4.6 -7.6 9.4 -12.1 13.8 -14.9 L16.3 -10.3 C 15.1 -6.3 11.5 -3.1 7.4 -1.8 C 4.4 -0.9 1.8 -1.8 0.8 -3.2 Z" fill="${C.yellow}"/>` +
+  `<path d="M13.8 -14.9 L16.3 -10.3 C 15.7 -8.4 14.7 -6.7 13.4 -5.3 C 14 -8 14.2 -10.9 12.6 -13.9 Z" fill="${C.dark}" opacity=".92"/>` +
+  `<path d="M2.2 -4.2 C 5.2 -6.2 8.2 -8.8 11.2 -11.6 M3.4 -3.2 C 6.6 -4.7 9.6 -6.7 12.4 -9 M5 -2.4 C 7.8 -3.4 10.4 -4.9 12.6 -6.7" stroke="${C.dark}" stroke-width=".55" fill="none" opacity=".7" stroke-linecap="round"/>` +
+  `<path d="M1 -1 C 4 0 8.5 1.5 9.5 5.5 C 10 8.4 7.8 10.2 4.8 9.2 C 2.4 8.4 1 5.8 0.6 3 Z" fill="${C.yellow}"/>` +
+  `<path d="M9.1 5.7 C 8.7 8.1 6.7 9.3 4.7 8.7 C 3 8.1 1.8 6.6 1.2 4.5" stroke="${C.dark}" stroke-width="2.3" fill="none" stroke-linecap="round"/>` +
+  `<circle cx="7.6" cy="7.3" r=".62" fill="${C.blue}"/><circle cx="5.4" cy="8.1" r=".62" fill="${C.blue}"/><circle cx="3.3" cy="7.4" r=".62" fill="${C.blue}"/>` +
+  `<circle cx="1.7" cy="5.2" r=".85" fill="${C.red}"/><circle cx="1.7" cy="5.2" r=".32" fill="${C.dark}" opacity=".7"/>` +
+  `<path d="M5.9 8.3 C 6.1 9.5 6.6 10.4 7.4 11.2 C 7.7 10.2 7.3 9.2 6.5 8 Z" fill="${C.dark}"/>`);
+
+// P: wA (0 open → 62 closed-up), antA
+const bfly = P =>
+  wingL(P.wA || 0) + wingR(P.wA || 0) +
+  `<path d="M0 -7.5 C 1.5 -7.5 2 -5.5 2 -3 C 2 0.5 1.4 5 0 7 C -1.4 5 -2 0.5 -2 -3 C -2 -5.5 -1.5 -7.5 0 -7.5 Z" fill="${C.body}"/>` +
+  `<ellipse cx="0" cy="-5.6" rx=".5" ry="2.6" fill="${C.yellow}" opacity=".4"/>` +
+  `<circle cx="0" cy="-7.6" r="1.7" fill="${C.body}"/>` +
+  `<circle cx="-0.5" cy="-8.1" r=".45" fill="${C.pale}" opacity=".6"/>` +
+  g(rot(P.antA || 0, 0, -8.6),
+    `<path d="M-0.8 -8.6 C -2.4 -11.5 -3.6 -13 -4.8 -13.8 M0.8 -8.6 C 2.4 -11.5 3.6 -13 4.8 -13.8" stroke="${C.body}" stroke-width=".9" fill="none" stroke-linecap="round"/>` +
+    `<circle cx="-4.8" cy="-13.8" r="1" fill="${C.body}"/><circle cx="4.8" cy="-13.8" r="1" fill="${C.body}"/>`);
+
+function draw(P) {
+  const dx = P.dx || 0, dy = P.dy || 0;
+  let s = P.ticks || '';
+  if (P.grounded) s += shadow(dx, GY + 0.8, 9, Math.max(0, -dy), 12);
+  return s + g(trl(dx, dy) + ' ' + rot(P.roll || 0, 0, 0), bfly(P));
+}
+
+return {
+  id: 'swallowtail', view: [-30, -26, 62, 44], groundY: GY,
+  thumb: { m: 'bask', t: 0.3 },
+  motions: [
+    { id: 'bask', label: 'Bask', short: 'Bask', dur: 3.8, env: { t: 'ground' }, speed: '0 km/h', beat: 'Open · tremble · hold',
+      desc: 'Wings spread wide to the sun, the twin tails just clearing the grass — held open far longer than the red admiral would dare.',
+      anim: 'Live in the open pose: a fine tremble at the wingtips, antennae always moving. Close once, decisively, and reopen at leisure.' },
+    { id: 'flit', label: 'Flit', short: 'Flit', dur: 0.62, env: { t: 'air' }, speed: '~14 km/h', beat: 'Deep strokes · lift',
+      desc: 'Big, deep wingbeats for a big butterfly — each stroke hoists the body a full length before the long sail downhill.',
+      anim: 'Fewer, deeper beats than any smaller butterfly. Let the body swing beneath the wings like cargo on a crane.' },
+    { id: 'nectar', label: 'Feed on the wing', short: 'Nectar', dur: 1.15, env: { t: 'reed', x: 11, y: -6 }, speed: '0 km/h · hovering', beat: 'Beats while feeding',
+      desc: 'Its signature habit: it never quite settles at the flower, but keeps the wings beating and merely touches down with its forefeet.',
+      anim: 'Constant shallow wingbeats with a soft vertical bob. The hold is never still — drift the body on a slow figure the wings must correct.' }
+    ,{ id: 'roost', label: 'Roost', short: 'Roost', dur: 6, env: { t: 'reed', x: -2, y: -10 }, night: true, speed: '0 km/h', beat: 'Wings shut · slow sway',
+      desc: 'The grand wings folded to a narrow blade over the back, tails hanging, clamped to a stem out of the night wind.',
+      anim: 'Keep the folded silhouette still and vertical; only the faintest sway betrays that the stem carries something alive.' }
+  ],
+  render(mid, t) {
+    t = wrap(t);
+    if (mid === 'roost') {
+      return draw({ grounded: false, dy: 0, wA: 72 + 2 * Math.sin(TAU * t), antA: 2 * Math.sin(TAU * t * 0.5) });
+    }
+    if (mid === 'flit') {
+      const flap = osc(t, 2, 0);
+      return draw({
+        wA: 30 + 34 * flap,
+        dy: -4.2 * osc(t, 1, .3) - 1.4 * osc(t, 2, .1), dx: 3 * osc(t, 1, .04),
+        roll: 8 * osc(t, 1, .42), antA: 3 * osc(t, 2, .3),
+        ticks: airTicks(t, { x1: -27, x2: 29, y: -16, h: 14, v: 30, n: 4, s: 1.05 })
+      });
+    }
+    if (mid === 'nectar') {
+      return draw({
+        wA: 30 + 15 * osc(t, 7, 0),
+        dy: -2 - 1.1 * osc(t, 2, .15) - 0.5 * osc(t, 7, .25),
+        dx: 2 + 1.4 * osc(t, 1, .05),
+        roll: 4 * osc(t, 1, .35) + 2 * osc(t, 2, .6),
+        antA: 3 * osc(t, 3, .2)
+      });
+    }
+    // bask
+    const K = keys(t, [
+      [0.00, { wA: 3 }],
+      [0.44, { wA: 3 }],
+      [0.52, { wA: 60 }],
+      [0.62, { wA: 60 }],
+      [0.70, { wA: -4 }],
+      [0.76, { wA: 3 }],
+      [1.00, { wA: 3 }]
+    ]);
+    K.wA += 2 * osc(t, 6, .15) * (K.wA > 30 ? 0.5 : 1);
+    K.grounded = true;
+    K.dy = -0.8;
+    K.antA = 4 * osc(t, 3, .1);
+    return draw(K);
+  }
+};
+
+})();
+__REG["commonblue"] = (function(){
+// Common Blue — fable style (front view: male's lilac-blue wings, dark rim, white fringe, orange marginal lunules)
+const C = { blue: '#6E86D8', blue2: '#5A70C4', edge: '#3A3440', fringe: '#FBF7F2', orange: '#D98A3E', spot: '#2A2530', body: '#2A2530', pale: '#FBF7F2' };
+const GY = 8.5;
+
+const fold = a => Math.max(0.12, Math.cos(Math.min(88, Math.abs(a)) * Math.PI / 180));
+
+const wingL = a => g(scl(fold(a), 1, -1, 0) + ' ' + rot(a * 0.55, -1, -2),
+  `<path d="M-0.8 -4.6 C -4.6 -7.6 -9.4 -12.1 -13.8 -14.9 L-16.3 -10.3 C -15.1 -6.3 -11.5 -3.1 -7.4 -1.8 C -4.4 -0.9 -1.8 -1.8 -0.8 -3.2 Z" fill="${C.blue}"/>` +
+  `<path d="M-1.2 -3.6 C -4.8 -5.6 -8.8 -8.6 -12.4 -11.8" stroke="${C.blue2}" stroke-width="1.3" fill="none" opacity=".55" stroke-linecap="round"/>` +
+  `<path d="M-13.8 -14.9 L-16.3 -10.3 C -15.1 -6.3 -11.5 -3.1 -7.4 -1.8" stroke="${C.edge}" stroke-width="1" fill="none" stroke-linecap="round"/>` +
+  `<circle cx="-15.5" cy="-10.7" r=".4" fill="${C.fringe}"/><circle cx="-13.3" cy="-6.3" r=".4" fill="${C.fringe}"/><circle cx="-10.2" cy="-3.3" r=".4" fill="${C.fringe}"/>` +
+  `<path d="M-1 -1 C -4 0 -8.5 1.5 -9.5 5.5 C -10 8.4 -7.8 10.2 -4.8 9.2 C -2.4 8.4 -1 5.8 -0.6 3 Z" fill="${C.blue}"/>` +
+  `<path d="M-9.5 5.5 C -10 8.4 -7.8 10.2 -4.8 9.2 C -2.4 8.4 -1 5.8 -0.6 3" stroke="${C.edge}" stroke-width=".9" fill="none" stroke-linecap="round"/>` +
+  `<circle cx="-7.3" cy="7.7" r=".55" fill="${C.orange}"/><circle cx="-5.2" cy="8.4" r=".55" fill="${C.orange}"/>` +
+  `<circle cx="-7.3" cy="8.7" r=".34" fill="${C.spot}"/><circle cx="-5.2" cy="9.4" r=".34" fill="${C.spot}"/>` +
+  `<circle cx="-8.7" cy="7" r=".36" fill="${C.fringe}"/><circle cx="-3.2" cy="8.9" r=".36" fill="${C.fringe}"/>`);
+
+const wingR = a => g(scl(fold(a), 1, 1, 0) + ' ' + rot(-a * 0.55, 1, -2),
+  `<path d="M0.8 -4.6 C 4.6 -7.6 9.4 -12.1 13.8 -14.9 L16.3 -10.3 C 15.1 -6.3 11.5 -3.1 7.4 -1.8 C 4.4 -0.9 1.8 -1.8 0.8 -3.2 Z" fill="${C.blue}"/>` +
+  `<path d="M1.2 -3.6 C 4.8 -5.6 8.8 -8.6 12.4 -11.8" stroke="${C.blue2}" stroke-width="1.3" fill="none" opacity=".55" stroke-linecap="round"/>` +
+  `<path d="M13.8 -14.9 L16.3 -10.3 C 15.1 -6.3 11.5 -3.1 7.4 -1.8" stroke="${C.edge}" stroke-width="1" fill="none" stroke-linecap="round"/>` +
+  `<circle cx="15.5" cy="-10.7" r=".4" fill="${C.fringe}"/><circle cx="13.3" cy="-6.3" r=".4" fill="${C.fringe}"/><circle cx="10.2" cy="-3.3" r=".4" fill="${C.fringe}"/>` +
+  `<path d="M1 -1 C 4 0 8.5 1.5 9.5 5.5 C 10 8.4 7.8 10.2 4.8 9.2 C 2.4 8.4 1 5.8 0.6 3 Z" fill="${C.blue}"/>` +
+  `<path d="M9.5 5.5 C 10 8.4 7.8 10.2 4.8 9.2 C 2.4 8.4 1 5.8 0.6 3" stroke="${C.edge}" stroke-width=".9" fill="none" stroke-linecap="round"/>` +
+  `<circle cx="7.3" cy="7.7" r=".55" fill="${C.orange}"/><circle cx="5.2" cy="8.4" r=".55" fill="${C.orange}"/>` +
+  `<circle cx="7.3" cy="8.7" r=".34" fill="${C.spot}"/><circle cx="5.2" cy="9.4" r=".34" fill="${C.spot}"/>` +
+  `<circle cx="8.7" cy="7" r=".36" fill="${C.fringe}"/><circle cx="3.2" cy="8.9" r=".36" fill="${C.fringe}"/>`);
+
+// P: wA (0 open → 60 closed-up), antA
+const bfly = P =>
+  wingL(P.wA || 0) + wingR(P.wA || 0) +
+  `<path d="M0 -6.6 C 1.3 -6.6 1.7 -4.9 1.7 -2.7 C 1.7 0.4 1.2 4.4 0 6.2 C -1.2 4.4 -1.7 0.4 -1.7 -2.7 C -1.7 -4.9 -1.3 -6.6 0 -6.6 Z" fill="${C.body}"/>` +
+  `<ellipse cx="0" cy="-4.9" rx=".45" ry="2.3" fill="${C.blue}" opacity=".3"/>` +
+  `<circle cx="0" cy="-6.7" r="1.5" fill="${C.body}"/>` +
+  `<circle cx="-0.45" cy="-7.1" r=".4" fill="${C.pale}" opacity=".6"/>` +
+  g(rot(P.antA || 0, 0, -7.6),
+    `<path d="M-0.7 -7.6 C -2 -10.2 -3.1 -11.6 -4.2 -12.3 M0.7 -7.6 C 2 -10.2 3.1 -11.6 4.2 -12.3" stroke="${C.body}" stroke-width=".8" fill="none" stroke-linecap="round"/>` +
+    `<circle cx="-4.2" cy="-12.3" r=".9" fill="${C.pale}"/><circle cx="4.2" cy="-12.3" r=".9" fill="${C.pale}"/>` +
+    `<circle cx="-4.2" cy="-12.3" r=".9" fill="none" stroke="${C.body}" stroke-width=".4"/><circle cx="4.2" cy="-12.3" r=".9" fill="none" stroke="${C.body}" stroke-width=".4"/>`);
+
+function draw(P) {
+  const s0 = P.scale || 0.82;
+  const dx = P.dx || 0, dy = P.dy || 0;
+  let s = P.ticks || '';
+  if (P.grounded) s += shadow(dx, GY + 0.8, 7, Math.max(0, -dy), 12);
+  return s + g(trl(dx, dy) + ' ' + scl(s0, s0, 0, 0) + ' ' + rot(P.roll || 0, 0, 0), bfly(P));
+}
+
+return {
+  id: 'commonblue', view: [-26, -24, 52, 40], groundY: GY,
+  thumb: { m: 'bask', t: 0.5 },
+  motions: [
+    { id: 'bask', label: 'Bask', short: 'Bask', dur: 3.0, env: { t: 'ground' }, speed: '0 km/h', beat: 'Half-open · tremble',
+      desc: 'A thumbnail of sky held half-cocked to catch the low morning sun, wings quivering, rarely laid fully flat.',
+      anim: 'Keep the wings around a third open and alive with a fine tremble — a small butterfly never quite goes still. Antennae always working.' },
+    { id: 'flit', label: 'Flit', short: 'Flit', dur: 0.46, env: { t: 'air' }, speed: '~7 km/h', beat: 'Fast shallow flicks',
+      desc: 'Quick, low and restless, threading a wandering line a hand\u2019s breadth above the grass heads and never for long.',
+      anim: 'Fast, shallow beats — faster than any larger butterfly here. Keep it low, keep it wandering, and let the light body jitter.' },
+    { id: 'settle', label: 'Settle to feed', short: 'Settle', dur: 1.1, env: { t: 'reed', x: 9, y: -4 }, speed: '0 km/h', beat: 'Land · fold · sip',
+      desc: 'It drops onto a flower head, closes the wings up over its back, and feeds — the blue put away, only the freckled underside showing.',
+      anim: 'Arrive with a last flick, then fold the wings up and hold near-closed with a slow breathing sway. A tiny settle-bob on landing.' }
+    ,{ id: 'roost', label: 'Roost', short: 'Roost', dur: 5.5, env: { t: 'reed', x: 2, y: -8 }, night: true, speed: '0 km/h', beat: 'Wings shut · slow sway',
+      desc: 'Perched high on a grass head with the wings shut over its back, the blue put away, only the freckled grey underside left to the dusk.',
+      anim: 'A tiny closed wedge on a swaying stem; let it breathe with the grass and hold the wings near-shut all night.' }
+  ],
+  render(mid, t) {
+    t = wrap(t);
+    if (mid === 'roost') {
+      return draw({ grounded: false, dy: -0.6, wA: 66 + 2 * Math.sin(TAU * t), antA: 2 * Math.sin(TAU * t * 0.5) });
+    }
+    if (mid === 'flit') {
+      const flap = osc(t, 2, 0);
+      return draw({
+        wA: 26 + 30 * flap,
+        dy: -2.4 * osc(t, 1, .28) - 1 * osc(t, 2, .1), dx: 2.2 * osc(t, 1, .05),
+        roll: 9 * osc(t, 1, .4), antA: 3 * osc(t, 2, .3),
+        ticks: airTicks(t, { x1: -23, x2: 25, y: -14, h: 12, v: 34, n: 4, s: .9 })
+      });
+    }
+    if (mid === 'settle') {
+      const land = keys(t, [
+        [0.00, { wA: 40 }],
+        [0.16, { wA: 20 }],
+        [0.30, { wA: 58 }],
+        [1.00, { wA: 58 }]
+      ]);
+      land.wA += 3 * osc(t, 3, .1) * (t > 0.32 ? 1 : 0);
+      land.dy = -1.4 - 0.6 * osc(t, 1.5, .2) - 1.2 * pulse(t, 0.16, 0.34);
+      land.antA = 3 * osc(t, 3, .2);
+      return draw(land);
+    }
+    // bask — held part-open, trembling
+    const K = keys(t, [
+      [0.00, { wA: 34 }],
+      [0.40, { wA: 34 }],
+      [0.50, { wA: 8 }],
+      [0.58, { wA: 34 }],
+      [1.00, { wA: 34 }]
+    ]);
+    K.wA += 2.6 * osc(t, 7, .15);
+    K.grounded = true;
+    K.dy = -0.6;
+    K.antA = 4.5 * osc(t, 3.5, .1);
+    return draw(K);
+  }
+};
+
+})();
+__REG["peacock"] = (function(){
+// Peacock — fable style (front view: rust-red wings with the four blue-and-black eyespots)
+const C = { red: '#A83A2A', red2: '#872E20', dark: '#2A2530', blue: '#5F7CB8', pale: '#FBF7F2', cream: '#EAD9B0', body: '#2A2530' };
+const GY = 8.5;
+
+const fold = a => Math.max(0.12, Math.cos(Math.min(88, Math.abs(a)) * Math.PI / 180));
+
+const wingL = a => g(scl(fold(a), 1, -1, 0) + ' ' + rot(a * 0.55, -1, -2),
+  `<path d="M-0.8 -4.6 C -4.6 -7.6 -9.4 -12.1 -13.8 -14.9 L-16.3 -10.3 C -15.1 -6.3 -11.5 -3.1 -7.4 -1.8 C -4.4 -0.9 -1.8 -1.8 -0.8 -3.2 Z" fill="${C.red}"/>` +
+  `<path d="M-0.8 -4.6 C -4.6 -7.6 -9.4 -12.1 -13.8 -14.9 L-14.7 -13.1 C -10.2 -10.6 -5.4 -7.1 -1.7 -4.2 Z" fill="${C.red2}"/>` +
+  `<path d="M-13.9 -14.6 C -11.4 -13.3 -9.9 -11.3 -9.9 -8.9 C -11.9 -9 -14 -10.3 -15.3 -12.3 Z" fill="${C.cream}"/>` +
+  `<circle cx="-12.5" cy="-11.6" r="1.75" fill="${C.dark}"/>` +
+  `<circle cx="-13.1" cy="-12.3" r=".78" fill="${C.blue}"/><circle cx="-11.7" cy="-10.7" r=".5" fill="${C.blue}"/>` +
+  `<path d="M-1 -1 C -4 0 -8.5 1.5 -9.5 5.5 C -10 8.4 -7.8 10.2 -4.8 9.2 C -2.4 8.4 -1 5.8 -0.6 3 Z" fill="${C.red}"/>` +
+  `<path d="M-1 -1 C -3.1 -0.2 -5.6 0.7 -7.1 2.5 C -5 3.1 -2.6 2.7 -0.8 2 Z" fill="${C.red2}" opacity=".8"/>` +
+  `<circle cx="-6.3" cy="6.2" r="2.35" fill="${C.dark}"/>` +
+  `<circle cx="-6.3" cy="6.2" r="1.4" fill="${C.blue}"/>` +
+  `<circle cx="-6.8" cy="5.7" r=".5" fill="${C.pale}" opacity=".85"/>`);
+
+const wingR = a => g(scl(fold(a), 1, 1, 0) + ' ' + rot(-a * 0.55, 1, -2),
+  `<path d="M0.8 -4.6 C 4.6 -7.6 9.4 -12.1 13.8 -14.9 L16.3 -10.3 C 15.1 -6.3 11.5 -3.1 7.4 -1.8 C 4.4 -0.9 1.8 -1.8 0.8 -3.2 Z" fill="${C.red}"/>` +
+  `<path d="M0.8 -4.6 C 4.6 -7.6 9.4 -12.1 13.8 -14.9 L14.7 -13.1 C 10.2 -10.6 5.4 -7.1 1.7 -4.2 Z" fill="${C.red2}"/>` +
+  `<path d="M13.9 -14.6 C 11.4 -13.3 9.9 -11.3 9.9 -8.9 C 11.9 -9 14 -10.3 15.3 -12.3 Z" fill="${C.cream}"/>` +
+  `<circle cx="12.5" cy="-11.6" r="1.75" fill="${C.dark}"/>` +
+  `<circle cx="13.1" cy="-12.3" r=".78" fill="${C.blue}"/><circle cx="11.7" cy="-10.7" r=".5" fill="${C.blue}"/>` +
+  `<path d="M1 -1 C 4 0 8.5 1.5 9.5 5.5 C 10 8.4 7.8 10.2 4.8 9.2 C 2.4 8.4 1 5.8 0.6 3 Z" fill="${C.red}"/>` +
+  `<path d="M1 -1 C 3.1 -0.2 5.6 0.7 7.1 2.5 C 5 3.1 2.6 2.7 0.8 2 Z" fill="${C.red2}" opacity=".8"/>` +
+  `<circle cx="6.3" cy="6.2" r="2.35" fill="${C.dark}"/>` +
+  `<circle cx="6.3" cy="6.2" r="1.4" fill="${C.blue}"/>` +
+  `<circle cx="5.8" cy="5.7" r=".5" fill="${C.pale}" opacity=".85"/>`);
+
+// P: wA (0 open → 62 closed-up), antA
+const bfly = P =>
+  wingL(P.wA || 0) + wingR(P.wA || 0) +
+  `<path d="M0 -7.5 C 1.5 -7.5 2 -5.5 2 -3 C 2 0.5 1.4 5 0 7 C -1.4 5 -2 0.5 -2 -3 C -2 -5.5 -1.5 -7.5 0 -7.5 Z" fill="${C.body}"/>` +
+  `<ellipse cx="0" cy="-5.6" rx=".5" ry="2.6" fill="${C.pale}" opacity=".18"/>` +
+  `<circle cx="0" cy="-7.6" r="1.7" fill="${C.body}"/>` +
+  `<circle cx="-0.5" cy="-8.1" r=".45" fill="${C.pale}" opacity=".6"/>` +
+  g(rot(P.antA || 0, 0, -8.6),
+    `<path d="M-0.8 -8.6 C -2.4 -11.5 -3.6 -13 -4.8 -13.8 M0.8 -8.6 C 2.4 -11.5 3.6 -13 4.8 -13.8" stroke="${C.body}" stroke-width=".9" fill="none" stroke-linecap="round"/>` +
+    `<circle cx="-4.8" cy="-13.8" r="1" fill="${C.body}"/><circle cx="4.8" cy="-13.8" r="1" fill="${C.body}"/>`);
+
+function draw(P) {
+  const dx = P.dx || 0, dy = P.dy || 0;
+  let s = P.ticks || '';
+  if (P.grounded) s += shadow(dx, GY + 0.8, 9, Math.max(0, -dy), 12);
+  return s + g(trl(dx, dy) + ' ' + rot(P.roll || 0, 0, 0), bfly(P));
+}
+
+return {
+  id: 'peacock', view: [-30, -26, 62, 44], groundY: GY,
+  thumb: { m: 'bask', t: 0.05 },
+  motions: [
+    { id: 'bask', label: 'Bask', short: 'Bask', dur: 3.6, env: { t: 'ground' }, speed: '0 km/h', beat: 'Open · hold · close',
+      desc: 'Wings laid flat to the sun, the four eyes staring up. Between spells it folds them shut to a dead-leaf brown and all but disappears.',
+      anim: 'Hold the open pose long and still — the eyespots are the whole point. Close slowly, hold shut even longer, reopen without warning.' },
+    { id: 'flash', label: 'Startle flash', short: 'Flash', dur: 1.6, env: { t: 'ground' }, speed: '0 km/h', beat: 'Snap open · glare · snap shut',
+      desc: 'Its famous bluff: wings clapped shut, then snapped wide in a single frame to throw four sudden eyes at whatever leaned too close.',
+      anim: 'The snap is 2–3 frames, no more — sell it with a tiny recoil of the body. Then a dead-still glare, then a hard clap shut. Fear, not grace.' },
+    { id: 'flutter', label: 'Flutter', short: 'Flutter', dur: 0.58, env: { t: 'air' }, speed: '~10 km/h', beat: 'Burst flaps + bounce',
+      desc: 'A powerful, jinking flight in bursts of deep flaps, the heavy body tossed on an unrepeatable line.',
+      anim: 'Deeper, slower beats than the smaller butterflies. Let the body swing and lurch — nothing travels straight.' },
+    { id: 'sail', label: 'Sail', short: 'Sail', dur: 2.8, env: { t: 'air' }, speed: '~13 km/h', beat: 'Set wings · drift',
+      desc: 'Between bursts it sets the wings flat and rides, losing height by lazy degrees before the next flurry.',
+      anim: 'Wings just above horizontal with the faintest flutter; sell the drift with a slow roll and a long sinking curve.' }
+    ,{ id: 'roost', label: 'Roost', short: 'Roost', dur: 6, env: { t: 'reed', x: -2, y: -10 }, night: true, speed: '0 km/h', beat: 'Wings shut · slow sway',
+      desc: 'Wings snapped shut to their dead-leaf brown underside, the four eyes put away for the night, hung motionless beneath a stem.',
+      anim: 'Absolute stillness in the closed pose — the drama is that the eyes are gone; just a scrap of dark bark, breathing.' }
+  ],
+  render(mid, t) {
+    t = wrap(t);
+    if (mid === 'roost') {
+      return draw({ grounded: false, dy: 0, wA: 72 + 2 * Math.sin(TAU * t), antA: 2 * Math.sin(TAU * t * 0.5) });
+    }
+    if (mid === 'flutter') {
+      const flap = osc(t, 2, 0);
+      return draw({
+        wA: 32 + 32 * flap,
+        dy: -3.4 * osc(t, 1, .28) - 1.3 * osc(t, 2, .1), dx: 2.8 * osc(t, 1, .05),
+        roll: 8 * osc(t, 1, .4), antA: 3 * osc(t, 2, .3),
+        ticks: airTicks(t, { x1: -27, x2: 29, y: -16, h: 14, v: 32, n: 4, s: 1.05 })
+      });
+    }
+    if (mid === 'sail') {
+      return draw({
+        wA: -6 + 3 * osc(t, 4, .1),
+        dy: -3.5 * osc(t, 1, .3), dx: 4 * osc(t, 1, .02),
+        roll: 5 * osc(t, 1, .5), antA: 2 * osc(t, 2, .2),
+        ticks: airTicks(t, { x1: -27, x2: 29, y: -16, h: 14, v: 22, n: 4, s: 1 })
+      });
+    }
+    if (mid === 'flash') {
+      const K = keys(t, [
+        [0.00, { wA: 62 }],
+        [0.20, { wA: 62 }],
+        [0.26, { wA: -7 }],
+        [0.32, { wA: 1 }],
+        [0.58, { wA: 1 }],
+        [0.64, { wA: 62 }],
+        [0.90, { wA: 62 }],
+        [1.00, { wA: 62 }]
+      ]);
+      K.grounded = true;
+      K.dy = -1.6 * (pulse(t, 0.24, 0.34) + pulse(t, 0.62, 0.7));
+      K.antA = 5 * osc(t, 4, .1);
+      return draw(K);
+    }
+    // bask
+    const K = keys(t, [
+      [0.00, { wA: 1 }],
+      [0.18, { wA: 1 }],
+      [0.36, { wA: 62 }],
+      [0.54, { wA: 62 }],
+      [0.62, { wA: -5 }],
+      [0.68, { wA: 1 }],
+      [0.90, { wA: 1 }],
+      [1.00, { wA: 1 }]
+    ]);
+    K.wA += 1.4 * osc(t, 5, .2) * (K.wA > 30 ? 1 : 0.4);
+    K.grounded = true;
+    K.antA = 4 * osc(t, 3, .1);
+    return draw(K);
+  }
+};
+
+})();
 __REG["dragonfly"] = (function(){
-// Emperor Dragonfly — fable style (art authored facing left, flipped to face right)
-
-
-const C = { body: '#4F91A8', dark: '#3E7E94', head: '#5BA6BE', wing: '#CFE9F5', eye: '#2A2326' };
+// Emperor Dragonfly — fable style (side profile; art faces LEFT, flipped to face right)
+// Anax imperator male: apple-green thorax, sky-blue abdomen w/ black dorsal line, green eyes.
+const C = {
+  eye:'#7CB68D', eyeLo:'#5A9EC6', eyeHi:'#D3EBDC',
+  thorax:'#83B15C', thoraxHi:'#98C36E', thoraxDk:'#688F45',
+  abd:'#5EA6D6', abdDk:'#4187BB', dorsal:'#2B3138', joint:'#CFE7F2',
+  wing:'#E5F1F6', vein:'#A0B7BE', stigma:'#3B4046', leg:'#2E2A26'
+};
 const GY = 10;
 
-// P (original left-facing space): abdA, wingFlick (adds to both), wingFast (0..1 blur flutter), headA
+// long narrow blade from (0,0) along +x, half-width W
+function blade(L, W) {
+  return `M0 0 C ${N(L*0.13)} ${N(-W)} ${N(L*0.5)} ${N(-W*1.12)} ${N(L*0.79)} ${N(-W*0.52)} `
+    + `C ${N(L*0.92)} ${N(-W*0.18)} ${N(L)} ${N(-W*0.06)} ${N(L)} 0 `
+    + `C ${N(L)} ${N(W*0.06)} ${N(L*0.92)} ${N(W*0.18)} ${N(L*0.79)} ${N(W*0.52)} `
+    + `C ${N(L*0.5)} ${N(W*1.12)} ${N(L*0.13)} ${N(W)} 0 0 Z`;
+}
+function veins(L, W) {
+  let v = `<path d="M${N(L*0.05)} ${N(-W*0.12)} C ${N(L*0.4)} ${N(-W*0.42)} ${N(L*0.72)} ${N(-W*0.32)} ${N(L*0.95)} ${N(-W*0.05)}" stroke="${C.vein}" stroke-width="0.22" fill="none" opacity=".5"/>`
+    + `<path d="M${N(L*0.05)} ${N(W*0.08)} C ${N(L*0.4)} ${N(W*0.28)} ${N(L*0.72)} ${N(W*0.22)} ${N(L*0.95)} ${N(W*0.03)}" stroke="${C.vein}" stroke-width="0.2" fill="none" opacity=".4"/>`;
+  for (let i = 0; i < 6; i++) {
+    const x = L * (0.2 + i * 0.13), k = 1 - i * 0.1;
+    v += `<line x1="${N(x)}" y1="${N(-W*0.6*k)}" x2="${N(x)}" y2="${N(W*0.55*k)}" stroke="${C.vein}" stroke-width="0.14" opacity=".36"/>`;
+  }
+  return v;
+}
+function wing(bx, by, deg, L, W, op) {
+  return g(trl(bx, by) + ' ' + rot(deg, 0, 0),
+    `<path d="${blade(L, W)}" fill="${C.wing}" opacity="${N(op)}"/>` +
+    veins(L, W) +
+    `<rect x="${N(L*0.79)}" y="${N(-W*0.5)}" width="${N(L*0.1)}" height="${N(W*0.26)}" rx="0.25" fill="${C.stigma}" opacity=".85"/>`);
+}
+
+function abdomen(flex) {
+  const rings = [[0.5,1.62],[3.5,1.55],[6.5,1.46],[9.5,1.3],[12.5,1.1],[15,0.9],[17.5,0.68]];
+  const cy = x => x < 13 ? 0.02 * x : 0.26 + 0.16 * (x - 13);
+  let r = '';
+  for (const [x, h] of rings) {
+    const c = cy(x);
+    r += `<line x1="${x}" y1="${N(c-h)}" x2="${x}" y2="${N(c+h)}" stroke="${C.dorsal}" stroke-width="0.4" opacity=".5"/>`
+      + `<line x1="${N(x-0.55)}" y1="${N(c-h*0.85)}" x2="${N(x-0.55)}" y2="${N(c+h*0.65)}" stroke="${C.joint}" stroke-width="0.4" opacity=".55"/>`;
+  }
+  return g(rot(flex || 0, -2, 0),
+    `<path d="M-2 -1.75 C 3 -2.0 9 -1.65 14 -0.95 C 17.5 -0.5 20 0.15 21.3 1.05 C 21.7 1.35 21.4 1.75 20.7 1.7 C 20 1.65 17.5 1.45 14 1.05 C 9 1.8 3 2.05 -2 1.8 C -3.1 1.7 -3.1 -1.65 -2 -1.75 Z" fill="${C.abd}"/>` +
+    `<path d="M-2 0.25 C 4 0.8 10 1.05 15 1.02 C 10 1.85 3.5 2.05 -2 1.8 C -3.1 1.62 -2.7 0.6 -2 0.25 Z" fill="${C.abdDk}"/>` +
+    r +
+    `<path d="M-2 -1.4 C 3 -1.68 9 -1.35 14 -0.72 C 17.6 -0.32 20 0.35 21.2 1.05" stroke="${C.dorsal}" stroke-width="0.85" fill="none" stroke-linecap="round" opacity=".9"/>` +
+    `<ellipse cx="4" cy="-0.9" rx="5" ry="0.45" fill="#fff" opacity=".24"/>`);
+}
+
+const thorax =
+  `<path d="M-5.4 -2.6 C -3.2 -3.5 -0.6 -3.0 0.2 -1.6 C 0.8 -0.4 0.7 1.5 -0.1 2.5 C -1.1 3.6 -4.2 3.6 -5.6 2.6 C -6.6 1.9 -6.6 -2.0 -5.4 -2.6 Z" fill="${C.thorax}"/>` +
+  `<path d="M-5.4 -2.6 C -3.2 -3.5 -0.6 -3.0 0.2 -1.6 C -1.5 -1.9 -3.6 -1.5 -5.2 -0.55 C -6.1 -1.6 -6.0 -2.2 -5.4 -2.6 Z" fill="${C.thoraxHi}" opacity=".8"/>` +
+  `<path d="M-4.4 -1.7 C -3.5 0.5 -3.1 2.1 -3.3 3.3" stroke="${C.thoraxDk}" stroke-width="0.55" fill="none" opacity=".5"/>`;
+
+const legs =
+  `<g stroke="${C.leg}" stroke-width="0.62" fill="none" stroke-linecap="round">` +
+  `<path d="M-4.6 2.2 C -6.4 3.6 -8.0 4.6 -9.2 6.2"/>` +
+  `<path d="M-3.4 2.7 C -5.0 4.4 -6.2 5.8 -7.0 7.2"/>` +
+  `<path d="M-1.8 2.9 C -2.8 4.7 -3.6 6.1 -4.0 7.5"/></g>` +
+  `<g stroke="${C.leg}" stroke-width="0.34" stroke-linecap="round" opacity=".8">` +
+  `<path d="M-7.3 4.5 l-0.9 0.5 M-8.3 5.4 l-0.9 0.4 M-5.7 5.2 l-0.8 0.5 M-6.5 6.1 l-0.8 0.4 M-3.1 5.1 l-0.7 0.5 M-3.6 6.2 l-0.7 0.4"/></g>`;
+
+function head(tilt) {
+  return g(rot(tilt || 0, -5.5, 0),
+    `<path d="M-5.6 -1.6 C -6.4 -0.8 -6.4 1.4 -5.6 2.2 C -5.0 1.2 -5.0 -0.6 -5.6 -1.6 Z" fill="${C.thoraxDk}" opacity=".55"/>` +
+    `<ellipse cx="-8.9" cy="0.1" rx="3.7" ry="3.15" fill="${C.eye}"/>` +
+    `<path d="M-8.9 -3.0 A3.7 3.15 0 0 1 -8.9 3.2 C -6.9 3.1 -5.5 1.9 -5.5 0.1 C -5.5 -1.7 -6.9 -3.0 -8.9 -3.0 Z" fill="${C.eyeHi}" opacity=".22"/>` +
+    `<path d="M-12.4 0.5 A3.7 3.15 0 0 0 -5.4 0.9 C -6.5 2.5 -7.8 3.25 -9.2 3.2 C -11.2 3.1 -12.5 1.9 -12.4 0.5 Z" fill="${C.eyeLo}" opacity=".8"/>` +
+    `<path d="M-12.0 1.5 C -12.9 1.7 -13.1 2.6 -12.3 3.05 C -11.7 2.5 -11.7 1.9 -12.0 1.5 Z" fill="#C9B98C"/>` +
+    `<ellipse cx="-10.4" cy="-1.4" rx="1.6" ry="1.1" fill="${C.eyeHi}" opacity=".5" transform="rotate(-18 -10.4 -1.4)"/>` +
+    `<circle cx="-11.0" cy="-1.8" r=".5" fill="#fff" opacity=".85"/>`);
+}
+
 function sprite(P) {
-  const wa = (P.wingFlick || 0) + 11 * (P.wingFast || 0) * osc(P.t || 0, 6);
-  const wb = (P.wingFlick || 0) + 11 * (P.wingFast || 0) * osc(P.t || 0, 6, .5);
-  const abdomen = g(rot(P.abdA || 0, -2, 0),
-    `<path d="M-3 -1.5 C2 -1.7 9 -1.4 14.5 -0.6 C15.3 -0.4 15.3 0.4 14.5 0.6 C9 1.4 2 1.7 -3 1.5 C-4 1.4 -4 -1.4 -3 -1.5 Z" fill="${C.body}"/>` +
-    `<path d="M-3 0.2 C2 0.6 9 0.9 14.5 0.6 C9 1.4 2 1.7 -3 1.5 C-4 1.4 -3.8 0.4 -3 0.2 Z" fill="${C.dark}"/>` +
-    `<ellipse cx="6" cy="-0.5" rx="6" ry="0.9" fill="#fff" opacity=".28"/>`);
-  const wingsUp = g(rot(-wa, 0, 0), `<g opacity=".62">` +
-    `<path d="M0 -0.4 C 3.5 -2.4 6.5 -3.4 9 -3.6 C 9.4 -2.6 7 -1.3 4 -0.6 C 2 -0.1 1 0 0 -0.4 Z" fill="${C.wing}"/>` +
-    `<path d="M-0.5 -0.6 C 4 -3.5 8 -5 12 -5.2 C 12.5 -3.8 9 -2 5 -1 C 2.5 -0.3 0.3 0 -0.5 -0.6 Z" fill="${C.wing}"/>` +
-    `<path d="M-0.5 -0.6 C 4 -3.5 8 -5 12 -5.2 C 12.5 -3.8 9 -2 5 -1 C 2.5 -0.3 0.3 0 -0.5 -0.6 Z" fill="#fff" opacity=".3"/></g>`);
-  const wingsDn = g(rot(wb, 0, 0), `<g opacity=".62">` +
-    `<path d="M0 0.4 C 3.5 2.4 6.5 3.4 9 3.6 C 9.4 2.6 7 1.3 4 0.6 C 2 0.1 1 0 0 0.4 Z" fill="${C.wing}"/>` +
-    `<path d="M-0.5 0.6 C 4 3.5 8 5 12 5.2 C 12.5 3.8 9 2 5 1 C 2.5 0.3 0.3 0 -0.5 0.6 Z" fill="${C.wing}"/></g>`);
-  const head = g(rot(P.headA || 0, -4.4, 0),
-    `<circle cx="-4.4" cy="0" r="4" fill="${C.head}"/>` +
-    `<path d="M-4.4 0 a4 4 0 0 1 0 -0.2 C-2 -2.2 -1 -1.2 -1 0 C-1 1.2 -2 2.2 -4.4 0.2 Z" fill="${C.dark}" opacity=".5"/>` +
-    `<circle cx="-5.2" cy="-1" r="1.5" fill="${C.eye}"/>` +
-    `<circle cx="-5.7" cy="-1.6" r=".55" fill="#fff" opacity=".9"/>`);
-  return abdomen + wingsUp + wingsDn + head;
+  const fast = P.wingFast || 0;
+  const op = 0.6 - 0.22 * fast;
+  const ff = P.foreFlap || 0, hf = P.hindFlap || 0;
+  let far = wing(-3.4, -2.3, 205 + ff, 15.2, 2.6, op * 0.72) + wing(-1.8, -2.3, -22 + hf, 14.4, 3.0, op * 0.72);
+  let near = wing(-3.8, -2.5, 201 + ff, 15.2, 2.6, op) + wing(-1.4, -2.5, -18 + hf, 14.4, 3.0, op);
+  if (fast) {
+    const gh = op * 0.4;
+    far = wing(-3.4, -2.3, 205 + ff + 7, 15.2, 2.6, gh) + wing(-1.8, -2.3, -22 + hf - 7, 14.4, 3.0, gh) + far;
+    near += wing(-3.8, -2.5, 201 + ff - 7, 15.2, 2.6, gh) + wing(-1.4, -2.5, -18 + hf + 7, 14.4, 3.0, gh);
+  }
+  return far + legs + abdomen(P.abdA) + thorax + head(P.headA) + near;
 }
 
 function draw(P) {
@@ -1995,11 +3027,11 @@ function draw(P) {
 }
 
 return {
-  id: 'dragonfly', view: [-32, -22, 66, 40], groundY: GY,
+  id: 'dragonfly', view: [-30, -20, 62, 40], groundY: GY,
   thumb: { m: 'perch', t: 0.05 },
   motions: [
-    { id: 'perch', label: 'Perch', short: 'Perch', dur: 3.6, env: { t: 'reed', x: -3, y: 4 }, speed: '0 km/h', beat: 'Still · wing flicks',
-      desc: 'Hung on a reed-tip between patrols: wings held glassy-flat, the long abdomen balancing on air.',
+    { id: 'perch', label: 'Perch', short: 'Perch', dur: 3.6, env: { t: 'reed', x: 9, y: -3 }, speed: '0 km/h', beat: 'Still · wing flicks',
+      desc: 'Hung on a reed between patrols: the four wings held glassy and flat, the long blue abdomen balancing on air.',
       anim: 'Total stillness sold by interruptions — one wing flick, one abdomen flex, seconds apart. Nothing eases; everything snaps.' },
     { id: 'hover', label: 'Hover', short: 'Hover', dur: 0.8, env: { t: 'air' }, speed: '0 km/h', beat: 'Wings 30/s · pinned',
       desc: 'Holding a point in the air on four independent wings — the body drifts a centimetre and corrects, drifts and corrects.',
@@ -2007,43 +3039,327 @@ return {
     { id: 'dart', label: 'Dart', short: 'Dart', dur: 2.6, env: { t: 'air' }, speed: '~55 km/h burst', beat: 'Hold → whip → hold',
       desc: 'The strike: from a standing hover to thirty body-lengths away inside a second, then stopped dead as if braked on a wire.',
       anim: 'One or two frames of smear for the launch, a hard stop with a single overshoot wobble. The hold before the dart is the storytelling.' }
+    ,{ id: 'roost', label: 'Roost', short: 'Roost', dur: 6, env: { t: 'reed', x: 9, y: -3 }, night: true, speed: '0 km/h', beat: 'Wings flat · still',
+      desc: 'Hung up in the reeds for the night, the four glassy wings held flat and still, the long blue body cooling and motionless.',
+      anim: 'Dead still, wings flat — no flicks, no darts. Only the faintest abdomen sway says it is asleep and not abandoned.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'roost') {
+      return draw({ grounded: false, dy: 0, foreFlap: 0, hindFlap: 0, headA: 0, abdA: 1 + 0.6 * Math.sin(TAU * t) });
+    }
     if (mid === 'hover') {
       return draw({
-        t, wingFast: 1,
-        dx: 1.8 * osc(t, 1, .15) + 0.7 * osc(t, 3, .4), dy: -1.4 * osc(t, 2, .35),
-        pitch: 2.5 * osc(t, 1, .6),
-        ticks: airTicks(t, { x1: -29, x2: 31, y: -14, h: 12, v: 16, n: 4, s: .9 })
+        wingFast: 1, foreFlap: 13 * osc(t, 6), hindFlap: 13 * osc(t, 6, .5),
+        dx: 1.6 * osc(t, 1, .15) + 0.6 * osc(t, 3, .4), dy: -1.3 * osc(t, 2, .35),
+        pitch: 2.2 * osc(t, 1, .6), abdA: 1.1 * osc(t, 1, .1),
+        ticks: airTicks(t, { x1: -27, x2: 29, y: -14, h: 12, v: 16, n: 4, s: .9 })
       });
     }
     if (mid === 'dart') {
       const K = keys(t, [
-        [0.00, { dx: -8, pitch: 0 }],
-        [0.26, { dx: -8, pitch: 0 }],
-        [0.30, { dx: 14, pitch: 4 }],
-        [0.33, { dx: 12.5, pitch: -2 }],
-        [0.36, { dx: 13, pitch: 0 }],
-        [0.60, { dx: 13, pitch: 0 }],
-        [0.78, { dx: -8, pitch: -3 }],
-        [0.84, { dx: -8, pitch: 0 }],
-        [1.00, { dx: -8, pitch: 0 }]
+        [0.00, { dx: -8, pitch: 0 }], [0.26, { dx: -8, pitch: 0 }],
+        [0.30, { dx: 14, pitch: 4 }], [0.33, { dx: 12.5, pitch: -2 }],
+        [0.36, { dx: 13, pitch: 0 }], [0.60, { dx: 13, pitch: 0 }],
+        [0.78, { dx: -8, pitch: -3 }], [0.84, { dx: -8, pitch: 0 }], [1.00, { dx: -8, pitch: 0 }]
       ]);
       K.t = t; K.wingFast = 1;
+      K.foreFlap = 13 * osc(t, 6); K.hindFlap = 13 * osc(t, 6, .5);
       K.dy = -1 * osc(t, 2, .3);
       const zip = pulse(t, .265, .33);
-      if (zip > 0.25) K.streaks = `<g stroke="#9FB6A8" stroke-linecap="round" opacity="${N(zip * .8)}"><line x1="${N(K.dx - 16)}" y1="-2" x2="${N(K.dx - 7)}" y2="-2" stroke-width=".8"/><line x1="${N(K.dx - 13)}" y1="1.5" x2="${N(K.dx - 5)}" y2="1.5" stroke-width=".6"/></g>`;
-      K.ticks = airTicks(t, { x1: -29, x2: 31, y: -14, h: 12, v: 16, n: 4, s: .9 });
+      if (zip > 0.25) K.streaks = `<g stroke="#9FB6A8" stroke-linecap="round" opacity="${N(zip * .8)}"><line x1="${N(K.dx - 18)}" y1="-2" x2="${N(K.dx - 7)}" y2="-2" stroke-width=".8"/><line x1="${N(K.dx - 15)}" y1="1.5" x2="${N(K.dx - 5)}" y2="1.5" stroke-width=".6"/></g>`;
+      K.ticks = airTicks(t, { x1: -27, x2: 29, y: -14, h: 12, v: 16, n: 4, s: .9 });
       return draw(K);
     }
     // perch
     return draw({
-      t, grounded: false,
-      wingFlick: 8 * pulse(t, .3, .345) - 6 * pulse(t, .72, .765),
-      abdA: 2.5 * pulse(t, .48, .6) + 1.2 * osc(t, 1, .2),
-      headA: 4 * pulse(t, .12, .2) - 4 * pulse(t, .86, .94),
+      grounded: false,
+      foreFlap: 6 * pulse(t, .30, .345) - 4.5 * pulse(t, .72, .765),
+      hindFlap: -5 * pulse(t, .31, .35) + 3.5 * pulse(t, .73, .77),
+      abdA: 2.4 * pulse(t, .48, .6) + 1 * osc(t, 1, .2),
+      headA: 4 * pulse(t, .12, .2) - 3.5 * pulse(t, .86, .94),
       dy: 0
+    });
+  }
+};
+
+})();
+__REG["darter"] = (function(){
+// Common Darter — fable style (side profile; art faces LEFT, flipped to face right)
+// Sympetrum striolatum male: ochre-brown thorax, orange-red abdomen, amber-based clear wings.
+// The classic "sit-and-sally" dragonfly: perches on a tip, dashes out for prey, returns.
+const C = {
+  eye:'#9E5C3B', eyeLo:'#7C4A34', eyeHi:'#E8CBA8',
+  thorax:'#B4793E', thoraxHi:'#C99457', thoraxDk:'#8C5B2C',
+  abd:'#C6503A', abdDk:'#A23A2A', abdHi:'#DE7458', mark:'#5C2A20',
+  wing:'#EEF3F3', amber:'#E7C67A', vein:'#B9AE92', stigma:'#7A3B2E', leg:'#2E2A26'
+};
+const GY = 10;
+
+function blade(L, W) {
+  return `M0 0 C ${N(L*0.14)} ${N(-W)} ${N(L*0.52)} ${N(-W*1.08)} ${N(L*0.8)} ${N(-W*0.5)} `
+    + `C ${N(L*0.92)} ${N(-W*0.17)} ${N(L)} ${N(-W*0.06)} ${N(L)} 0 `
+    + `C ${N(L)} ${N(W*0.06)} ${N(L*0.92)} ${N(W*0.17)} ${N(L*0.8)} ${N(W*0.5)} `
+    + `C ${N(L*0.52)} ${N(W*1.08)} ${N(L*0.14)} ${N(W)} 0 0 Z`;
+}
+function veins(L, W) {
+  let v = `<path d="M${N(L*0.05)} ${N(-W*0.1)} C ${N(L*0.4)} ${N(-W*0.4)} ${N(L*0.72)} ${N(-W*0.3)} ${N(L*0.95)} ${N(-W*0.05)}" stroke="${C.vein}" stroke-width="0.22" fill="none" opacity=".5"/>`
+    + `<path d="M${N(L*0.05)} ${N(W*0.08)} C ${N(L*0.4)} ${N(W*0.26)} ${N(L*0.72)} ${N(W*0.2)} ${N(L*0.95)} ${N(W*0.03)}" stroke="${C.vein}" stroke-width="0.2" fill="none" opacity=".4"/>`;
+  for (let i = 0; i < 6; i++) {
+    const x = L * (0.2 + i * 0.13), k = 1 - i * 0.1;
+    v += `<line x1="${N(x)}" y1="${N(-W*0.58*k)}" x2="${N(x)}" y2="${N(W*0.52*k)}" stroke="${C.vein}" stroke-width="0.13" opacity=".33"/>`;
+  }
+  return v;
+}
+function wing(bx, by, deg, L, W, op) {
+  return g(trl(bx, by) + ' ' + rot(deg, 0, 0),
+    `<path d="${blade(L, W)}" fill="${C.wing}" opacity="${N(op)}"/>` +
+    `<ellipse cx="${N(L*0.14)}" cy="0" rx="${N(L*0.16)}" ry="${N(W*0.62)}" fill="${C.amber}" opacity="${N(op*0.55)}"/>` +
+    veins(L, W) +
+    `<rect x="${N(L*0.8)}" y="${N(-W*0.48)}" width="${N(L*0.1)}" height="${N(W*0.24)}" rx="0.22" fill="${C.stigma}" opacity=".85"/>`);
+}
+
+function abdomen(flex) {
+  return g(rot(flex || 0, -2, 0),
+    // slightly spindle-shaped, orange-red, shorter than the Emperor's
+    `<path d="M-2 -1.85 C 2 -2.35 6 -2.3 9.5 -1.55 C 12.5 -0.95 14.5 -0.4 15.6 0.35 C 16.0 0.62 15.8 1.15 15.2 1.15 C 14.4 1.15 12.5 0.9 9.5 1.6 C 6 2.35 2 2.4 -2 1.9 C -3.1 1.78 -3.1 -1.73 -2 -1.85 Z" fill="${C.abd}"/>` +
+    `<path d="M-2 -1.4 C 2 -1.85 6 -1.8 9.5 -1.1 C 12.5 -0.55 14.6 0.0 15.5 0.5 C 12 -0.2 6 -0.1 -2 -0.2 C -2.9 -0.9 -2.7 -1.28 -2 -1.4 Z" fill="${C.abdHi}" opacity=".7"/>` +
+    `<path d="M-2 0.4 C 3 0.95 8 1.2 12 1.05 C 8 1.9 3 2.35 -2 1.9 C -3.1 1.7 -2.7 0.75 -2 0.4 Z" fill="${C.abdDk}"/>` +
+    // black lateral segment marks
+    `<g stroke="${C.mark}" stroke-width="0.5" opacity=".65" stroke-linecap="round">` +
+    `<path d="M4 1.4 l0 0.6 M6.5 1.5 l0 0.55 M9 1.35 l0 0.55 M11 1.05 l0 0.5 M12.8 0.7 l0 0.45"/></g>` +
+    `<ellipse cx="4" cy="-1.0" rx="4" ry="0.4" fill="#fff" opacity=".28"/>`);
+}
+
+const thorax =
+  `<path d="M-5.2 -2.7 C -3.0 -3.6 -0.5 -3.1 0.3 -1.7 C 0.9 -0.5 0.8 1.6 -0.1 2.7 C -1.1 3.8 -4.2 3.7 -5.5 2.7 C -6.5 2.0 -6.5 -2.1 -5.2 -2.7 Z" fill="${C.thorax}"/>` +
+  `<path d="M-5.2 -2.7 C -3.0 -3.6 -0.5 -3.1 0.3 -1.7 C -1.4 -2.0 -3.5 -1.6 -5.1 -0.6 C -6.0 -1.7 -5.9 -2.3 -5.2 -2.7 Z" fill="${C.thoraxHi}" opacity=".85"/>` +
+  `<path d="M-4.3 -1.8 C -3.4 0.5 -3.0 2.2 -3.2 3.4" stroke="${C.thoraxDk}" stroke-width="0.55" fill="none" opacity=".5"/>`;
+
+const legs =
+  `<g stroke="${C.leg}" stroke-width="0.6" fill="none" stroke-linecap="round">` +
+  `<path d="M-4.4 2.3 C -6.2 3.7 -7.8 4.7 -9.0 6.3"/>` +
+  `<path d="M-3.2 2.8 C -4.8 4.5 -6.0 5.9 -6.8 7.3"/>` +
+  `<path d="M-1.6 3.0 C -2.6 4.8 -3.4 6.2 -3.8 7.6"/></g>` +
+  `<g stroke="${C.leg}" stroke-width="0.32" stroke-linecap="round" opacity=".8">` +
+  `<path d="M-7.1 4.6 l-0.9 0.5 M-8.1 5.5 l-0.9 0.4 M-5.5 5.3 l-0.8 0.5 M-6.3 6.2 l-0.8 0.4 M-2.9 5.2 l-0.7 0.5 M-3.4 6.3 l-0.7 0.4"/></g>`;
+
+function head(tilt) {
+  return g(rot(tilt || 0, -5.4, 0),
+    `<path d="M-5.5 -1.6 C -6.3 -0.8 -6.3 1.4 -5.5 2.2 C -4.9 1.2 -4.9 -0.6 -5.5 -1.6 Z" fill="${C.thoraxDk}" opacity=".5"/>` +
+    `<ellipse cx="-8.6" cy="0.0" rx="3.5" ry="3.0" fill="${C.eye}"/>` +
+    `<path d="M-12.0 0.4 A3.5 3.0 0 0 0 -5.2 0.8 C -6.3 2.3 -7.5 3.05 -8.9 3.0 C -10.8 2.9 -12.1 1.8 -12.0 0.4 Z" fill="${C.eyeLo}" opacity=".8"/>` +
+    `<path d="M-11.6 1.4 C -12.5 1.6 -12.7 2.5 -11.9 2.95 C -11.3 2.4 -11.3 1.8 -11.6 1.4 Z" fill="#D8C29A"/>` +
+    `<ellipse cx="-10.0" cy="-1.4" rx="1.5" ry="1.05" fill="${C.eyeHi}" opacity=".5" transform="rotate(-18 -10.0 -1.4)"/>` +
+    `<circle cx="-10.6" cy="-1.8" r=".48" fill="#fff" opacity=".85"/>`);
+}
+
+function sprite(P) {
+  const fast = P.wingFast || 0;
+  const op = 0.62 - 0.22 * fast;
+  const ff = P.foreFlap || 0, hf = P.hindFlap || 0;
+  let far = wing(-3.2, -2.4, 208 + ff, 13.2, 2.5, op * 0.72) + wing(-1.6, -2.4, -26 + hf, 12.8, 2.8, op * 0.72);
+  let near = wing(-3.6, -2.6, 204 + ff, 13.2, 2.5, op) + wing(-1.2, -2.6, -22 + hf, 12.8, 2.8, op);
+  if (fast) {
+    const gh = op * 0.4;
+    far = wing(-3.2, -2.4, 208 + ff + 7, 13.2, 2.5, gh) + wing(-1.6, -2.4, -26 + hf - 7, 12.8, 2.8, gh) + far;
+    near += wing(-3.6, -2.6, 204 + ff - 7, 13.2, 2.5, gh) + wing(-1.2, -2.6, -22 + hf + 7, 12.8, 2.8, gh);
+  }
+  return far + legs + abdomen(P.abdA) + thorax + head(P.headA) + near;
+}
+
+function draw(P) {
+  const dx = P.dx || 0, dy = P.dy || 0;
+  let s = P.ticks || '';
+  if (P.streaks) s += P.streaks;
+  if (P.grounded) s += shadow(dx + 2, GY, 8, Math.max(0, 4 - dy), 16);
+  return s + g(trl(dx, dy) + ' ' + rot(P.pitch || 0, 0, 0), g('scale(-1 1)', sprite(P)));
+}
+
+return {
+  id: 'darter', view: [-28, -20, 58, 40], groundY: GY,
+  thumb: { m: 'perch', t: 0.05 },
+  motions: [
+    { id: 'perch', label: 'Perch', short: 'Perch', dur: 3.8, env: { t: 'branch', y: 4 }, speed: '0 km/h', beat: 'Sentry · scan',
+      desc: 'The sit-and-wait hunter, planted on a favourite twig-tip in full sun, wings pressed forward and down, all business.',
+      anim: 'A sentry pose broken only by the head — quick saccades to left and right as it clocks passing insects, then a stillness that means it has chosen one.' },
+    { id: 'sally', label: 'Sally', short: 'Sally', dur: 2.4, env: { t: 'air' }, speed: '~30 km/h dash', beat: 'Launch · snatch · return',
+      desc: 'Its signature move: a lightning dash off the perch to snatch a fly from the air, a sharp turn, and a return to the very same twig.',
+      anim: 'Out fast, one hard direction-change at the "catch", then home. The animator\u2019s trick is the return — it must land exactly where it left.' },
+    { id: 'hover', label: 'Hover', short: 'Hover', dur: 0.85, env: { t: 'air' }, speed: '0 km/h', beat: 'Wings 35/s · hang',
+      desc: 'A brief hover to inspect before it commits — the red body hanging under a silver blur, tilting to read the wind.',
+      anim: 'Shorter and twitchier than the Emperor\u2019s hover: quicker corrections, a restless head, the sense of a decision about to be made.' }
+    ,{ id: 'roost', label: 'Roost', short: 'Roost', dur: 6, env: { t: 'branch', y: 4 }, night: true, speed: '0 km/h', beat: 'Sentry off · still',
+      desc: 'Settled low in the grass for the night on its favourite twig, wings pressed down and forward, the red body gone quiet.',
+      anim: 'Hold the sentry silhouette but empty it of the daytime saccades; a single slow head-settle is all that moves.' }
+  ],
+  render(mid, t) {
+    t = wrap(t);
+    if (mid === 'roost') {
+      return draw({ grounded: false, dy: 0, foreFlap: 0, hindFlap: 0, headA: 2 * Math.sin(TAU * t * 0.5), abdA: 0.6 * Math.sin(TAU * t) });
+    }
+    if (mid === 'hover') {
+      return draw({
+        wingFast: 1, foreFlap: 12 * osc(t, 6), hindFlap: 12 * osc(t, 6, .5),
+        dx: 1.4 * osc(t, 1, .2) + 0.7 * osc(t, 3, .5), dy: -1.2 * osc(t, 2, .35),
+        pitch: 3 * osc(t, 1, .5), headA: 4 * osc(t, 2, .1), abdA: 1 * osc(t, 1, .1),
+        ticks: airTicks(t, { x1: -25, x2: 27, y: -13, h: 12, v: 15, n: 4, s: .9 })
+      });
+    }
+    if (mid === 'sally') {
+      const K = keys(t, [
+        [0.00, { dx: -9, dy: 5, pitch: 0 }], [0.20, { dx: -9, dy: 5, pitch: 0 }],
+        [0.28, { dx: 4, dy: -3, pitch: 8 }], [0.40, { dx: 13, dy: -6, pitch: 4 }],
+        [0.46, { dx: 12, dy: -7, pitch: -10 }], [0.52, { dx: 6, dy: -4, pitch: -6 }],
+        [0.70, { dx: -9, dy: 5, pitch: 6 }], [0.80, { dx: -9, dy: 5, pitch: 0 }], [1.00, { dx: -9, dy: 5, pitch: 0 }]
+      ]);
+      K.t = t; K.wingFast = 1;
+      K.foreFlap = 12 * osc(t, 6); K.hindFlap = 12 * osc(t, 6, .5);
+      const snap = pulse(t, .43, .49);
+      if (snap > 0.2) K.headA = 6 * snap;
+      K.ticks = airTicks(t, { x1: -25, x2: 27, y: -13, h: 12, v: 15, n: 4, s: .9 });
+      return draw(K);
+    }
+    // perch
+    return draw({
+      grounded: false, dy: 0,
+      headA: 7 * pulse(t, .16, .30) - 6 * pulse(t, .52, .66) + 3 * pulse(t, .80, .88),
+      foreFlap: 4 * pulse(t, .42, .46),
+      hindFlap: -3 * pulse(t, .43, .47),
+      abdA: 1.4 * pulse(t, .70, .82) + 0.6 * osc(t, 1, .15)
+    });
+  }
+};
+
+})();
+__REG["demoiselle"] = (function(){
+// Banded Demoiselle — fable style (side profile; art faces LEFT, flipped to face right)
+// Calopteryx splendens male: metallic blue-green body, broad wings with a dark blue-black
+// mid-band. A DAMSELFLY — folds its wings shut over the back at rest and flies with a
+// weak, fluttery, butterfly-like beat low over slow water.
+const C = {
+  body:'#279A8B', hi:'#8FE6D6', shade:'#1C7669', tip:'#245F57', ring:'#BDF0E4',
+  eye:'#2B8E88', eyeDk:'#1F6E69', eyeHi:'#CFEFE9',
+  wing:'#E7EFED', band:'#2C3550', bandHi:'#425786', vein:'#9BB0AE', leg:'#242220'
+};
+const GY = 10;
+
+function blade(L, W) {
+  return `M0 0 C ${N(L*0.14)} ${N(-W)} ${N(L*0.5)} ${N(-W*1.15)} ${N(L*0.79)} ${N(-W*0.52)} `
+    + `C ${N(L*0.92)} ${N(-W*0.18)} ${N(L)} ${N(-W*0.06)} ${N(L)} 0 `
+    + `C ${N(L)} ${N(W*0.06)} ${N(L*0.92)} ${N(W*0.18)} ${N(L*0.79)} ${N(W*0.52)} `
+    + `C ${N(L*0.5)} ${N(W*1.15)} ${N(L*0.14)} ${N(W)} 0 0 Z`;
+}
+function wing(bx, by, deg, L, W, op) {
+  const band = `M${N(L*0.4)} ${N(-W*1.02)} C ${N(L*0.54)} ${N(-W*1.08)} ${N(L*0.68)} ${N(-W*0.86)} ${N(L*0.79)} ${N(-W*0.52)} `
+    + `L ${N(L*0.79)} ${N(W*0.52)} C ${N(L*0.68)} ${N(W*0.86)} ${N(L*0.54)} ${N(W*1.08)} ${N(L*0.4)} ${N(W*1.02)} Z`;
+  const v = `<path d="M${N(L*0.05)} ${N(-W*0.12)} C ${N(L*0.4)} ${N(-W*0.42)} ${N(L*0.72)} ${N(-W*0.32)} ${N(L*0.96)} ${N(-W*0.05)}" stroke="${C.vein}" stroke-width="0.2" fill="none" opacity=".4"/>`
+    + `<path d="M${N(L*0.05)} ${N(W*0.08)} C ${N(L*0.4)} ${N(W*0.28)} ${N(L*0.72)} ${N(W*0.22)} ${N(L*0.96)} ${N(W*0.03)}" stroke="${C.vein}" stroke-width="0.18" fill="none" opacity=".35"/>`;
+  return g(trl(bx, by) + ' ' + rot(deg, 0, 0),
+    `<path d="${blade(L, W)}" fill="${C.wing}" opacity="${N(op*0.66)}"/>` +
+    v +
+    `<path d="${band}" fill="${C.band}" opacity="${N(op)}"/>` +
+    `<path d="${band}" fill="${C.bandHi}" opacity="${N(op*0.28)}"/>`);
+}
+
+function abdomen(flex) {
+  let rings = '<g stroke="' + C.ring + '" stroke-width="0.3" opacity=".6">';
+  for (let i = 0; i < 8; i++) { const x = 1 + i * 2.4; rings += `<line x1="${N(x)}" y1="-0.55" x2="${N(x)}" y2="0.55"/>`; }
+  rings += '</g>';
+  return g(rot(flex || 0, -2, 0),
+    `<path d="M-2 -0.9 C 3 -1.0 10 -0.85 16 -0.6 C 18.5 -0.5 20.2 -0.32 20.9 0.0 C 21.2 0.16 21.0 0.52 20.5 0.52 C 20.2 0.52 18.5 0.46 16 0.58 C 10 0.85 3 1.0 -2 0.9 C -2.95 0.82 -2.95 -0.82 -2 -0.9 Z" fill="${C.body}"/>` +
+    `<path d="M-2 -0.62 C 4 -0.72 11 -0.56 17 -0.36 C 11 -0.16 4 -0.2 -2 -0.2 C -2.6 -0.46 -2.5 -0.52 -2 -0.62 Z" fill="${C.hi}" opacity=".5"/>` +
+    `<path d="M13.5 -0.66 C 16 -0.54 19 -0.34 20.9 0.0 C 21.2 0.16 21.0 0.52 20.5 0.52 C 18.5 0.52 16 0.58 13.5 0.72 C 12.9 0.42 12.9 -0.34 13.5 -0.66 Z" fill="${C.tip}"/>` +
+    rings +
+    `<ellipse cx="6" cy="-0.5" rx="7" ry="0.2" fill="#fff" opacity=".32"/>`);
+}
+
+const thorax =
+  `<path d="M-5 -2.4 C -3 -3.1 -0.8 -2.7 -0.1 -1.5 C 0.4 -0.5 0.4 1.4 -0.3 2.3 C -1.2 3.2 -3.9 3.2 -5.1 2.3 C -6.0 1.6 -6.0 -1.9 -5 -2.4 Z" fill="${C.body}"/>` +
+  `<path d="M-5 -2.4 C -3 -3.1 -0.8 -2.7 -0.1 -1.5 C -1.6 -1.8 -3.4 -1.4 -4.9 -0.5 C -5.7 -1.6 -5.6 -2.1 -5 -2.4 Z" fill="${C.hi}" opacity=".6"/>` +
+  `<path d="M-4.2 -1.6 C -3.4 0.4 -3.0 1.9 -3.2 3.0" stroke="${C.shade}" stroke-width="0.5" fill="none" opacity=".5"/>`;
+
+const legs =
+  `<g stroke="${C.leg}" stroke-width="0.5" fill="none" stroke-linecap="round">` +
+  `<path d="M-4.2 2.0 C -6.0 3.4 -7.6 4.6 -8.8 6.4"/>` +
+  `<path d="M-3.0 2.5 C -4.6 4.3 -5.8 5.8 -6.6 7.4"/>` +
+  `<path d="M-1.4 2.6 C -2.4 4.5 -3.2 6.1 -3.6 7.6"/></g>` +
+  `<g stroke="${C.leg}" stroke-width="0.28" stroke-linecap="round" opacity=".8">` +
+  `<path d="M-6.9 4.6 l-0.9 0.5 M-7.9 5.6 l-0.9 0.4 M-5.3 5.4 l-0.8 0.5 M-6.1 6.3 l-0.8 0.4 M-2.7 5.2 l-0.7 0.5 M-3.2 6.4 l-0.7 0.4"/></g>`;
+
+function head(tilt) {
+  return g(rot(tilt || 0, -5.2, 0),
+    `<ellipse cx="-6.6" cy="-0.5" rx="2.2" ry="1.8" fill="${C.eyeDk}" opacity=".8"/>` +
+    `<ellipse cx="-8.0" cy="0.0" rx="2.9" ry="2.4" fill="${C.eye}"/>` +
+    `<path d="M-10.9 0.2 A2.9 2.4 0 0 0 -5.4 0.6 C -6.3 1.8 -7.3 2.4 -8.5 2.4 C -10.1 2.35 -11.0 1.4 -10.9 0.2 Z" fill="${C.eyeDk}" opacity=".7"/>` +
+    `<path d="M-10.6 1.1 C -11.4 1.3 -11.6 2.0 -10.9 2.4 C -10.4 2.0 -10.4 1.5 -10.6 1.1 Z" fill="#B7C9B0"/>` +
+    `<ellipse cx="-9.1" cy="-1.1" rx="1.2" ry="0.85" fill="${C.eyeHi}" opacity=".55" transform="rotate(-18 -9.1 -1.1)"/>` +
+    `<circle cx="-9.6" cy="-1.4" r=".42" fill="#fff" opacity=".85"/>`);
+}
+
+// P.wSweep = blade angle (deg); flying blurs opacity via P.fly
+function sprite(P) {
+  const sw = P.wSweep, fly = P.fly || 0;
+  const opF = 0.6 - 0.18 * fly, opN = 0.7 - 0.2 * fly;
+  const far = wing(-2.4, -2.1, sw - 4, 12.8, 3.3, opF);
+  const near = wing(-2.4, -2.3, sw + 2, 13.4, 3.5, opN);
+  return far + legs + abdomen(P.abdA) + thorax + head(P.headA) + near;
+}
+
+function draw(P) {
+  const dx = P.dx || 0, dy = P.dy || 0;
+  let s = P.ticks || '';
+  if (P.grounded) s += shadow(dx + 2, GY, 7, Math.max(0, 4 - dy), 16);
+  return s + g(trl(dx, dy) + ' ' + rot(P.pitch || 0, 0, 0), g('scale(-1 1)', sprite(P)));
+}
+
+return {
+  id: 'demoiselle', view: [-28, -22, 58, 42], groundY: GY,
+  thumb: { m: 'perch', t: 0.05 },
+  motions: [
+    { id: 'perch', label: 'Perch', short: 'Perch', dur: 4.0, env: { t: 'reed', x: 10, y: -6 }, speed: '0 km/h', beat: 'Wings shut · flick',
+      desc: 'At rest the demoiselle does what no true dragonfly can: it shuts all four wings together over its back, the dark bands stacked into one bold mark.',
+      anim: 'The signature is the closed-wing silhouette. Sell life with a slow half-open flick of the wings and a metallic body that never quite holds still.' },
+    { id: 'flutter', label: 'Flutter', short: 'Flutter', dur: 1.0, env: { t: 'water', y: 6 }, speed: '~5 km/h', beat: 'Weak clap · bob',
+      desc: 'A famously feeble flier — it flutters low over the water on soft, butterfly-slow wingbeats, the body rising and falling with every clap.',
+      anim: 'Nothing crisp here. Deep, lazy open-and-close beats, a heavy vertical bob, and a path that drifts and sags between beats.' },
+    { id: 'display', label: 'Courtship flutter', short: 'Display', dur: 1.6, env: { t: 'water', y: 6 }, speed: '0 km/h · hovering', beat: 'Show the bands',
+      desc: 'The male\u2019s courtship: a hovering, quivering flutter before a watching female, the banded wings flashing open and shut to show their colour.',
+      anim: 'Exaggerate the wing-clap and slow it down; hold the body almost in place with a fine quiver, and let the open pose linger to flash the bands.' }
+    ,{ id: 'roost', label: 'Roost', short: 'Roost', dur: 6, env: { t: 'reed', x: 10, y: -6 }, night: true, speed: '0 km/h', beat: 'Wings stacked shut · still',
+      desc: 'All four wings stacked shut over the back on a bankside reed, the dark bands aligned into one still mark against the night water.',
+      anim: 'Fold the wings to their tightest and stop everything; the metallic body may glint but must not move.' }
+  ],
+  render(mid, t) {
+    t = wrap(t);
+    if (mid === 'roost') {
+      return draw({ grounded: false, dy: 0, wSweep: -86 + 2 * Math.sin(TAU * t), headA: 1.2 * Math.sin(TAU * t * 0.5), abdA: 0.6 * Math.sin(TAU * t) });
+    }
+    if (mid === 'flutter') {
+      const clap = 0.5 - 0.5 * Math.cos(TAU * t * 3);
+      return draw({
+        fly: 1, wSweep: -74 + 60 * clap,
+        dx: 4 * osc(t, 1, .02), dy: -3.2 * osc(t, 3, .1) - 1.2 * osc(t, 1, .3),
+        pitch: 6 * osc(t, 1, .35), abdA: 3 * osc(t, 1, .2),
+        ticks: rippleTicks(t, { y: 6, x1: -25, x2: 27, v: 12, n: 5, s: 1 })
+      });
+    }
+    if (mid === 'display') {
+      const clap = 0.5 - 0.5 * Math.cos(TAU * t * 2);
+      return draw({
+        fly: 1, wSweep: -78 + 66 * clap,
+        dx: 1.2 * osc(t, 1, .1), dy: -1.4 - 1.0 * osc(t, 2, .1) + 0.4 * Math.sin(TAU * t * 14),
+        pitch: 3 * osc(t, 2, .3), headA: 2 * osc(t, 3, .2), abdA: 1.6 * osc(t, 2, .15),
+        ticks: rippleTicks(t, { y: 6, x1: -25, x2: 27, v: 4, n: 5, s: 1 })
+      });
+    }
+    // perch — wings shut over the back
+    const flick = pulse(t, .40, .52);
+    return draw({
+      grounded: false, dy: 0,
+      wSweep: -54 + 20 * flick,
+      headA: 6 * pulse(t, .14, .26) - 5 * pulse(t, .66, .78),
+      abdA: 1.2 * pulse(t, .82, .94) + 0.5 * osc(t, 1, .1)
     });
   }
 };
@@ -2051,8 +3367,6 @@ return {
 })();
 __REG["bee"] = (function(){
 // Honeybee — fable style (side profile, faces right)
-
-
 const C = { gold: '#FFC93C', shade: '#F2A82E', stripe: '#33304A', fuzz: '#E8A63A', head: '#33304A', wing: '#EAF4FF', eye: '#211F30' };
 
 // wings attach at thorax top (~1.5,-3); sweep back-up, flap by rotation at the root
@@ -2110,9 +3424,15 @@ return {
     { id: 'waggle', label: 'Waggle dance', short: 'Waggle', dur: 2.6, env: { t: 'air' }, speed: '0 km/h', beat: 'Waggle run · circle back',
       desc: 'The famous figure-of-eight: a straight run danced at a waggle, then a loop back to start it again — a map drawn in motion.',
       anim: 'The waggle is a violent 13-per-second shimmy strictly on the straight run; the return loops are calm. Alternate loop sides.' }
+    ,{ id: 'roost', label: 'Roost', short: 'Roost', dur: 5.5, env: { t: 'reed', x: -12, y: -10 }, night: true, speed: '0 km/h', beat: 'Gripped · hanging',
+      desc: 'Gripped to a stem with its jaws in the cool of the night, legs loose, antennae drooping, wings laid flat along the back.',
+      anim: 'Let the whole body hang heavy from the grip; the antennae sag and only a slow breath stirs the fuzz.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'roost') {
+      return draw({ dx: -6, dy: -2, pitch: -22, wA: 0, wB: 0, legS: -6, antA: -14 + 2 * Math.sin(TAU * t * 0.5) });
+    }
     if (mid === 'patrol') {
       const vx = Math.cos(TAU * t); // d/dt of the dx sweep
       return draw({
@@ -2155,8 +3475,6 @@ return {
 })();
 __REG["ladybug"] = (function(){
 // Seven-spot Ladybird — fable style (side view)
-
-
 const C = { red: '#CF473D', rim: '#B23A32', seam: '#7E2A24', black: '#2A2326', hind: '#B9C4CC', cream: '#FBF7F2' };
 const GY = 10.5;
 
@@ -2219,9 +3537,15 @@ return {
     { id: 'fly', label: 'Fly', short: 'Fly', dur: 0.9, env: { t: 'air' }, speed: '~8 km/h', beat: 'Cases high · gauze blur',
       desc: 'In the air the red cases stand up like little doors while the true wings do all the whirring work below.',
       anim: 'Keep the raised cases rock-steady — only the gauze wings blur. The heavy dome swings pendulum-fashion under the lift.' }
+    ,{ id: 'rest', label: 'Rest', short: 'Rest', dur: 6, env: { t: 'ground' }, night: true, speed: '0 km/h', beat: 'Clamped · still',
+      desc: 'Clamped down on a leaf for the night, legs and antennae drawn in, the red dome shut tight over the folded wings beneath.',
+      anim: 'A still red button — legs tucked away, nothing moving. Let one antenna twitch once, then stop.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'rest') {
+      return draw({ grounded: true, eA: 0, hw: 0, legsTuck: true, antA: -6 + 1.5 * pulse(t, .5, .56), tilt: 0, dy: 0 });
+    }
     if (mid === 'check') {
       const K = keys(t, [
         [0.00, { eA: 0, hw: 0 }],
@@ -2261,8 +3585,6 @@ return {
 })();
 __REG["frog"] = (function(){
 // Common Frog — fable style (front view)
-
-
 const C = { deep: '#5A9447', mid: '#6FB05A', light: '#7FBF68', dark: '#4E8240', mouth: '#3F6E34', eye: '#2A2326', throat: '#D8E8B8' };
 const GY = 9.5;
 
@@ -2332,9 +3654,15 @@ return {
     { id: 'swim', label: 'Swim', short: 'Swim', dur: 1.6, env: { t: 'water', y: 5 }, speed: '~2 km/h', beat: 'Kick · glide',
       desc: 'A frog swims like it jumps, underwater: one simultaneous kick of both hind legs, then a long folded glide.',
       anim: 'Kick in two frames, glide in twenty. The legs recover slowly and stay folded until the glide has fully died.' }
+    ,{ id: 'rest', label: 'Rest', short: 'Rest', dur: 6, env: { t: 'ground' }, night: false, speed: '0 km/h', beat: 'Tucked · throat 2/s',
+      desc: 'Tucked down into a squat parcel by day, limbs folded under, the eyes lidded to slits and only the throat softly working.',
+      anim: 'Everything held; the slow throat-pulse and the closed lids carry it. A rare, heavy half-blink is the only event.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'rest') {
+      return draw({ grounded: true, sy: 1 + 0.014 * osc(t, 2), sx: 1 - 0.008 * osc(t, 2), throat: 0.18 + 0.05 * Math.abs(osc(t, 4)), blink: 1, legA: 0, lookX: 0 });
+    }
     if (mid === 'hop') {
       const K = keys(t, [
         [0.00, { dy: 0, sx: 1, sy: 1, legA: 0 }],
@@ -2400,8 +3728,6 @@ function wins(t, a, b) { const p = Math.min(1, Math.max(0, (t - a) / (b - a))); 
 })();
 __REG["turtle"] = (function(){
 // European Pond Turtle — fable style
-
-
 const C = { shell: '#97A968', rim: '#7C8F53', skin: '#A4B86B', skinD: '#8FA35D', hi: '#C2CE8F', eye: '#2A2326' };
 const GY = 12.3;
 
@@ -2460,9 +3786,15 @@ return {
     { id: 'bask', label: 'Bask', short: 'Bask', dur: 4.6, env: { t: 'ground' }, speed: '0 km/h', beat: 'Neck out · sun-still',
       desc: 'Flat rock, full sun: neck stretched to its whole length, eyes closing by degrees — a stone that breathes.',
       anim: 'Stretch the neck a shade further than anatomy suggests and let the blinks get slower and heavier as the loop runs.' }
+    ,{ id: 'rest', label: 'Rest', short: 'Rest', dur: 6.5, env: { t: 'ground' }, night: true, speed: '0 km/h', beat: 'Withdrawn · still',
+      desc: 'Head, legs and tail drawn into the shell and settled for the night — a smooth stone that will move again by morning.',
+      anim: 'The shell simply sits; a breath of drift and the faintest rock are all that separate sleep from stone.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'rest') {
+      return draw({ grounded: true, headT: 0.92, legTuck: 0.92, headA: 0, tailA: 0, pitch: 0.4 * Math.sin(TAU * t), blink: 1 });
+    }
     if (mid === 'swim') {
       return draw({
         pitch: -7 + 1.5 * osc(t, 1, .3), dy: -1.6 * osc(t, 1, .25),
@@ -2513,8 +3845,6 @@ return {
 })();
 __REG["fish"] = (function(){
 // Roach (river fish) — fable style
-
-
 const C = { body: '#5BA6BE', deep: '#4F91A8', dark: '#3E7E94', belly: '#CFE9F5', eye: '#2A2326' };
 const WATER = -16;
 
@@ -2569,9 +3899,15 @@ return {
     { id: 'gulp', label: 'Rise & gulp', short: 'Gulp', dur: 3.2, env: { t: 'water', y: -16 }, speed: '~0 km/h', beat: 'Tilt · sip · sink',
       desc: 'Something small lands on the ceiling of the world; the fish tilts up, sips it from the surface, and sinks away.',
       anim: 'Approach the surface slowly, kiss it with an O of a mouth and one ring of ripple, then fall away with a single tail-stroke.' }
+    ,{ id: 'rest', label: 'Rest', short: 'Rest', dur: 6, env: { t: 'water', y: -16 }, night: true, speed: '0 km/h', beat: 'Hovering · fins idle',
+      desc: 'Hanging near the river bed in the dark, fins barely sculling, the silver body held almost still — its eyes, as ever, open.',
+      anim: 'Near-total stillness: a whisper of tail and fin to hold station, the body hovering level in the slow current.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'rest') {
+      return draw({ tailA: 2 * osc(t, 1, 0), finA: 3 * osc(t, 1, .2), dy: -0.6 * osc(t, 1, .1), pitch: 1 * osc(t, 1, .3), ticks: rippleTicks(t, { y: WATER, x1: -30, x2: 33, v: 3, n: 5, s: 1, tone: '#8FA9B4' }) });
+    }
     if (mid === 'dart') {
       const K = keys(t, [
         [0.00, { dx: -6, tailA: 0, pitch: 0 }],
@@ -2621,8 +3957,6 @@ return {
 })();
 __REG["snail"] = (function(){
 // Garden Snail — fable style
-
-
 const C = { skin: '#D8C6AE', skinD: '#CDBBA0', line: '#B7A488', shell: '#C99A5A', rim: '#B0844A', spiral: '#A87B3E', eye: '#2A2326' };
 const GY = 9.4;
 
@@ -2670,9 +4004,15 @@ return {
     { id: 'hide', label: 'Hide', short: 'Hide', dur: 4.6, env: { t: 'ground' }, speed: '0 km/h', beat: 'Pour in → wait → pour out',
       desc: 'Real trouble, and the snail pours itself backwards into the spiral until only the front door of foot remains.',
       anim: 'The body funnels in like water down a drain, shell settling as the weight arrives. Re-emergence is twice as slow, stalks last.' }
+    ,{ id: 'rest', label: 'Rest', short: 'Rest', dur: 6.5, env: { t: 'ground' }, night: false, speed: '0 km/h', beat: 'Sealed in · still',
+      desc: 'Withdrawn deep into the spiral by day and sealed behind the foot — the whole animal put away as a stone with a door.',
+      anim: 'No motion at all — the pose IS the sleep. Only the shell’s sheen tells it apart from a pebble.' }
   ],
   render(mid, t) {
     t = wrap(t);
+    if (mid === 'rest') {
+      return draw({ bodyS: 1, stalkA: 0.06, stalkB: 0.06, shellA: 0, neckA: 0 });
+    }
     if (mid === 'peek') {
       const K = keys(t, [
         [0.00, { stalkA: 1, stalkB: 1 }],
@@ -2716,331 +4056,6 @@ return {
   }
 };
 
-})();
-
-// ── butterfly variety (Motion Atlas fable5 pack, 2026-07-08): swallowtail / common blue / peacock ──
-__REG["swallowtail"] = (function(){
-// Swallowtail — fable style (front view: cream-yellow wings, dark tip bands + veins, blue lunules, red eyespots, tailed hindwings)
-
-const C = { yellow: '#E8CF7E', dark: '#3A3440', blue: '#7BA0C9', red: '#D2503E', body: '#2A2530', pale: '#FBF7F2' };
-const GY = 8.5;
-
-const fold = a => Math.max(0.12, Math.cos(Math.min(88, Math.abs(a)) * Math.PI / 180));
-
-const wingL = a => g(scl(fold(a), 1, -1, 0) + ' ' + rot(a * 0.55, -1, -2),
-  `<path d="M-0.8 -4.6 C -4.6 -7.6 -9.4 -12.1 -13.8 -14.9 L-16.3 -10.3 C -15.1 -6.3 -11.5 -3.1 -7.4 -1.8 C -4.4 -0.9 -1.8 -1.8 -0.8 -3.2 Z" fill="${C.yellow}"/>` +
-  `<path d="M-13.8 -14.9 L-16.3 -10.3 C -15.7 -8.4 -14.7 -6.7 -13.4 -5.3 C -14 -8 -14.2 -10.9 -12.6 -13.9 Z" fill="${C.dark}" opacity=".92"/>` +
-  `<path d="M-2.2 -4.2 C -5.2 -6.2 -8.2 -8.8 -11.2 -11.6 M-3.4 -3.2 C -6.6 -4.7 -9.6 -6.7 -12.4 -9 M-5 -2.4 C -7.8 -3.4 -10.4 -4.9 -12.6 -6.7" stroke="${C.dark}" stroke-width=".55" fill="none" opacity=".7" stroke-linecap="round"/>` +
-  `<path d="M-1 -1 C -4 0 -8.5 1.5 -9.5 5.5 C -10 8.4 -7.8 10.2 -4.8 9.2 C -2.4 8.4 -1 5.8 -0.6 3 Z" fill="${C.yellow}"/>` +
-  `<path d="M-9.1 5.7 C -8.7 8.1 -6.7 9.3 -4.7 8.7 C -3 8.1 -1.8 6.6 -1.2 4.5" stroke="${C.dark}" stroke-width="2.3" fill="none" stroke-linecap="round"/>` +
-  `<circle cx="-7.6" cy="7.3" r=".62" fill="${C.blue}"/><circle cx="-5.4" cy="8.1" r=".62" fill="${C.blue}"/><circle cx="-3.3" cy="7.4" r=".62" fill="${C.blue}"/>` +
-  `<circle cx="-1.7" cy="5.2" r=".85" fill="${C.red}"/><circle cx="-1.7" cy="5.2" r=".32" fill="${C.dark}" opacity=".7"/>` +
-  `<path d="M-5.9 8.3 C -6.1 9.5 -6.6 10.4 -7.4 11.2 C -7.7 10.2 -7.3 9.2 -6.5 8 Z" fill="${C.dark}"/>`);
-
-const wingR = a => g(scl(fold(a), 1, 1, 0) + ' ' + rot(-a * 0.55, 1, -2),
-  `<path d="M0.8 -4.6 C 4.6 -7.6 9.4 -12.1 13.8 -14.9 L16.3 -10.3 C 15.1 -6.3 11.5 -3.1 7.4 -1.8 C 4.4 -0.9 1.8 -1.8 0.8 -3.2 Z" fill="${C.yellow}"/>` +
-  `<path d="M13.8 -14.9 L16.3 -10.3 C 15.7 -8.4 14.7 -6.7 13.4 -5.3 C 14 -8 14.2 -10.9 12.6 -13.9 Z" fill="${C.dark}" opacity=".92"/>` +
-  `<path d="M2.2 -4.2 C 5.2 -6.2 8.2 -8.8 11.2 -11.6 M3.4 -3.2 C 6.6 -4.7 9.6 -6.7 12.4 -9 M5 -2.4 C 7.8 -3.4 10.4 -4.9 12.6 -6.7" stroke="${C.dark}" stroke-width=".55" fill="none" opacity=".7" stroke-linecap="round"/>` +
-  `<path d="M1 -1 C 4 0 8.5 1.5 9.5 5.5 C 10 8.4 7.8 10.2 4.8 9.2 C 2.4 8.4 1 5.8 0.6 3 Z" fill="${C.yellow}"/>` +
-  `<path d="M9.1 5.7 C 8.7 8.1 6.7 9.3 4.7 8.7 C 3 8.1 1.8 6.6 1.2 4.5" stroke="${C.dark}" stroke-width="2.3" fill="none" stroke-linecap="round"/>` +
-  `<circle cx="7.6" cy="7.3" r=".62" fill="${C.blue}"/><circle cx="5.4" cy="8.1" r=".62" fill="${C.blue}"/><circle cx="3.3" cy="7.4" r=".62" fill="${C.blue}"/>` +
-  `<circle cx="1.7" cy="5.2" r=".85" fill="${C.red}"/><circle cx="1.7" cy="5.2" r=".32" fill="${C.dark}" opacity=".7"/>` +
-  `<path d="M5.9 8.3 C 6.1 9.5 6.6 10.4 7.4 11.2 C 7.7 10.2 7.3 9.2 6.5 8 Z" fill="${C.dark}"/>`);
-
-// P: wA (0 open → 62 closed-up), antA
-const bfly = P =>
-  wingL(P.wA || 0) + wingR(P.wA || 0) +
-  `<path d="M0 -7.5 C 1.5 -7.5 2 -5.5 2 -3 C 2 0.5 1.4 5 0 7 C -1.4 5 -2 0.5 -2 -3 C -2 -5.5 -1.5 -7.5 0 -7.5 Z" fill="${C.body}"/>` +
-  `<ellipse cx="0" cy="-5.6" rx=".5" ry="2.6" fill="${C.yellow}" opacity=".4"/>` +
-  `<circle cx="0" cy="-7.6" r="1.7" fill="${C.body}"/>` +
-  `<circle cx="-0.5" cy="-8.1" r=".45" fill="${C.pale}" opacity=".6"/>` +
-  g(rot(P.antA || 0, 0, -8.6),
-    `<path d="M-0.8 -8.6 C -2.4 -11.5 -3.6 -13 -4.8 -13.8 M0.8 -8.6 C 2.4 -11.5 3.6 -13 4.8 -13.8" stroke="${C.body}" stroke-width=".9" fill="none" stroke-linecap="round"/>` +
-    `<circle cx="-4.8" cy="-13.8" r="1" fill="${C.body}"/><circle cx="4.8" cy="-13.8" r="1" fill="${C.body}"/>`);
-
-function draw(P) {
-  const dx = P.dx || 0, dy = P.dy || 0;
-  let s = P.ticks || '';
-  if (P.grounded) s += shadow(dx, GY + 0.8, 9, Math.max(0, -dy), 12);
-  return s + g(trl(dx, dy) + ' ' + rot(P.roll || 0, 0, 0), bfly(P));
-}
-
-return {
-  id: 'swallowtail', view: [-30, -26, 62, 44], groundY: GY,
-  thumb: { m: 'bask', t: 0.3 },
-  motions: [
-    { id: 'bask', label: 'Bask', short: 'Bask', dur: 3.8, env: { t: 'ground' }, speed: '0 km/h', beat: 'Open · tremble · hold',
-      desc: 'Wings spread wide to the sun, the twin tails just clearing the grass — held open far longer than the red admiral would dare.',
-      anim: 'Live in the open pose: a fine tremble at the wingtips, antennae always moving. Close once, decisively, and reopen at leisure.' },
-    { id: 'flit', label: 'Flit', short: 'Flit', dur: 0.62, env: { t: 'air' }, speed: '~14 km/h', beat: 'Deep strokes · lift',
-      desc: 'Big, deep wingbeats for a big butterfly — each stroke hoists the body a full length before the long sail downhill.',
-      anim: 'Fewer, deeper beats than any smaller butterfly. Let the body swing beneath the wings like cargo on a crane.' },
-    { id: 'nectar', label: 'Feed on the wing', short: 'Nectar', dur: 1.15, env: { t: 'reed', x: 11, y: -6 }, speed: '0 km/h · hovering', beat: 'Beats while feeding',
-      desc: 'Its signature habit: it never quite settles at the flower, but keeps the wings beating and merely touches down with its forefeet.',
-      anim: 'Constant shallow wingbeats with a soft vertical bob. The hold is never still — drift the body on a slow figure the wings must correct.' }
-  ],
-  render(mid, t) {
-    t = wrap(t);
-    if (mid === 'flit') {
-      const flap = osc(t, 2, 0);
-      return draw({
-        wA: 30 + 34 * flap,
-        dy: -4.2 * osc(t, 1, .3) - 1.4 * osc(t, 2, .1), dx: 3 * osc(t, 1, .04),
-        roll: 8 * osc(t, 1, .42), antA: 3 * osc(t, 2, .3),
-        ticks: airTicks(t, { x1: -27, x2: 29, y: -16, h: 14, v: 30, n: 4, s: 1.05 })
-      });
-    }
-    if (mid === 'nectar') {
-      return draw({
-        wA: 30 + 15 * osc(t, 7, 0),
-        dy: -2 - 1.1 * osc(t, 2, .15) - 0.5 * osc(t, 7, .25),
-        dx: 2 + 1.4 * osc(t, 1, .05),
-        roll: 4 * osc(t, 1, .35) + 2 * osc(t, 2, .6),
-        antA: 3 * osc(t, 3, .2)
-      });
-    }
-    // bask
-    const K = keys(t, [
-      [0.00, { wA: 3 }],
-      [0.44, { wA: 3 }],
-      [0.52, { wA: 60 }],
-      [0.62, { wA: 60 }],
-      [0.70, { wA: -4 }],
-      [0.76, { wA: 3 }],
-      [1.00, { wA: 3 }]
-    ]);
-    K.wA += 2 * osc(t, 6, .15) * (K.wA > 30 ? 0.5 : 1);
-    K.grounded = true;
-    K.dy = -0.8;
-    K.antA = 4 * osc(t, 3, .1);
-    return draw(K);
-  }
-};
-})();
-
-__REG["commonblue"] = (function(){
-// Common Blue — fable style (front view: male's lilac-blue wings, dark rim, white fringe, orange marginal lunules)
-
-const C = { blue: '#6E86D8', blue2: '#5A70C4', edge: '#3A3440', fringe: '#FBF7F2', orange: '#D98A3E', spot: '#2A2530', body: '#2A2530', pale: '#FBF7F2' };
-const GY = 8.5;
-
-const fold = a => Math.max(0.12, Math.cos(Math.min(88, Math.abs(a)) * Math.PI / 180));
-
-const wingL = a => g(scl(fold(a), 1, -1, 0) + ' ' + rot(a * 0.55, -1, -2),
-  `<path d="M-0.8 -4.6 C -4.6 -7.6 -9.4 -12.1 -13.8 -14.9 L-16.3 -10.3 C -15.1 -6.3 -11.5 -3.1 -7.4 -1.8 C -4.4 -0.9 -1.8 -1.8 -0.8 -3.2 Z" fill="${C.blue}"/>` +
-  `<path d="M-1.2 -3.6 C -4.8 -5.6 -8.8 -8.6 -12.4 -11.8" stroke="${C.blue2}" stroke-width="1.3" fill="none" opacity=".55" stroke-linecap="round"/>` +
-  `<path d="M-13.8 -14.9 L-16.3 -10.3 C -15.1 -6.3 -11.5 -3.1 -7.4 -1.8" stroke="${C.edge}" stroke-width="1" fill="none" stroke-linecap="round"/>` +
-  `<circle cx="-15.5" cy="-10.7" r=".4" fill="${C.fringe}"/><circle cx="-13.3" cy="-6.3" r=".4" fill="${C.fringe}"/><circle cx="-10.2" cy="-3.3" r=".4" fill="${C.fringe}"/>` +
-  `<path d="M-1 -1 C -4 0 -8.5 1.5 -9.5 5.5 C -10 8.4 -7.8 10.2 -4.8 9.2 C -2.4 8.4 -1 5.8 -0.6 3 Z" fill="${C.blue}"/>` +
-  `<path d="M-9.5 5.5 C -10 8.4 -7.8 10.2 -4.8 9.2 C -2.4 8.4 -1 5.8 -0.6 3" stroke="${C.edge}" stroke-width=".9" fill="none" stroke-linecap="round"/>` +
-  `<circle cx="-7.3" cy="7.7" r=".55" fill="${C.orange}"/><circle cx="-5.2" cy="8.4" r=".55" fill="${C.orange}"/>` +
-  `<circle cx="-7.3" cy="8.7" r=".34" fill="${C.spot}"/><circle cx="-5.2" cy="9.4" r=".34" fill="${C.spot}"/>` +
-  `<circle cx="-8.7" cy="7" r=".36" fill="${C.fringe}"/><circle cx="-3.2" cy="8.9" r=".36" fill="${C.fringe}"/>`);
-
-const wingR = a => g(scl(fold(a), 1, 1, 0) + ' ' + rot(-a * 0.55, 1, -2),
-  `<path d="M0.8 -4.6 C 4.6 -7.6 9.4 -12.1 13.8 -14.9 L16.3 -10.3 C 15.1 -6.3 11.5 -3.1 7.4 -1.8 C 4.4 -0.9 1.8 -1.8 0.8 -3.2 Z" fill="${C.blue}"/>` +
-  `<path d="M1.2 -3.6 C 4.8 -5.6 8.8 -8.6 12.4 -11.8" stroke="${C.blue2}" stroke-width="1.3" fill="none" opacity=".55" stroke-linecap="round"/>` +
-  `<path d="M13.8 -14.9 L16.3 -10.3 C 15.1 -6.3 11.5 -3.1 7.4 -1.8" stroke="${C.edge}" stroke-width="1" fill="none" stroke-linecap="round"/>` +
-  `<circle cx="15.5" cy="-10.7" r=".4" fill="${C.fringe}"/><circle cx="13.3" cy="-6.3" r=".4" fill="${C.fringe}"/><circle cx="10.2" cy="-3.3" r=".4" fill="${C.fringe}"/>` +
-  `<path d="M1 -1 C 4 0 8.5 1.5 9.5 5.5 C 10 8.4 7.8 10.2 4.8 9.2 C 2.4 8.4 1 5.8 0.6 3 Z" fill="${C.blue}"/>` +
-  `<path d="M9.5 5.5 C 10 8.4 7.8 10.2 4.8 9.2 C 2.4 8.4 1 5.8 0.6 3" stroke="${C.edge}" stroke-width=".9" fill="none" stroke-linecap="round"/>` +
-  `<circle cx="7.3" cy="7.7" r=".55" fill="${C.orange}"/><circle cx="5.2" cy="8.4" r=".55" fill="${C.orange}"/>` +
-  `<circle cx="7.3" cy="8.7" r=".34" fill="${C.spot}"/><circle cx="5.2" cy="9.4" r=".34" fill="${C.spot}"/>` +
-  `<circle cx="8.7" cy="7" r=".36" fill="${C.fringe}"/><circle cx="3.2" cy="8.9" r=".36" fill="${C.fringe}"/>`);
-
-// P: wA (0 open → 60 closed-up), antA
-const bfly = P =>
-  wingL(P.wA || 0) + wingR(P.wA || 0) +
-  `<path d="M0 -6.6 C 1.3 -6.6 1.7 -4.9 1.7 -2.7 C 1.7 0.4 1.2 4.4 0 6.2 C -1.2 4.4 -1.7 0.4 -1.7 -2.7 C -1.7 -4.9 -1.3 -6.6 0 -6.6 Z" fill="${C.body}"/>` +
-  `<ellipse cx="0" cy="-4.9" rx=".45" ry="2.3" fill="${C.blue}" opacity=".3"/>` +
-  `<circle cx="0" cy="-6.7" r="1.5" fill="${C.body}"/>` +
-  `<circle cx="-0.45" cy="-7.1" r=".4" fill="${C.pale}" opacity=".6"/>` +
-  g(rot(P.antA || 0, 0, -7.6),
-    `<path d="M-0.7 -7.6 C -2 -10.2 -3.1 -11.6 -4.2 -12.3 M0.7 -7.6 C 2 -10.2 3.1 -11.6 4.2 -12.3" stroke="${C.body}" stroke-width=".8" fill="none" stroke-linecap="round"/>` +
-    `<circle cx="-4.2" cy="-12.3" r=".9" fill="${C.pale}"/><circle cx="4.2" cy="-12.3" r=".9" fill="${C.pale}"/>` +
-    `<circle cx="-4.2" cy="-12.3" r=".9" fill="none" stroke="${C.body}" stroke-width=".4"/><circle cx="4.2" cy="-12.3" r=".9" fill="none" stroke="${C.body}" stroke-width=".4"/>`);
-
-function draw(P) {
-  const s0 = P.scale || 0.82;
-  const dx = P.dx || 0, dy = P.dy || 0;
-  let s = P.ticks || '';
-  if (P.grounded) s += shadow(dx, GY + 0.8, 7, Math.max(0, -dy), 12);
-  return s + g(trl(dx, dy) + ' ' + scl(s0, s0, 0, 0) + ' ' + rot(P.roll || 0, 0, 0), bfly(P));
-}
-
-return {
-  id: 'commonblue', view: [-26, -24, 52, 40], groundY: GY,
-  thumb: { m: 'bask', t: 0.5 },
-  motions: [
-    { id: 'bask', label: 'Bask', short: 'Bask', dur: 3.0, env: { t: 'ground' }, speed: '0 km/h', beat: 'Half-open · tremble',
-      desc: 'A thumbnail of sky held half-cocked to catch the low morning sun, wings quivering, rarely laid fully flat.',
-      anim: 'Keep the wings around a third open and alive with a fine tremble — a small butterfly never quite goes still. Antennae always working.' },
-    { id: 'flit', label: 'Flit', short: 'Flit', dur: 0.46, env: { t: 'air' }, speed: '~7 km/h', beat: 'Fast shallow flicks',
-      desc: 'Quick, low and restless, threading a wandering line a hand\u2019s breadth above the grass heads and never for long.',
-      anim: 'Fast, shallow beats — faster than any larger butterfly here. Keep it low, keep it wandering, and let the light body jitter.' },
-    { id: 'settle', label: 'Settle to feed', short: 'Settle', dur: 1.1, env: { t: 'reed', x: 9, y: -4 }, speed: '0 km/h', beat: 'Land · fold · sip',
-      desc: 'It drops onto a flower head, closes the wings up over its back, and feeds — the blue put away, only the freckled underside showing.',
-      anim: 'Arrive with a last flick, then fold the wings up and hold near-closed with a slow breathing sway. A tiny settle-bob on landing.' }
-  ],
-  render(mid, t) {
-    t = wrap(t);
-    if (mid === 'flit') {
-      const flap = osc(t, 2, 0);
-      return draw({
-        wA: 26 + 30 * flap,
-        dy: -2.4 * osc(t, 1, .28) - 1 * osc(t, 2, .1), dx: 2.2 * osc(t, 1, .05),
-        roll: 9 * osc(t, 1, .4), antA: 3 * osc(t, 2, .3),
-        ticks: airTicks(t, { x1: -23, x2: 25, y: -14, h: 12, v: 34, n: 4, s: .9 })
-      });
-    }
-    if (mid === 'settle') {
-      const land = keys(t, [
-        [0.00, { wA: 40 }],
-        [0.16, { wA: 20 }],
-        [0.30, { wA: 58 }],
-        [1.00, { wA: 58 }]
-      ]);
-      land.wA += 3 * osc(t, 3, .1) * (t > 0.32 ? 1 : 0);
-      land.dy = -1.4 - 0.6 * osc(t, 1.5, .2) - 1.2 * pulse(t, 0.16, 0.34);
-      land.antA = 3 * osc(t, 3, .2);
-      return draw(land);
-    }
-    // bask — held part-open, trembling
-    const K = keys(t, [
-      [0.00, { wA: 34 }],
-      [0.40, { wA: 34 }],
-      [0.50, { wA: 8 }],
-      [0.58, { wA: 34 }],
-      [1.00, { wA: 34 }]
-    ]);
-    K.wA += 2.6 * osc(t, 7, .15);
-    K.grounded = true;
-    K.dy = -0.6;
-    K.antA = 4.5 * osc(t, 3.5, .1);
-    return draw(K);
-  }
-};
-})();
-
-__REG["peacock"] = (function(){
-// Peacock — fable style (front view: rust-red wings with the four blue-and-black eyespots)
-
-const C = { red: '#A83A2A', red2: '#872E20', dark: '#2A2530', blue: '#5F7CB8', pale: '#FBF7F2', cream: '#EAD9B0', body: '#2A2530' };
-const GY = 8.5;
-
-const fold = a => Math.max(0.12, Math.cos(Math.min(88, Math.abs(a)) * Math.PI / 180));
-
-const wingL = a => g(scl(fold(a), 1, -1, 0) + ' ' + rot(a * 0.55, -1, -2),
-  `<path d="M-0.8 -4.6 C -4.6 -7.6 -9.4 -12.1 -13.8 -14.9 L-16.3 -10.3 C -15.1 -6.3 -11.5 -3.1 -7.4 -1.8 C -4.4 -0.9 -1.8 -1.8 -0.8 -3.2 Z" fill="${C.red}"/>` +
-  `<path d="M-0.8 -4.6 C -4.6 -7.6 -9.4 -12.1 -13.8 -14.9 L-14.7 -13.1 C -10.2 -10.6 -5.4 -7.1 -1.7 -4.2 Z" fill="${C.red2}"/>` +
-  `<path d="M-13.9 -14.6 C -11.4 -13.3 -9.9 -11.3 -9.9 -8.9 C -11.9 -9 -14 -10.3 -15.3 -12.3 Z" fill="${C.cream}"/>` +
-  `<circle cx="-12.5" cy="-11.6" r="1.75" fill="${C.dark}"/>` +
-  `<circle cx="-13.1" cy="-12.3" r=".78" fill="${C.blue}"/><circle cx="-11.7" cy="-10.7" r=".5" fill="${C.blue}"/>` +
-  `<path d="M-1 -1 C -4 0 -8.5 1.5 -9.5 5.5 C -10 8.4 -7.8 10.2 -4.8 9.2 C -2.4 8.4 -1 5.8 -0.6 3 Z" fill="${C.red}"/>` +
-  `<path d="M-1 -1 C -3.1 -0.2 -5.6 0.7 -7.1 2.5 C -5 3.1 -2.6 2.7 -0.8 2 Z" fill="${C.red2}" opacity=".8"/>` +
-  `<circle cx="-6.3" cy="6.2" r="2.35" fill="${C.dark}"/>` +
-  `<circle cx="-6.3" cy="6.2" r="1.4" fill="${C.blue}"/>` +
-  `<circle cx="-6.8" cy="5.7" r=".5" fill="${C.pale}" opacity=".85"/>`);
-
-const wingR = a => g(scl(fold(a), 1, 1, 0) + ' ' + rot(-a * 0.55, 1, -2),
-  `<path d="M0.8 -4.6 C 4.6 -7.6 9.4 -12.1 13.8 -14.9 L16.3 -10.3 C 15.1 -6.3 11.5 -3.1 7.4 -1.8 C 4.4 -0.9 1.8 -1.8 0.8 -3.2 Z" fill="${C.red}"/>` +
-  `<path d="M0.8 -4.6 C 4.6 -7.6 9.4 -12.1 13.8 -14.9 L14.7 -13.1 C 10.2 -10.6 5.4 -7.1 1.7 -4.2 Z" fill="${C.red2}"/>` +
-  `<path d="M13.9 -14.6 C 11.4 -13.3 9.9 -11.3 9.9 -8.9 C 11.9 -9 14 -10.3 15.3 -12.3 Z" fill="${C.cream}"/>` +
-  `<circle cx="12.5" cy="-11.6" r="1.75" fill="${C.dark}"/>` +
-  `<circle cx="13.1" cy="-12.3" r=".78" fill="${C.blue}"/><circle cx="11.7" cy="-10.7" r=".5" fill="${C.blue}"/>` +
-  `<path d="M1 -1 C 4 0 8.5 1.5 9.5 5.5 C 10 8.4 7.8 10.2 4.8 9.2 C 2.4 8.4 1 5.8 0.6 3 Z" fill="${C.red}"/>` +
-  `<path d="M1 -1 C 3.1 -0.2 5.6 0.7 7.1 2.5 C 5 3.1 2.6 2.7 0.8 2 Z" fill="${C.red2}" opacity=".8"/>` +
-  `<circle cx="6.3" cy="6.2" r="2.35" fill="${C.dark}"/>` +
-  `<circle cx="6.3" cy="6.2" r="1.4" fill="${C.blue}"/>` +
-  `<circle cx="5.8" cy="5.7" r=".5" fill="${C.pale}" opacity=".85"/>`);
-
-// P: wA (0 open → 62 closed-up), antA
-const bfly = P =>
-  wingL(P.wA || 0) + wingR(P.wA || 0) +
-  `<path d="M0 -7.5 C 1.5 -7.5 2 -5.5 2 -3 C 2 0.5 1.4 5 0 7 C -1.4 5 -2 0.5 -2 -3 C -2 -5.5 -1.5 -7.5 0 -7.5 Z" fill="${C.body}"/>` +
-  `<ellipse cx="0" cy="-5.6" rx=".5" ry="2.6" fill="${C.pale}" opacity=".18"/>` +
-  `<circle cx="0" cy="-7.6" r="1.7" fill="${C.body}"/>` +
-  `<circle cx="-0.5" cy="-8.1" r=".45" fill="${C.pale}" opacity=".6"/>` +
-  g(rot(P.antA || 0, 0, -8.6),
-    `<path d="M-0.8 -8.6 C -2.4 -11.5 -3.6 -13 -4.8 -13.8 M0.8 -8.6 C 2.4 -11.5 3.6 -13 4.8 -13.8" stroke="${C.body}" stroke-width=".9" fill="none" stroke-linecap="round"/>` +
-    `<circle cx="-4.8" cy="-13.8" r="1" fill="${C.body}"/><circle cx="4.8" cy="-13.8" r="1" fill="${C.body}"/>`);
-
-function draw(P) {
-  const dx = P.dx || 0, dy = P.dy || 0;
-  let s = P.ticks || '';
-  if (P.grounded) s += shadow(dx, GY + 0.8, 9, Math.max(0, -dy), 12);
-  return s + g(trl(dx, dy) + ' ' + rot(P.roll || 0, 0, 0), bfly(P));
-}
-
-return {
-  id: 'peacock', view: [-30, -26, 62, 44], groundY: GY,
-  thumb: { m: 'bask', t: 0.05 },
-  motions: [
-    { id: 'bask', label: 'Bask', short: 'Bask', dur: 3.6, env: { t: 'ground' }, speed: '0 km/h', beat: 'Open · hold · close',
-      desc: 'Wings laid flat to the sun, the four eyes staring up. Between spells it folds them shut to a dead-leaf brown and all but disappears.',
-      anim: 'Hold the open pose long and still — the eyespots are the whole point. Close slowly, hold shut even longer, reopen without warning.' },
-    { id: 'flash', label: 'Startle flash', short: 'Flash', dur: 1.6, env: { t: 'ground' }, speed: '0 km/h', beat: 'Snap open · glare · snap shut',
-      desc: 'Its famous bluff: wings clapped shut, then snapped wide in a single frame to throw four sudden eyes at whatever leaned too close.',
-      anim: 'The snap is 2–3 frames, no more — sell it with a tiny recoil of the body. Then a dead-still glare, then a hard clap shut. Fear, not grace.' },
-    { id: 'flutter', label: 'Flutter', short: 'Flutter', dur: 0.58, env: { t: 'air' }, speed: '~10 km/h', beat: 'Burst flaps + bounce',
-      desc: 'A powerful, jinking flight in bursts of deep flaps, the heavy body tossed on an unrepeatable line.',
-      anim: 'Deeper, slower beats than the smaller butterflies. Let the body swing and lurch — nothing travels straight.' },
-    { id: 'sail', label: 'Sail', short: 'Sail', dur: 2.8, env: { t: 'air' }, speed: '~13 km/h', beat: 'Set wings · drift',
-      desc: 'Between bursts it sets the wings flat and rides, losing height by lazy degrees before the next flurry.',
-      anim: 'Wings just above horizontal with the faintest flutter; sell the drift with a slow roll and a long sinking curve.' }
-  ],
-  render(mid, t) {
-    t = wrap(t);
-    if (mid === 'flutter') {
-      const flap = osc(t, 2, 0);
-      return draw({
-        wA: 32 + 32 * flap,
-        dy: -3.4 * osc(t, 1, .28) - 1.3 * osc(t, 2, .1), dx: 2.8 * osc(t, 1, .05),
-        roll: 8 * osc(t, 1, .4), antA: 3 * osc(t, 2, .3),
-        ticks: airTicks(t, { x1: -27, x2: 29, y: -16, h: 14, v: 32, n: 4, s: 1.05 })
-      });
-    }
-    if (mid === 'sail') {
-      return draw({
-        wA: -6 + 3 * osc(t, 4, .1),
-        dy: -3.5 * osc(t, 1, .3), dx: 4 * osc(t, 1, .02),
-        roll: 5 * osc(t, 1, .5), antA: 2 * osc(t, 2, .2),
-        ticks: airTicks(t, { x1: -27, x2: 29, y: -16, h: 14, v: 22, n: 4, s: 1 })
-      });
-    }
-    if (mid === 'flash') {
-      const K = keys(t, [
-        [0.00, { wA: 62 }],
-        [0.20, { wA: 62 }],
-        [0.26, { wA: -7 }],
-        [0.32, { wA: 1 }],
-        [0.58, { wA: 1 }],
-        [0.64, { wA: 62 }],
-        [0.90, { wA: 62 }],
-        [1.00, { wA: 62 }]
-      ]);
-      K.grounded = true;
-      K.dy = -1.6 * (pulse(t, 0.24, 0.34) + pulse(t, 0.62, 0.7));
-      K.antA = 5 * osc(t, 4, .1);
-      return draw(K);
-    }
-    // bask
-    const K = keys(t, [
-      [0.00, { wA: 1 }],
-      [0.18, { wA: 1 }],
-      [0.36, { wA: 62 }],
-      [0.54, { wA: 62 }],
-      [0.62, { wA: -5 }],
-      [0.68, { wA: 1 }],
-      [0.90, { wA: 1 }],
-      [1.00, { wA: 1 }]
-    ]);
-    K.wA += 1.4 * osc(t, 5, .2) * (K.wA > 30 ? 1 : 0.4);
-    K.grounded = true;
-    K.antA = 4 * osc(t, 3, .1);
-    return draw(K);
-  }
-};
 })();
 
 window.__FABLE_ANIMALS = __REG;

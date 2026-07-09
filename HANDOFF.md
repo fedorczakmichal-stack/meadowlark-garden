@@ -456,3 +456,49 @@ szufladka, heavy, Escape; 0 błędów konsoli. CACHE `v71`.
   gwieździe), drawer, 0 błędów konsoli we wszystkich sesjach. **Panel 3 sędziów** (scena/HUD/LookBack na zrzutach) →
   poprawki: zoom wyżej, kropki kontrastowe, gwiazdy-powroty jaśniejsze+nad haze, sky-meet bg .92, top-scrim, frog↔duck
   rozsunięte. Zrzuty przed/po: `shots/v72/`. Raport: `REPORT-v72.md`. CACHE `v72`.
+**v73** (2026-07-09): **PACZKI ASSETÓW Claude Design (zwierzęta+rośliny) + NOC OGRODU.** Źródła: `Grafiki zwierząt do
+animacji-handoff.zip` + `Rosliny-handoff.zip` (inwentaryzacja 3-agentowa; ⚠ w paczce zwierząt BUNDLE jest STARSZY niż
+moduły ESM `animals-fable/*.js` — źródłem prawdy są MODUŁY: mają ruchy nocne `sleep/roost/rest` z flagą `night:` i
+najświeższy art; bundle nie ma też ogrodowych patchy).
+- **`garden/fable-animals.js` PRZEBUDOWANY (4062 l.)**: nagłówek z HEAD (patche: `laneDy/lanePitch(__FABLE_ROAM)`,
+  guardy `__FABLE_NO_TICKS`) + WSZYSTKIE 30 modułów ESM (konwersja wg przepisu v62: strip import / `export default`→
+  `return` / IIFE `__REG[id]`; skrypt `assemble_engine2.py` w scratchpadzie sesji) + re-aplikacja 8 wywołań laneDy w
+  gaitach + **port `stand` bociana z HEAD** (ESM go nie ma, a `FABLE_BEHAV.stork.idles` go wymaga!). Nowe gatunki w
+  rejestrze: heron/swallow/kestrel/**darter/demoiselle** (+cat/dog/horse/boar nieużywane w CAST). `fableRender` ustawia
+  też `window.__FABLE_ROAM` (tłumi bob gaitu pod reżyserem). Walidacja node: 30 gatunków × wszystkie motions = 0 błędów.
+- **WAŻKI (wymóg)**: stary płaski dragonfly ZASTĄPIONY nowym art (Anax imperator) przez przebudowę silnika; do CAST
+  doszły **darter** (perch przy wschodnich trzcinach `future+96`) i **demoiselle** (flutter nisko nad wodą `future+40`).
+- **NOC = ogród ZASYPIA** (`night=phase==='night'` w renderMeadow; sceneSig ma dayPhase → auto-rebuild na granicy):
+  osobna RZADSZA obsada zamiast przyciemnionego dnia. Nokturnalne chodzą: fox/hedgehog/mouse/snail + żaba w pozie
+  `croak` (float) + sowa; ŚPIĄ w dedykowanych pozach paczki (floats fltAmp≤3): mallard `sleep` (głowa na grzbiecie, na
+  wodzie), stork `sleep` (na jednej nodze w płyciźnie), bird `sleep` (w lasku u głowy ścieżki — za dnia o zmierzchu
+  ten sam ptak ma `sing`), fish `rest` (głębiej, opacity .4), darter+demoiselle `roost` (na trzcinach/lawendzie).
+  ZNIKAJĄ do świtu: jelenie, miś, królik, żółw, biedronka, WSZYSTKIE motyle i pszczoły (+skybirdy/larki jak dawniej).
+  Zero nowych animacji — te same floats/flipbooki, te same gate'y reduced-motion/motion-calm.
+- **GA (rośliny) DOPORTOWANE z `The Growth Atlas.dc.html`** (⚠ `The Growth Atlas.html` to tylko bundler-shell;
+  `export-src.dc.html` = stara wersja): (1) **`hull()` + hull-baza w `canopy()`** — korony drzew bez przerw, z ciemną
+  pod-koroną (zachowany fix `dk` ku `S.vein` z v68 i id `gaCanopyHi`); (2) **KRZEWY**: `SHRUB_FORM` (20 form) + 8 metod
+  `shrub*` (fix `glCanopyHi`→`gaCanopyHi`) + 20 gatunków w SPECIES; helper **`gaShrub(x,y,kind,sc,seed,flip)`** (cień
+  kontaktowy + gaTint; `seed` solí id → inna deterministyczna sylwetka per instancja; sc .24-.44). UŻYTE SELEKTYWNIE:
+  Home=box·hydrangea·box·lilac·box (ręczne elipsy żywopłotu USUNIĘTE), Connection=hawthorn+elder (białe kwiecie
+  wiosna/lato, głóg+bez = prawdziwa „white-blossom thicket"), Meaning=2×heather na wzgórku, Craft=buddleja za ulami,
+  solo: guelder@1400, dogwood@2240 (CZERWONE nagie pędy zimą). Krzewy liściaste zimą=nagie pędy (spójne z drzewami
+  v66); zimozielone (box/heather/holly…) zostają zielone+czapy `shrubSnow`; midground/las = celowo stare uproszczone
+  bloby (dalszy plan wg modelu głębi v72). (3) **KAMIENIE**: +5 zwykłych rodzajów do `GA.STONE`+SPECIES (chalk,
+  limestone, conglomerate, gneiss[vein], ironstone) + vein-overlay w `oneStone`; `STONE_KINDS` przepisane na TYLKO
+  zwykłe (quartz/amethyst wycięte z rozsypu!); rotacja far-stones 5→7 rodzajów; **celowe pojedyncze**: 2 przy stopie
+  ścieżki (742/854), brzeg strumienia (2406), rant stawu (3052), stoki wzgórka (1568+pebble, 1938). Menhiry/dolmeny/
+  mur/bazalt/obsydian/agat/kryształy z paczki ŚWIADOMIE nieportowane (kontrakt spokoju). Czapy śniegu automatyczne
+  (gaStone/_gaSeason). (4) **TRAWY 3 WARSTWY**: tło y434-456 (drobne, sc .16-.24, opacity .85, krok ~84-114, poza
+  wodą/szlakiem), dywan y522-545 zagęszczony (krok 42→36), front y550-576 = **`gaGrass()`** (bogate `GA.grassAbove`:
+  meadow/fescue/fountain z kłosami, sc .26-.37, krok ~196-284, clear=rdzenie+woda+ścieżka+`FABLE_RUNS`+30).
+- Weryfikacja file:// (skrypty sesji `verify_v73.mjs`): macierz 5 sezonów/pór × 7 kamer + full/quiet (38 zrzutów, DSF3),
+  harness ruchu DZIEŃ (14 walkerów, 120 s: 0 NaN/oob/moonwalk/flip-w-ruchu) i NOC (owl/fox/hedgehog/mouse/snail, 60 s:
+  czysto), 0 błędów konsoli we wszystkich fazach; panel 2 sędziów nad macierzą. CACHE `v73`.
+  **Fixy po panelu sędziów (w tym samym v73):** envStream reeds+cattail → `gaGrass('reed')` ×2 (gaTint → nocą przygasają;
+  koniec „gołych prętów”); darter y=`future-4` (SIEDZI na trzcinie, dzień perch + noc roost); hawker x=`future+6`; ptak
+  zmierzch/noc na KORONIE LILAKA (682,415) — śpiewa i zasypia w tym samym miejscu; SOWA 1452→1560 + gałąź (1516-1572)
+  = w kadrze Meaning (od v49 wisiała MIĘDZY kadrami!); dereń → (`future-96`,510) zachodni brzeg = pełny kadr Future;
+  samotna kalina USUNIĘTA. Nocna ryba y520 op .3. ⚠ REGUŁA: snap-kadry to ~±138 j. wokół HABX — obiekty-bohaterowie
+  lądują W oknach kadrów, nie w martwych strefach między nimi.
+

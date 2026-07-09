@@ -2406,6 +2406,31 @@ const GA=(()=>{ class GA_CLS {
     default:{ w:82,  h:76, cy:2,  rB:40, lobes:6, jag:0.16, fill:4 }
   };
 
+  // mature-bush silhouettes (absolute plate units; ground at y=0, cy is foliage-mass centre)
+  SHRUB_FORM = {
+    box:      { w:74, h:62, cy:-70,  rB:26, lobes:9, jag:0.13, fill:6, stems:0, habit:'dome' },
+    holly:    { w:70, h:86, cy:-92,  rB:26, lobes:8, jag:0.20, fill:5, stems:3, habit:'upright' },
+    rhodo:    { w:98, h:64, cy:-72,  rB:34, lobes:7, jag:0.15, fill:6, stems:4, habit:'broad' },
+    hydrangea:{ w:90, h:60, cy:-68,  rB:32, lobes:7, jag:0.18, fill:5, stems:5, habit:'broad' },
+    forsythia:{ w:92, h:78, cy:-84,  rB:24, lobes:8, jag:0.24, fill:4, stems:8, habit:'arch' },
+    buddleja: { w:80, h:88, cy:-96,  rB:26, lobes:7, jag:0.22, fill:5, stems:5, habit:'arch' },
+    gorse:    { w:80, h:70, cy:-74,  rB:24, lobes:9, jag:0.26, fill:5, stems:0, habit:'dome' },
+    lilac:    { w:78, h:92, cy:-100, rB:28, lobes:7, jag:0.16, fill:5, stems:4, habit:'upright' },
+    hawthorn: { w:84, h:82, cy:-92,  rB:28, lobes:8, jag:0.22, fill:5, stems:3, habit:'upright' },
+    elder:    { w:92, h:74, cy:-84,  rB:30, lobes:7, jag:0.20, fill:5, stems:4, habit:'broad' },
+    broom:    { w:66, h:82, cy:-86,  rB:20, lobes:9, jag:0.28, fill:4, stems:10,habit:'arch' },
+    dogwood:  { w:80, h:86, cy:-92,  rB:24, lobes:8, jag:0.24, fill:5, stems:9, habit:'arch' },
+    juniper:  { w:82, h:60, cy:-66,  rB:26, lobes:9, jag:0.15, fill:6, stems:0, habit:'dome' },
+    berberis: { w:86, h:78, cy:-86,  rB:24, lobes:9, jag:0.24, fill:5, stems:6, habit:'arch' },
+    cotoneaster:{ w:104,h:56, cy:-60, rB:32, lobes:8, jag:0.18, fill:6, stems:5, habit:'broad' },
+    guelder:  { w:88, h:86, cy:-96,  rB:28, lobes:7, jag:0.18, fill:5, stems:4, habit:'upright' },
+    heather:  { w:74, h:40, cy:-42,  rB:18, lobes:10,jag:0.14, fill:6, stems:0, habit:'dome' },
+    camellia: { w:80, h:94, cy:-104, rB:28, lobes:7, jag:0.12, fill:6, stems:4, habit:'upright' },
+    bramble:  { w:98, h:70, cy:-78,  rB:24, lobes:9, jag:0.26, fill:4, stems:9, habit:'arch' },
+    mahonia:  { w:76, h:88, cy:-98,  rB:24, lobes:8, jag:0.22, fill:5, stems:5, habit:'upright' },
+    default:  { w:82, h:70, cy:-80,  rB:30, lobes:8, jag:0.18, fill:5, stems:4, habit:'broad' }
+  };
+
   FLOWER_STAGES = [
     { name:'Seed', short:'Seed', at:0.0, desc:'The dry seed lies dormant, swelling with moisture until its coat splits and a first pale radicle probes downward for anchorage.' },
     { name:'Sprout', short:'Sprout', at:0.16, desc:'The hooked hypocotyl arches through the surface, then straightens and lifts two seed-leaves — the cotyledons — into the light.' },
@@ -2451,7 +2476,12 @@ const GA=(()=>{ class GA_CLS {
     quartz:   { kind:'crystal', w:96,  h:132, body:['#E4E9EE','#AEB8C2'], tip:'#F6F9FC', points:6 },
     amethyst: { kind:'geode',   w:110, h:98, body:['#6E6484','#3E3652'], crystal:['#B9A6D8','#8E77B8','#ECDCF4'] },
     slate:    { kind:'layered', w:120, h:80, body:['#5C6068','#363A40'], edge:'#828892' },
-    sandstone:{ kind:'banded',  w:122, h:92, body:['#CBA06A','#9A6C3C'], band:['#DCBB8A','#8E6234'] }
+    sandstone:{ kind:'banded',  w:122, h:92, body:['#CBA06A','#9A6C3C'], band:['#DCBB8A','#8E6234'] },
+    chalk:    { kind:'nodule',  w:100, h:80, body:['#ECE7DB','#C6C0AE'], cortex:'#F6F3EA' },
+    limestone:{ kind:'boulder', w:120, h:88, body:['#CFC9BC','#9C968A'], speck:['#B2AA98','#E8E3D6','#8C867A'] },
+    conglomerate:{ kind:'boulder', w:118, h:92, body:['#C89A6E','#8A5E38'], speck:['#E4CBA6','#6E4A2C','#A87848','#D8BC98'] },
+    gneiss:   { kind:'banded',   w:120, h:90,  body:['#B8AEA2','#726A60'], band:['#D8CFC2','#7A5A52'], vein:'#8A7A6E' },
+    ironstone:{ kind:'nodule',   w:100, h:82,  body:['#8A5236','#5A2E1E'], cortex:'#C88A54', speck:['#3A1E12','#B26A3E'] }
   };
 
   SPECIES = [
@@ -2551,6 +2581,92 @@ const GA=(()=>{ class GA_CLS {
       season:'Jul – Aug', sizeText:'60 – 100 cm', note:'The staff of life — a cultivated cereal whose bearded golden ears have fed civilisations for ten thousand years.' },
     { id:'reed', common:'Feather Reed Grass', latin:'Calamagrostis \u00d7 acutiflora', family:'Poaceae', type:'grass', kind:'reed',
       season:'Jun – Sep', sizeText:'1 – 1.5 m', note:'A strictly upright grass sending up narrow, feathery flower-spikes that stand like lit tapers well into winter.' },
+    { id:'box', common:'Boxwood', latin:'Buxus sempervirens', family:'Buxaceae', type:'shrub', shrubKind:'box', evergreen:true,
+      canopy:['#3E6B34','#477A3B','#4E8340','#3E6B34','#579048','#5E9A4E','#4E8340','#68A657','#6EAB5C'],
+      season:'Evergreen', sizeText:'1 \u2013 4 m', note:'A dense, small-leaved evergreen that clips into a firm dark mound and holds its colour, unbroken, through the whole turning year.' },
+    { id:'holly', common:'Holly', latin:'Ilex aquifolium', family:'Aquifoliaceae', type:'shrub', shrubKind:'holly', evergreen:true, spiny:true,
+      canopy:['#28532C','#2E5E32','#356A39','#28532C','#3E7742','#457F48','#356A39','#4E8A50','#548F56'],
+      berry:{ months:['Autumn','Winter'], col:'#C1201F', n:13, r:2.6 },
+      season:'Berries Nov \u2013 Feb', sizeText:'2 \u2013 6 m', note:'Glossy, spine-edged and darkly evergreen, holly lights its own midwinter with a scatter of hard scarlet berries.' },
+    { id:'rhododendron', common:'Rhododendron', latin:'Rhododendron ponticum', family:'Ericaceae', type:'shrub', shrubKind:'rhodo', evergreen:true,
+      canopy:['#2E5A34','#356439','#3C7040','#2E5A34','#457C49','#4C8450','#3C7040','#558D58','#5A9260'],
+      flower:{ months:['Spring'], kind:'truss', col:{deep:'#A6356E',mid:'#C95C8E',light:'#EBA6C6'}, n:5, r:12 },
+      season:'May \u2013 Jun', sizeText:'2 \u2013 5 m', note:'A broad evergreen that smothers itself each late spring in great domed trusses of funnel-shaped, magenta-throated bloom.' },
+    { id:'hydrangea', common:'Hydrangea', latin:'Hydrangea macrophylla', family:'Hydrangeaceae', type:'shrub', shrubKind:'hydrangea', evergreen:false, winterDried:true,
+      canopy:['#4A8244','#53904C','#5C9C54','#4A8244','#67A85F','#6EAF66','#5C9C54','#79B972','#7EBE78'],
+      flower:{ months:['Summer'], kind:'mophead', col:{deep:'#3E63A8',mid:'#5A82C4',light:'#A2BBE6'}, n:6, r:10 },
+      season:'Jul \u2013 Sep', sizeText:'1 \u2013 2 m', note:'A rounded deciduous bush carrying great blue-to-pink mopheads all summer, the faded blooms drying to paper that stands into winter.' },
+    { id:'forsythia', common:'Forsythia', latin:'Forsythia \u00d7 intermedia', family:'Oleaceae', type:'shrub', shrubKind:'forsythia', evergreen:false,
+      canopy:['#5A8E44','#63994C','#6CA554','#5A8E44','#78B160','#7FB868','#6CA554','#8AC272','#8FC678'],
+      flower:{ months:['Spring'], kind:'sprinkle', col:{deep:'#E0A21F',mid:'#F4C21E',light:'#FBE07A'}, n:32, r:2.6 },
+      season:'Mar \u2013 Apr', sizeText:'1 \u2013 3 m', note:'The first shout of spring colour, arching its stems into a fountain of egg-yolk yellow well before the leaves arrive.' },
+    { id:'buddleja', common:'Butterfly Bush', latin:'Buddleja davidii', family:'Scrophulariaceae', type:'shrub', shrubKind:'buddleja', evergreen:false,
+      canopy:['#5E7E4C','#688A54','#72965C','#5E7E4C','#7EA268','#85A970','#72965C','#8FB27C','#94B682'],
+      flower:{ months:['Summer'], kind:'spike', col:{deep:'#6A3C8E',mid:'#8A5CB0',light:'#B79BD8'}, n:8, len:30 },
+      season:'Jul \u2013 Sep', sizeText:'2 \u2013 4 m', note:'A fast, arching shrub whose long honeyed flower-spikes draw butterflies to the summer garden in drifting clouds.' },
+    { id:'gorse', common:'Gorse', latin:'Ulex europaeus', family:'Fabaceae', type:'shrub', shrubKind:'gorse', evergreen:true, spiny:true,
+      canopy:['#3A5E34','#43683A','#4A7440','#3A5E34','#548050','#5A8656','#4A7440','#649060','#68945F'],
+      flower:{ months:['Spring','Summer'], kind:'sprinkle', col:{deep:'#D98E1F',mid:'#F2B12A',light:'#FBD873'}, n:26, r:2.3 },
+      season:'Feb \u2013 Jun', sizeText:'1 \u2013 3 m', note:'A tough, spiny evergreen of heath and cliff, ablaze with coconut-scented golden pea-flowers for much of the year.' },
+    { id:'lilac', common:'Lilac', latin:'Syringa vulgaris', family:'Oleaceae', type:'shrub', shrubKind:'lilac', evergreen:false,
+      canopy:['#4E8244','#57904C','#609C54','#4E8244','#6BA85F','#72AF66','#609C54','#7DB972','#82BE78'],
+      flower:{ months:['Spring'], kind:'spike', col:{deep:'#7E5C9E',mid:'#9F7EC0',light:'#C9B4E0'}, n:7, len:32 },
+      season:'May', sizeText:'2 \u2013 5 m', note:'An old cottage-garden shrub that hangs itself, for a few weeks each May, with heavy scented cones of lilac bloom.' },
+    { id:'hawthorn', common:'Hawthorn', latin:'Crataegus monogyna', family:'Rosaceae', type:'shrub', shrubKind:'hawthorn', evergreen:false,
+      canopy:['#43702F','#4C7C38','#568942','#43702F','#629650','#699C58','#568942','#75A968','#7BAE6E'],
+      flower:{ months:['Spring'], kind:'sprinkle', col:{deep:'#D6CCB6',mid:'#F1EBDD',light:'#FFFFFF'}, n:46, r:2.0 },
+      berry:{ months:['Autumn'], col:'#B4241B', n:17, r:2.4 },
+      season:'May blossom', sizeText:'4 \u2013 8 m', note:'The whitethorn of the old hedgerows \u2014 foaming with may-blossom in spring and hung with dark-red haws by autumn.' },
+    { id:'elder', common:'Elder', latin:'Sambucus nigra', family:'Adoxaceae', type:'shrub', shrubKind:'elder', evergreen:false,
+      canopy:['#47764A','#508152','#5A8D5B','#47764A','#66995F','#6D9F66','#5A8D5B','#78A972','#7DAE78'],
+      flower:{ months:['Summer'], kind:'umbel', col:{deep:'#DAD3C0',mid:'#EFEBDF',light:'#FFFFFF'}, n:6, r:13 },
+      berry:{ months:['Autumn'], col:'#2C2338', n:22, r:2.0 },
+      season:'Jun flower \u00b7 Sep fruit', sizeText:'3 \u2013 6 m', note:'A hedgerow shrub of creamy summer flower-plates and heavy sprays of near-black autumn berries, both long gathered for cordial and wine.' },
+    { id:'broom', common:'Broom', latin:'Cytisus scoparius', family:'Fabaceae', type:'shrub', shrubKind:'broom', evergreen:true,
+      canopy:['#3E6B30','#477836','#4F843E','#3E6B30','#5A9048','#61974E','#4F843E','#6BA35A','#70A860'],
+      flower:{ months:['Spring','Summer'], kind:'sprinkle', col:{deep:'#D98E1F',mid:'#F2C21E',light:'#FBE07A'}, n:34, r:2.2 },
+      season:'Apr \u2013 Jun', sizeText:'1 \u2013 2.5 m', note:'A mass of slender green whip-stems that stays green all winter and blazes gold with pea-flowers through late spring.' },
+    { id:'dogwood', common:'Dogwood', latin:'Cornus sanguinea', family:'Cornaceae', type:'shrub', shrubKind:'dogwood', evergreen:false,
+      canopy:['#48734A','#517E52','#5B8A5B','#48734A','#67965F','#6E9C66','#5B8A5B','#79A672','#7EAB78'],
+      flower:{ months:['Spring'], kind:'sprinkle', col:{deep:'#D8D2C0',mid:'#EFEBDF',light:'#FFFFFF'}, n:26, r:2.2 },
+      season:'Winter stems', sizeText:'1 \u2013 3 m', note:'Grown for winter fire \u2014 its bare stems glow blood-red through the cold months, hidden under green leaf and white flower the rest of the year.' },
+    { id:'juniper', common:'Juniper', latin:'Juniperus communis', family:'Cupressaceae', type:'shrub', shrubKind:'juniper', evergreen:true, spiny:true,
+      canopy:['#3E5E4A','#476A52','#4E765A','#3E5E4A','#588066','#5E886C','#4E765A','#6A9880','#6E9C86'],
+      berry:{ months:['Autumn','Winter'], col:'#3A4A66', n:16, r:2.4 },
+      season:'Berries autumn', sizeText:'1 \u2013 4 m', note:'A hardy, prickly evergreen of chalk down and mountainside, its blue-black \u201cberries\u201d \u2014 really tiny cones \u2014 ripening slowly over two full years.' },
+    { id:'berberis', common:'Barberry', latin:'Berberis thunbergii', family:'Berberidaceae', type:'shrub', shrubKind:'berberis', evergreen:false, spiny:true,
+      canopy:['#7A5A34','#8A6838','#9A7A3E','#7A5A34','#AC8C48','#B4964E','#9A7A3E','#C0A45A','#C6AC62'],
+      flower:{ months:['Spring'], kind:'sprinkle', col:{deep:'#E0A21F',mid:'#F2C21E',light:'#FBE07A'}, n:28, r:2.0 },
+      berry:{ months:['Autumn'], col:'#B4241B', n:22, r:1.8 },
+      season:'Fiery autumn', sizeText:'1 \u2013 2 m', note:'A dense, thorny little bush grown for its blazing scarlet autumn leaf and the small oval berries that hang on long after the leaves have fallen.' },
+    { id:'cotoneaster', common:'Cotoneaster', latin:'Cotoneaster horizontalis', family:'Rosaceae', type:'shrub', shrubKind:'cotoneaster', evergreen:true,
+      canopy:['#3E6B3E','#477846','#50844E','#3E6B3E','#5C9058','#63975F','#50844E','#6EA36A','#73A870'],
+      flower:{ months:['Spring'], kind:'sprinkle', col:{deep:'#E4C0C4',mid:'#F2DADC',light:'#FFFFFF'}, n:30, r:1.8 },
+      berry:{ months:['Autumn','Winter'], col:'#C0261C', n:36, r:2.0 },
+      season:'Berries Sep \u2013 Feb', sizeText:'0.5 \u2013 2 m', note:'A tough spreading shrub that carries such a weight of small red berries into winter that the whole bush seems to glow against the frost.' },
+    { id:'guelder', common:'Guelder Rose', latin:'Viburnum opulus', family:'Adoxaceae', type:'shrub', shrubKind:'guelder', evergreen:false,
+      canopy:['#4A7644','#53814C','#5C8D55','#4A7644','#679960','#6E9F67','#5C8D55','#79A972','#7EAE78'],
+      flower:{ months:['Spring'], kind:'umbel', col:{deep:'#DAD3C0',mid:'#EFEBDF',light:'#FFFFFF'}, n:6, r:12 },
+      berry:{ months:['Autumn'], col:'#C21A16', n:20, r:2.4 },
+      season:'Berries autumn', sizeText:'2 \u2013 4 m', note:'A hedgerow shrub ringed in early summer with flat lacecap heads of white bloom, then hung in autumn with glassy, translucent scarlet berries.' },
+    { id:'heather', common:'Heather', latin:'Calluna vulgaris', family:'Ericaceae', type:'shrub', shrubKind:'heather', evergreen:true,
+      canopy:['#4A5E3E','#556A46','#5C744C','#4A5E3E','#68824E','#6E8854','#5C744C','#7A9660','#7E9A64'],
+      flower:{ months:['Summer','Autumn'], kind:'sprinkle', col:{deep:'#8E3A7E',mid:'#B45C9E',light:'#D89AC4'}, n:56, r:1.5 },
+      season:'Aug \u2013 Sep', sizeText:'20 \u2013 60 cm', note:'The low, wiry evergreen that clothes whole moors in a purple haze of tiny bell-flowers each late summer, humming with bees.' },
+    { id:'camellia', common:'Camellia', latin:'Camellia japonica', family:'Theaceae', type:'shrub', shrubKind:'camellia', evergreen:true,
+      canopy:['#284E2E','#2E5A33','#356639','#284E2E','#3E7444','#457B4A','#356639','#4E8654','#548B59'],
+      flower:{ months:['Winter','Spring'], kind:'truss', col:{deep:'#B03858',mid:'#D2637E',light:'#F0A9BC'}, n:6, r:11 },
+      season:'Feb \u2013 Apr', sizeText:'2 \u2013 5 m', note:'A glossy dark evergreen that opens great rose-like blooms in the teeth of late winter, when little else in the garden dares to flower.' },
+    { id:'bramble', common:'Bramble', latin:'Rubus fruticosus', family:'Rosaceae', type:'shrub', shrubKind:'bramble', evergreen:false, spiny:true,
+      canopy:['#3E6B40','#477848','#508450','#3E6B40','#5C9058','#63975F','#508450','#6EA36A','#73A870'],
+      flower:{ months:['Summer'], kind:'sprinkle', col:{deep:'#E4C0CC',mid:'#F2DCE2',light:'#FFFFFF'}, n:24, r:2.2 },
+      berry:{ months:['Autumn'], col:'#241A2E', n:20, r:2.4 },
+      season:'Fruit Aug \u2013 Sep', sizeText:'1 \u2013 3 m', note:'The arching, hooked-thorn tangle of every hedge and waste corner, foaming with pale bloom in summer and heavy with black fruit by the turn of autumn.' },
+    { id:'mahonia', common:'Mahonia', latin:'Mahonia aquifolium', family:'Berberidaceae', type:'shrub', shrubKind:'mahonia', evergreen:true, spiny:true,
+      canopy:['#2E5236','#35603C','#3C6C43','#2E5236','#457C4C','#4C8453','#3C6C43','#568D5C','#5B9261'],
+      flower:{ months:['Winter'], kind:'spike', col:{deep:'#D9A81F',mid:'#F2C71E',light:'#FBE682'}, n:7, len:26 },
+      berry:{ months:['Spring','Summer'], col:'#3A4A72', n:20, r:2.2 },
+      season:'Flowers in winter', sizeText:'1 \u2013 2 m', note:'A bold, holly-leaved evergreen that lifts spikes of fragrant yellow flower through the darkest months, following them with a dusty-blue crop of berries.' },
     { id:'flint', common:'Flint', latin:'Cryptocrystalline silica', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'flint',
       season:'—', sizeText:'5 – 15 cm', note:'A hard nodule of silica born in chalk and clay, its glassy grey heart wrapped in a pale chalky cortex — struck for tools and fire since the Stone Age.' },
     { id:'granite', common:'Granite', latin:'Quartz · feldspar · mica', family:'Igneous', rockClass:'Igneous', type:'stone', kind:'granite',
@@ -2562,7 +2678,17 @@ const GA=(()=>{ class GA_CLS {
     { id:'slate', common:'Slate', latin:'Metamorphosed shale', family:'Metamorphic', rockClass:'Metamorphic', type:'stone', kind:'slate',
       season:'—', sizeText:'flags', note:'Mudstone squeezed and heated until its clays realign, splitting cleanly into flat grey sheets long prized for roofs and writing slates.' },
     { id:'sandstone', common:'Sandstone', latin:'Cemented sand grains', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'sandstone',
-      season:'—', sizeText:'to blocks', note:'Layered sand grains cemented over ages into a warm banded rock, its bedding lines a quiet record of ancient dunes and river beds.' }
+      season:'—', sizeText:'to blocks', note:'Layered sand grains cemented over ages into a warm banded rock, its bedding lines a quiet record of ancient dunes and river beds.' },
+    { id:'chalk', common:'Chalk', latin:'Calcium carbonate', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'chalk',
+      season:'—', sizeText:'5 – 15 cm', note:'Soft white lumps of chalk, the pressed shells of an ancient sea, crumbling pale into the downland turf.' },
+    { id:'limestone', common:'Limestone', latin:'Calcium carbonate', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'limestone',
+      season:'—', sizeText:'to blocks', note:'Pale grey limestone weathered into blocky clints, the bones of the hills that build the walls of upland meadows.' },
+    { id:'conglomerate', common:'Puddingstone', latin:'Conglomerate', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'conglomerate',
+      season:'—', sizeText:'to blocks', note:'A pudding of rounded pebbles set fast in a sandy cement \u2014 old beach or riverbed gravel turned to a single freckled stone.' },
+    { id:'gneiss', common:'Gneiss', latin:'Banded metamorphic', family:'Metamorphic', rockClass:'Metamorphic', type:'stone', kind:'gneiss',
+      season:'—', sizeText:'to boulders', note:'One of the oldest rocks of the crust, its light and dark minerals drawn out into wandering bands by unimaginable heat and pressure.' },
+    { id:'ironstone', common:'Ironstone', latin:'Ferruginous nodule', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'ironstone',
+      season:'—', sizeText:'5 \u2013 20 cm', note:'A heavy rust-brown nodule stained through with iron \u2014 the ore that once fed the old furnaces, weathering to ochre in the field.' },
   ];
 
   // ---------- math ----------
@@ -2945,6 +3071,11 @@ const GA=(()=>{ class GA_CLS {
       d+=` Q ${(x+mx*1.35).toFixed(1)} ${(y+my*1.35).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`; }
     return `<path d="${d} Z" fill="${f}"${op?` opacity="${op}"`:''}/>`; }
 
+  hull(pts,cx,cy,expand){ const F=n=>(+n).toFixed(1); const N=pts.length; if(!N) return '';
+    const P=pts.map(p=>{ const dx=p[0]-cx, dy=p[1]-cy, L=Math.hypot(dx,dy)||1; const e=1+(expand||0)/L; return [cx+dx*e, cy+dy*e]; });
+    let d=`M ${F((P[0][0]+P[N-1][0])/2)} ${F((P[0][1]+P[N-1][1])/2)}`;
+    for(let i=0;i<N;i++){ const p=P[i], q=P[(i+1)%N]; d+=` Q ${F(p[0])} ${F(p[1])} ${F((p[0]+q[0])/2)} ${F((p[1]+q[1])/2)}`; }
+    return d+' Z'; }
   canopy(sp,g,S){ S=S||this.SEASONS.Summer; const c=sp.canopy;
     const col=(h)=>this.seasonCol(h,S);
     const cherryPink=(S.blossom && sp.kind==='cherry');
@@ -2961,7 +3092,15 @@ const GA=(()=>{ class GA_CLS {
       outline.push([ex,ey,F.rB*(0.74+0.5*rnd()),i%c.length,rnd()*3]); }
     const inner=[]; for(let i=0;i<F.fill;i++){ const ang=rnd()*6.2832, rad=0.15+rnd()*0.5;
       inner.push([Math.cos(ang)*F.w*rad,Math.sin(ang)*F.h*rad+F.cy,F.rB*(0.62+0.42*rnd()),(i+2)%c.length,rnd()*3]); }
-    let s=''; const all=outline.concat(inner).sort((a,b)=>a[1]-b[1]);
+    const baseC=cf(c[Math.min(2,c.length-1)]);
+    // SOLID, gap-free base (v73 pack): an opaque bumpy under-canopy of enlarged lobes (single dark
+    // colour) laid down first, so no background ever shows through between the coloured puffs above
+    const hullPts=outline.map(o=>[o[0],o[1]]);
+    let s=`<path d="${this.hull(hullPts,0,F.cy,F.rB*0.72)}" fill="${dk}"/>`;
+    outline.forEach(p=>{ s+=this.puff(p[0],p[1],p[2]*1.18,dk,p[4]); });
+    inner.forEach(p=>{ s+=this.puff(p[0],p[1],p[2]*1.18,dk,p[4]); });
+    s+=`<path d="${this.hull(hullPts,0,F.cy,F.rB*0.46)}" fill="${baseC}"/>`;
+    const all=outline.concat(inner).sort((a,b)=>a[1]-b[1]);
     all.forEach(p=>{ s+=this.puff(p[0],p[1],p[2],cf(c[p[3]]),p[4]); });
     // lower shade for volume
     s+=this.puff(-F.w*0.2,F.cy+F.h*0.52,F.rB*1.5,dk,0.7,'0.5')+this.puff(F.w*0.28,F.cy+F.h*0.46,F.rB*1.35,dk,1.8,'0.42');
@@ -3027,6 +3166,97 @@ const GA=(()=>{ class GA_CLS {
     if(seedOp>0.02) s+=`<g opacity="${seedOp.toFixed(2)}">${this.sprout(this.sm(0.01,0.15,g),undefined,2)}</g>`;
     s+=this.trunk(th,tw,'pine')+this.conifer(sp,H,baseW,g,S);
     return s; }
+
+  // ---------- shrubs (mature bushes only) ----------
+  shrubScatter(F,n,rnd,radMul){ const o=[]; radMul=radMul||0.82;
+    for(let i=0;i<n;i++){ const a=rnd()*6.2832, rr=Math.sqrt(rnd())*radMul;
+      o.push([Math.cos(a)*F.w*rr, Math.sin(a)*F.h*rr+F.cy]); } return o; }
+  shrubStems(F,rnd,twCol,twHi){ let body=''; const stemN=F.stems; const F2=n=>(+n).toFixed(1);
+    const topY=F.cy+F.h*0.28;
+    if(stemN>0){
+      for(let i=0;i<stemN;i++){ const t=stemN>1?i/(stemN-1):0.5; const side=this.lp(-1,1,t)*(0.7+rnd()*0.4);
+        const baseX=side*F.w*0.14; const reach=F.habit==='arch'?0.66:(F.habit==='upright'?0.24:0.42);
+        const topX=side*F.w*reach*(0.7+rnd()*0.5); const tY=topY-(F.habit==='upright'?F.h*0.28*rnd():F.h*0.08*rnd());
+        const midX=(baseX+topX)/2 + (F.habit==='arch'? side*F.w*0.12 : side*2); const midY=tY*0.5;
+        const w0=this.lp(2.2,4.4,1-Math.abs(side)*0.35);
+        body+=`<path d="M ${F2(baseX-w0/2)} 0 Q ${F2(midX-w0*0.3)} ${F2(midY)} ${F2(topX)} ${F2(tY)} Q ${F2(midX+w0*0.3)} ${F2(midY)} ${F2(baseX+w0/2)} 0 Z" fill="${twCol}"/>`;
+        body+=`<path d="M ${F2(baseX)} -1 Q ${F2(midX)} ${F2(midY)} ${F2(topX)} ${F2(tY)}" stroke="${twHi}" stroke-width="1" fill="none" opacity="0.5" stroke-linecap="round"/>`;
+      }
+    } else { body+=`<path d="M -5 0 Q -3 ${F2(F.cy*0.42)} 0 ${F2(F.cy*0.52)} Q 3 ${F2(F.cy*0.42)} 5 0 Z" fill="${twCol}"/>`; }
+    return body; }
+  shrubMass(F,cols,dk,rnd,S){ const N=F.lobes*2, outline=[];
+    for(let i=0;i<N;i++){ const a=(i/N)*6.2832-1.5708; const jr=1+(rnd()*2-1)*F.jag;
+      const ex=Math.cos(a)*F.w*jr; const ey=Math.sin(a)*F.h*(1+(rnd()*2-1)*F.jag*0.6)+F.cy;
+      outline.push([ex,ey,F.rB*(0.72+0.5*rnd()),i,rnd()*3]); }
+    const inner=[]; for(let i=0;i<F.fill;i++){ const ang=rnd()*6.2832, rad=0.12+rnd()*0.5;
+      inner.push([Math.cos(ang)*F.w*rad,Math.sin(ang)*F.h*rad+F.cy,F.rB*(0.6+0.44*rnd()),i,rnd()*3]); }
+    const baseC=cols[Math.min(2,cols.length-1)];
+    const hp=outline.map(o=>[o[0],o[1]]);
+    let s=`<path d="${this.hull(hp,0,F.cy,F.rB*0.74)}" fill="${dk}"/>`;
+    outline.forEach(p=>{ s+=this.puff(p[0],p[1],p[2]*1.18,dk,p[4]); });
+    inner.forEach(p=>{ s+=this.puff(p[0],p[1],p[2]*1.18,dk,p[4]); });
+    s+=`<path d="${this.hull(hp,0,F.cy,F.rB*0.48)}" fill="${baseC}"/>`;
+    outline.concat(inner).sort((a,b)=>a[1]-b[1]).forEach(p=>{ s+=this.puff(p[0],p[1],p[2],cols[p[3]%cols.length],p[4]); });
+    s+=this.puff(-F.w*0.18,F.cy+F.h*0.5,F.rB*1.35,dk,0.7,'0.48')+this.puff(F.w*0.26,F.cy+F.h*0.44,F.rB*1.2,dk,1.8,'0.4');
+    const hi=this.mix(cols[cols.length-1], S.canopyHi||'#FFF8DC',0.36);
+    for(let i=0;i<3;i++){ const a=-2.5+i*0.5; s+=this.puff(Math.cos(a)*F.w*0.46,Math.sin(a)*F.h*0.46+F.cy,F.rB*(0.5-0.05*i),hi,i*1.3,'0.8'); }
+    s+=`<ellipse cx="${(-F.w*0.14).toFixed(1)}" cy="${(F.cy-F.h*0.34).toFixed(1)}" rx="${(F.w*0.46).toFixed(1)}" ry="${(F.h*0.4).toFixed(1)}" fill="url(#gaCanopyHi)"/>`;
+    return s; }
+  shrubBareTwigs(sp,F,rnd,S,winter){ const F2=n=>(+n).toFixed(1);
+    const col = sp.shrubKind==='dogwood' ? '#B0392A' : (winter?'#6C5C40':'#6E5E3A');
+    const col2 = sp.shrubKind==='dogwood' ? '#C85A42' : '#8A7550'; let s='';
+    const N=Math.round(F.lobes*2.4);
+    for(let i=0;i<N;i++){ const t=N>1?i/(N-1):0.5; const side=this.lp(-1,1,t)*(0.8+rnd()*0.35);
+      const tipX=side*F.w*(0.5+rnd()*0.5); const tipY=F.cy-F.h*0.18 - rnd()*F.h*0.7;
+      const baseX=side*F.w*0.1; const midX=(baseX+tipX)*0.5 + side*F.w*0.12; const midY=tipY*0.5;
+      s+=`<path d="M ${F2(baseX)} 0 Q ${F2(midX)} ${F2(midY)} ${F2(tipX)} ${F2(tipY)}" stroke="${col}" stroke-width="${(1.8-Math.abs(side)*0.7).toFixed(1)}" fill="none" stroke-linecap="round"/>`;
+      if(rnd()>0.4){ const bx2=this.lp(baseX,tipX,0.62), by2=this.lp(0,tipY,0.62);
+        s+=`<path d="M ${F2(bx2)} ${F2(by2)} l ${F2(side*6+rnd()*4)} ${F2(-6-rnd()*6)}" stroke="${col2}" stroke-width="0.9" stroke-linecap="round"/>`; } }
+    return s; }
+  shrubFlowers(sp,F,rnd,colOverride){ const fl=sp.flower; const col=colOverride||fl.col; const F2=n=>(+n).toFixed(1); let s='';
+    if(fl.kind==='sprinkle'){ this.shrubScatter(F,fl.n||28,rnd,0.86).forEach(p=>{ const r=fl.r||2.4;
+        s+=`<circle cx="${F2(p[0])}" cy="${F2(p[1])}" r="${(r*(0.7+rnd()*0.6)).toFixed(1)}" fill="${rnd()>0.4?col.mid:col.light}"/>`; }); return s; }
+    if(fl.kind==='mophead'){ this.shrubScatter(F,fl.n||6,rnd,0.6).forEach(h=>{ const R=fl.r||10;
+        for(let k=0;k<11;k++){ const a=rnd()*6.2832, rr=Math.sqrt(rnd())*R; s+=`<circle cx="${F2(h[0]+Math.cos(a)*rr)}" cy="${F2(h[1]+Math.sin(a)*rr*0.9)}" r="1.9" fill="${[col.deep,col.mid,col.light][k%3]}"/>`; }
+        s+=`<circle cx="${F2(h[0])}" cy="${F2(h[1])}" r="${(R*0.5).toFixed(1)}" fill="${col.mid}" opacity="0.22"/>`; }); return s; }
+    if(fl.kind==='truss'){ this.shrubScatter(F,fl.n||5,rnd,0.58).forEach(h=>{ const R=fl.r||12;
+        s+=`<ellipse cx="${F2(h[0])}" cy="${F2(h[1])}" rx="${R}" ry="${(R*0.8).toFixed(1)}" fill="${col.mid}"/>`;
+        for(let k=0;k<7;k++){ const a=k/7*6.2832; s+=`<circle cx="${F2(h[0]+Math.cos(a)*R*0.55)}" cy="${F2(h[1]+Math.sin(a)*R*0.5)}" r="2.6" fill="${k%2?col.light:col.deep}"/>`; }
+        s+=`<circle cx="${F2(h[0])}" cy="${F2(h[1])}" r="2.6" fill="${col.light}"/>`; }); return s; }
+    if(fl.kind==='spike'){ this.shrubScatter(F,fl.n||8,rnd,0.72).forEach(h=>{ const L=fl.len||28; const tipY=h[1]-L;
+        s+=`<path d="M ${F2(h[0]-4)} ${F2(h[1])} Q ${F2(h[0])} ${F2((h[1]+tipY)/2)} ${F2(h[0])} ${F2(tipY)} Q ${F2(h[0])} ${F2((h[1]+tipY)/2)} ${F2(h[0]+4)} ${F2(h[1])} Z" fill="${col.mid}"/>`;
+        for(let k=0;k<5;k++){ const t=k/4; const yy=this.lp(h[1],tipY,t); const ww=this.lp(4,1,t); s+=`<circle cx="${F2(h[0]-ww*0.5)}" cy="${F2(yy)}" r="1.5" fill="${col.light}"/><circle cx="${F2(h[0]+ww*0.5)}" cy="${F2(yy)}" r="1.5" fill="${col.deep}"/>`; } }); return s; }
+    if(fl.kind==='umbel'){ this.shrubScatter(F,fl.n||6,rnd,0.6).forEach(h=>{ const R=fl.r||11;
+        s+=`<ellipse cx="${F2(h[0])}" cy="${F2(h[1])}" rx="${R}" ry="${(R*0.42).toFixed(1)}" fill="${col.mid}" opacity="0.45"/>`;
+        for(let k=0;k<13;k++){ const a=rnd()*6.2832, rr=Math.sqrt(rnd())*R; s+=`<circle cx="${F2(h[0]+Math.cos(a)*rr)}" cy="${F2(h[1]+Math.sin(a)*rr*0.42)}" r="1.5" fill="${col.light}"/>`; } }); return s; }
+    return s; }
+  shrubBerries(sp,F,rnd,bare){ const b=sp.berry; let s='';
+    this.shrubScatter(F,b.n||13,rnd,bare?0.7:0.82).forEach(p=>{
+      s+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${(b.r||2.6).toFixed(1)}" fill="${b.col}"/><circle cx="${(p[0]-0.8).toFixed(1)}" cy="${(p[1]-0.9).toFixed(1)}" r="0.9" fill="#fff" opacity="0.5"/>`; });
+    return s; }
+  shrubSnow(F,bare){ const F2=n=>(+n).toFixed(1); const topY=F.cy-F.h*0.72; let s='';
+    s+=`<path d="M ${F2(-F.w*0.58)} ${F2(topY+9)} Q 0 ${F2(topY-4)} ${F2(F.w*0.58)} ${F2(topY+9)} Q 0 ${F2(topY+15)} ${F2(-F.w*0.58)} ${F2(topY+9)} Z" fill="#F4F9FC" opacity="${bare?0.5:0.85}"/>`;
+    s+=`<ellipse cx="${F2(-F.w*0.32)}" cy="${F2(F.cy-F.h*0.18)}" rx="13" ry="4" fill="#EEF5FA" opacity="0.7"/><ellipse cx="${F2(F.w*0.3)}" cy="${F2(F.cy+F.h*0.04)}" rx="10" ry="3.5" fill="#EEF5FA" opacity="0.58"/>`;
+    return s; }
+  shrubAbove(sp,g,S){ S=S||this.SEASONS.Summer;
+    const F=this.SHRUB_FORM[sp.shrubKind]||this.SHRUB_FORM.default;
+    const evergreen=!!sp.evergreen; const rnd=this.rng(this.hashId(sp.id+'|shrubV1'));
+    const winterBare=!evergreen && S.key==='Winter';
+    const flowerBare=(sp.shrubKind==='forsythia' && S.key==='Spring');
+    const cf=(h)=>{ if(evergreen){ return S.key==='Winter'?this.mix(h,'#5E6E62',0.14):h; } return this.seasonCol(h,S); };
+    const cols=sp.canopy.map(cf); const dk=this.mix(cols[0],'#22401E',0.5);
+    const flowering = sp.flower && sp.flower.months.indexOf(S.key)>=0;
+    const berrying  = sp.berry && sp.berry.months.indexOf(S.key)>=0;
+    const twCol = winterBare ? (sp.shrubKind==='dogwood'?'#B0392A':'#6C5C40') : '#5A4A2E';
+    let body='';
+    body+=this.shrubStems(F,this.rng(this.hashId(sp.id+'|stem')),twCol,'#7C6A40');
+    if(winterBare || flowerBare){ body+=this.shrubBareTwigs(sp,F,this.rng(this.hashId(sp.id+'|twig')),S,winterBare); }
+    else { body+=this.shrubMass(F,cols,dk,rnd,S); }
+    if(winterBare && sp.winterDried && sp.flower){ body+=this.shrubFlowers(sp,F,this.rng(this.hashId(sp.id+'|dry')),{deep:'#8A7A54',mid:'#A99B72',light:'#C8BE9A'}); }
+    if(!winterBare && flowering){ body+=this.shrubFlowers(sp,F,this.rng(this.hashId(sp.id+'|flr'))); }
+    if(berrying){ body+=this.shrubBerries(sp,F,this.rng(this.hashId(sp.id+'|ber')),winterBare); }
+    if(S.snow){ body+=this.shrubSnow(F,winterBare); }
+    return `<g>${body}</g>`; }
 
   flowerAbove(sp,g,S){ S=S||this.SEASONS.Summer; const spike=['spike','bluebell','foxglove','snowdrop'].includes(sp.bloomKind);
     const phase=(S&&S.forceBloom)?'bloom':this.phenophase(sp,S); const dormant=phase==='dormant'; const bulb=this.isBulb(sp);
@@ -3169,6 +3399,7 @@ const GA=(()=>{ class GA_CLS {
       if(T.kind==='banded'){ for(let i=0;i<5;i++){ const by=cy-h*0.3+i*(h*0.15); s+=`<path d="M ${F(-w*0.44)} ${F(by)} Q 0 ${F(by-2.5)} ${F(w*0.44)} ${F(by)}" stroke="${i%2?T.band[0]:T.band[1]}" stroke-width="${F(h*0.055)}" fill="none" opacity="0.5"/>`; } }
       if(T.speck){ const rnd=this.rng(sd+5); const ns=Math.round(44*Math.max(0.45,scMul)); for(let i=0;i<ns;i++){ const a=rnd()*6.2832, rr=Math.sqrt(rnd()); const px=Math.cos(a)*w*0.4*rr, py=cy+Math.sin(a)*h*0.38*rr; s+=`<circle cx="${F(px)}" cy="${F(py)}" r="${(0.7+rnd()*1.1).toFixed(1)}" fill="${T.speck[Math.floor(rnd()*T.speck.length)]}" opacity="0.72"/>`; } }
       if(T.cortex){ const rnd=this.rng(sd+9); for(let i=0;i<5;i++){ const a=rnd()*6.2832; const px=Math.cos(a)*w*0.36, py=cy+Math.sin(a)*h*0.32; s+=`<ellipse cx="${F(px)}" cy="${F(py)}" rx="${(w*0.12).toFixed(1)}" ry="${(h*0.1).toFixed(1)}" fill="${T.cortex}" opacity="0.5"/>`; } }
+      if(T.vein){ const rnd=this.rng(sd+11); for(let i=0;i<4;i++){ const y0=cy+(rnd()*2-1)*h*0.3; s+=`<path d="M ${F(-w*0.44)} ${F(y0)} Q ${F((rnd()*2-1)*w*0.22)} ${F(y0+(rnd()*2-1)*h*0.2)} ${F(w*0.44)} ${F(y0+(rnd()*2-1)*h*0.14)}" stroke="${T.vein}" stroke-width="${(0.8+rnd()*1.3).toFixed(1)}" fill="none" opacity="0.5"/>`; } }
     }
     if(S.snow && scMul>0.34){ const topY=cy-h*0.42; s+=`<path d="M ${F(-w*0.42)} ${F(topY+7)} Q 0 ${F(topY-3)} ${F(w*0.42)} ${F(topY+7)} Q 0 ${F(topY+11)} ${F(-w*0.42)} ${F(topY+7)} Z" fill="#F5F9FC" opacity="0.9"/>`; }
     return s; }
@@ -3352,7 +3583,25 @@ function scatterFlowers(cx,specs,gr){ let g='';
    Placed on the static canvas, so they are purely decorative and never intercept a tap.
    Season-aware (snow caps in winter via _gaSeason.snow) and night-tinted like every other flora.
    Rule: stones add depth at the edges and along paths, never covering a plant or a growth-tree. */
-const STONE_KINDS=['flint','granite','quartz','amethyst','slate','sandstone'];
+// every stone the MEADOW scatters is an ordinary field stone — flint, granite, slate, sandstone
+// plus the pack's new plain kinds. The pack's crystals/geodes/menhirs exist in GA.STONE but are
+// deliberately never placed (calm realism, no ornaments — the habitats stay the heroes).
+const STONE_KINDS=['flint','granite','slate','sandstone','chalk','limestone','conglomerate','gneiss','ironstone'];
+/* one pack SHRUB, grounded like a tree: soft contact shadow + season/night tint. Plate units are
+   large (w≈70-100), so hedgerow scale is sc≈0.28-0.45. `seed` varies the silhouette per instance
+   (clones the species with a salted id → a different deterministic rng stream), `flip` mirrors. */
+function gaShrub(x,y,kind,sc,seed,flip){
+  const base=GA_SP[kind]||GA_SP.box;
+  const sp=(seed!=null)?Object.assign({},base,{id:base.id+'#'+seed}):base;
+  const F=GA.SHRUB_FORM[base.shrubKind]||GA.SHRUB_FORM.default;
+  const shW=(F.w*sc*1.05).toFixed(0), shH=(F.w*sc*0.17).toFixed(1);
+  const sh=_gaSeason.snow?'':`<ellipse cx="${x}" cy="${y+2}" rx="${shW}" ry="${shH}" fill="rgba(58,44,26,${DUSKY(_phase)?.07:.12})"/>`;
+  return sh+`<g transform="translate(${x} ${y}) scale(${flip?-sc:sc} ${sc})">${gaTint(GA.shrubAbove(sp,1,_gaSeason))}</g>`;
+}
+/* one rich atlas GRASS clump (blades + seed heads) for the FRONT plane accents */
+function gaGrass(x,y,kind,sc,g){
+  return `<g transform="translate(${x} ${y}) scale(${sc})">${gaTint(GA.grassAbove(GA_SP[kind]||GA_SP.meadow,(g==null?0.85:g),_gaSeason))}</g>`;
+}
 // a single Atlas stone, grounded with a soft contact shadow. base sits at (x,y).
 function gaStone(x,y,sc,kind,seed){ const sp=GA_SP[kind]||GA_SP.flint; const T=GA.STONE[sp.kind];
   const sw=(T.w*sc*0.5), shy=y+2;
@@ -3414,13 +3663,19 @@ function drawFarStones(W,dusky){ let g='';
     // grounded on the meadow floor in the MIDDLE distance — env plants (drawn AFTER) sit in front, so these read
     // as small distant rocks resting ON the ground, not floating on a hillside. Lighter rounded kinds only.
     const dy=430+((i*13)%18), sc=0.09+r(1)*0.08;
-    g+=`<g opacity="${dusky?0.6:0.84}">${gaStone(dsx,dy,sc,['granite','flint','sandstone','granite','slate'][Math.floor(r(2)*5)],(i*617+11)>>>0)}</g>`;
+    g+=`<g opacity="${dusky?0.6:0.84}">${gaStone(dsx,dy,sc,['granite','flint','sandstone','chalk','slate','limestone','gneiss'][Math.floor(r(2)*7)],(i*617+11)>>>0)}</g>`;
   }
   return g; }
 function drawNearStones(W,dusky){ let g='';
   // the knoll's cairn — the Atlas's slate is a natural stack of flat slabs; set LOW on the knoll's front, well
   // below the grass roots (grass roots at meaningY+30 and grow UP; this sits at +58, in front, clear).
   g+=gaStone(HABX.meaning+120, HABY.meaning+58, 0.5, 'slate', 20001) + myPebble(HABX.meaning+94, HABY.meaning+64, 0.9, 0, 20002);
+  // singles where stones truly gather: path edges · stream bank · pond rim · the knoll's slopes
+  g+=gaStone(742,530,0.24,'flint',30001)+gaStone(854,538,0.19,'chalk',30002);            // either side of the trail's foot
+  g+=gaStone(2406,514,0.26,'limestone',30003);                                            // west stream bank, above the wader's run
+  g+=gaStone(3052,556,0.2,'gneiss',30004);                                                // hugging the pond's east rim
+  g+=gaStone(1568,498,0.26,'granite',30005)+myPebble(1592,504,0.8,2,30006);               // the knoll's west slope
+  g+=gaStone(1938,512,0.21,'ironstone',30007);                                            // its quieter east fall
   // a sparse scatter of single rocks in the open low foreground — well spaced, never on tree/water/path/plant band
   const cores=HAB.map(id=>HABX[id]+(HAB_TX[id]||0));
   const clear=x=> cores.some(c=>Math.abs(x-c)<104)                          // clear of every growth-tree
@@ -3450,18 +3705,15 @@ function envMeadow(cx,by,gr){ // Body — a full, healing wildflower meadow (tal
 }
 function envHome(cx,by,phase,gr){ // Home — a tended homestead garden
   // a soft row of individual rounded bushes (varied sizes and tones) instead of the old hedge-block
-  const hgB=nightTint(frost('#5E9A4E'),phase), hgL=nightTint(frost('#79B25C'),phase), hgD=nightTint(frost('#4C8440'),phase);
   let g='<g>';
   // (shifted left so the nearest bush clears the oak's flared base + root buttresses — no root-on-bush overlap)
-  const bsh=DUSKY(phase)?.07:.12;   // contact shadows ground the bushes like the trees + walkers
-  [[-232,0,19],[-198,4,24],[-164,-2,21],[-130,3,25],[-100,-1,20],[-72,4,16]].forEach(([dx,dy,r],i)=>{
-    const bx=cx+dx, byy=by-2+dy;
-    g+=`<ellipse cx="${bx}" cy="${(byy+r*0.5+3).toFixed(0)}" rx="${(r*0.82).toFixed(0)}" ry="${(r*0.16).toFixed(1)}" fill="rgba(58,44,26,${bsh})"/>`+
-       `<ellipse cx="${(bx-r*0.45).toFixed(0)}" cy="${byy+3}" rx="${(r*0.62).toFixed(0)}" ry="${(r*0.5).toFixed(0)}" fill="${hgD}"/>`+
-       `<ellipse cx="${(bx+r*0.4).toFixed(0)}" cy="${byy+4}" rx="${(r*0.55).toFixed(0)}" ry="${(r*0.45).toFixed(0)}" fill="${i%2?hgD:hgB}"/>`+
-       `<ellipse cx="${bx}" cy="${(byy-r*0.28).toFixed(0)}" rx="${(r*0.66).toFixed(0)}" ry="${(r*0.55).toFixed(0)}" fill="${hgB}"/>`+
-       `<ellipse cx="${(bx+r*0.15).toFixed(0)}" cy="${(byy-r*0.42).toFixed(0)}" rx="${(r*0.3).toFixed(0)}" ry="${(r*0.24).toFixed(0)}" fill="${hgL}" opacity=".75"/>`;
-  });
+  // the tended hedgerow, from the pack: clipped box between a garden hydrangea and a lilac —
+  // each instance seeded differently so the row never repeats one silhouette
+  g+=gaShrub(cx-226,by+8,'box',.30,1)
+    +gaShrub(cx-180,by+10,'hydrangea',.34,2)
+    +gaShrub(cx-140,by+7,'box',.27,3,true)
+    +gaShrub(cx-98,by+11,'lilac',.36,4)
+    +gaShrub(cx-66,by+8,'box',.24,5,true);
   g+=`</g>`;
   // a trail winding from the foreground up INTO the woods — S-curves, passing clear to the RIGHT of the tree
   const ppts=[{x:cx+150,y:by-146,w:5},{x:cx+98,y:by-98,w:9},{x:cx+130,y:by-34,w:13},{x:cx+54,y:by+30,w:17},{x:cx+2,y:by+92,w:22},{x:cx-30,y:620,w:27}];
@@ -3482,7 +3734,10 @@ function envHome(cx,by,phase,gr){ // Home — a tended homestead garden
 }
 function envThicket(cx,by,phase,gr){ // Connection — a green hedgerow thicket in soft WHITE blossom (hawthorn/elder, not pink)
   let g=''; const tk=nightTint('#6E5A3E',phase), l1=nightTint(frost('#7FB268'),phase), l2=nightTint(frost('#8FC078'),phase), l3=nightTint(frost('#6BA354'),phase), wf=nightTint('#FBF3E8',phase), cf=nightTint('#EAD9C2',phase);
-  [[-150,30],[146,26]].forEach(b=>{ const bx=cx+b[0],r=b[1]; g+=`<g transform="translate(${bx} ${by+12})"><rect x="-3" y="-30" width="6" height="36" fill="${tk}"/><ellipse cx="0" cy="-42" rx="${r}" ry="${(r*0.85).toFixed(0)}" fill="${l1}"/><ellipse cx="-8" cy="-48" rx="${(r*0.6).toFixed(0)}" ry="${(r*0.55).toFixed(0)}" fill="${l2}"/><ellipse cx="9" cy="-46" rx="${(r*0.5).toFixed(0)}" ry="${(r*0.45).toFixed(0)}" fill="${l3}"/>`+[[-9,-46],[6,-50],[12,-42],[-4,-38],[-13,-44],[3,-44],[9,-49]].map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="${(1.9-(i%2)*0.5).toFixed(1)}" fill="${i%3?wf:cf}"/>`).join('')+`</g>`; });
+  // the thicket itself, from the pack: a hawthorn and an elder — white sprinkle in spring,
+  // white umbels in summer, red haws + black elderberries in autumn (true hedgerow whites)
+  g+=gaShrub(cx-150,by+14,'hawthorn',.42,6)
+    +gaShrub(cx+146,by+12,'elder',.44,7,true);
   for(let i=0;i<9;i++){ const px=cx-150+i*38, py=by+30+(i%3)*6; g+=`<circle cx="${px}" cy="${py}" r="2" fill="${i%2?wf:l2}" opacity=".8"/>`; }
   g+=scatterFlowers(cx,[[-138,by+24,'daisy','cream',.58],[-92,by+30,'lavender',null,.5,70],[-44,by+30,'buttercup',null,.46],[78,by+26,'daisy','cream',.6],[128,by+22,'bluebell',null,.52,52]],gr);
   return g;
@@ -3502,6 +3757,8 @@ function envKnoll(cx,by,phase,gr){ // Meaning — a sunlit knoll with a stone ca
   }
   // a cairn — the Atlas's slate renders as a natural stack of flat slabs, so one clean stone reads as a built
   // cairn; set LOW on the knoll's front, well below the grass roots + a small companion. (see stonescape below)
+  // low heather domes on the sunny slope (evergreen; wears snow caps in winter)
+  g+=gaShrub(cx-58,by+46,'heather',.36,8)+gaShrub(cx+34,by+52,'heather',.30,9,true);
   g+=`<g stroke="${nightTint('#C9A24E',phase)}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".82">`;
   [-156,-96,96,160].forEach((dx,i)=>{ const x=cx+dx,y=by+30; g+=`<g class="sway" style="animation-duration:${8+i*0.3}s;animation-delay:${-i}s"><path d="M${x} ${y} C ${x-3} ${y-26} ${x-5} ${y-36} ${x-7} ${y-48} M${x} ${y} C ${x} ${y-28} ${x+1} ${y-38} ${x+2} ${y-50} M${x} ${y} C ${x+3} ${y-26} ${x+6} ${y-36} ${x+9} ${y-48}"/></g>`; });
   g+=`</g>`;
@@ -3518,6 +3775,8 @@ function envCraft(cx,by,phase,gr){ // Craft — a quiet apiary: a few straw hive
     +`<rect x="-10" y="12" width="20" height="4" rx="2" fill="${wood}"/><rect x="-8" y="16" width="3" height="8" fill="${wood}"/><rect x="5" y="16" width="3" height="8" fill="${wood}"/>`
     +`<ellipse cx="0" cy="8" rx="15" ry="6" fill="${nightTint('#C9924A',phase)}"/><ellipse cx="0" cy="1" rx="13" ry="6" fill="${nightTint('#D9A85C',phase)}"/><ellipse cx="0" cy="-5.5" rx="10.5" ry="5.4" fill="${nightTint('#C9924A',phase)}"/><ellipse cx="0" cy="-11" rx="7.5" ry="4.6" fill="${nightTint('#D9A85C',phase)}"/><circle cx="0" cy="-16" r="3.4" fill="${nightTint('#C9924A',phase)}"/>`
     +`<path d="M-3 10 A 3 3 0 0 1 3 10 Z" fill="${nightTint('#5A4026',phase)}"/></g>`;
+  // the butterfly bush of the apiary, behind the skeps (bee- and butterfly-fodder in bloom)
+  g+=gaShrub(cx+112,by+2,'buddleja',.34,10);
   g+=hive(cx-152,by+18,1)+hive(cx+34,by+30,0.84)+hive(cx+176,by+8,1.08);
   // a spade resting in the soil, off to one side
   g+=`<g transform="translate(${cx-196} ${by+24}) rotate(9)"><rect x="-1.6" y="-32" width="3.2" height="28" rx="1.6" fill="${wood}"/><rect x="-5" y="-36" width="10" height="4.4" rx="2.2" fill="${wood}"/><path d="M-5 -4 L5 -4 L4 8 C 2 11 -2 11 -4 8 Z" fill="${nightTint('#9AA1A8',phase)}"/></g>`;
@@ -3543,9 +3802,10 @@ function envStream(cx,by,dusky,gr){ // Future — a river springing from the woo
     g+=`<path class="flow flow2" d="${md2}" stroke="#DFF3EC" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-dasharray="2 30" opacity=".35"/>`; }
   g+=`<g stroke="#CDEFE6" stroke-width="2.2" fill="none" opacity=".5" stroke-linecap="round"><path d="M${cx+30} ${by+6} q 14 5 26 1"/><path d="M${cx+8} ${by+92} q 16 6 30 1"/></g>`;
   // reeds + cattail on the banks — the channel itself stays clear (no boulders in the water's path)
-  g+=`<g stroke="#3E7A6A" stroke-width="3" fill="none" stroke-linecap="round"><path d="M${cx-88} ${by+74} C ${cx-92} ${by+42} ${cx-90} ${by+24} ${cx-88} ${by+6}"/><path d="M${cx+96} ${by+12} C ${cx+100} ${by-14} ${cx+98} ${by-30} ${cx+96} ${by-46}"/></g>`;
-  g+=`<g transform="translate(${cx-104} ${by+44})"><rect x="-2" y="-38" width="4" height="38" fill="#7E6A3E"/><rect x="-3.5" y="-50" width="7" height="16" rx="3.5" fill="#8A5A2E"/></g>`;
   // cornflowers + bearded irises on the banks (never in the channel; right-bank ones clear of the willow at cx+84)
+  // reed beds from the atlas (feather reed — blades + seed heads), rooted on both banks;
+  // the east clump is the darter's perch/roost. gaTint keeps them dimmed at dusk/night.
+  g+=gaGrass(cx-92,by+54,'reed',.30,.9)+gaGrass(cx+96,by+52,'reed',.27,.9);
   g+=scatterFlowers(cx,[[-96,by+46,'cornflower','blue',.5],[-72,by+18,'iris',null,.48,58],[126,by+34,'cornflower','blue',.48],[152,by+52,'iris',null,.46,56]],gr);
   // the source emerges from WITHIN a bush clump sitting right over the river's head (tucked below the treeline)
   const fc=nightStep(frost(dusky?'#374B49':'#83AC6B')), fl=nightStep(frost(dusky?'#46585B':'#A6C68E'));
@@ -3690,10 +3950,11 @@ const FABLE_BEHAV={
 // backwards — which is exactly why they moon-walked. Only re-add fl:1 with a centre-line check.
 let fableEls=null,fableTimer=0,fableStarted=false;
 function fableRender(A,mid,t,roam){
-  const prev=window.__FABLE_NO_TICKS;
+  const prev=window.__FABLE_NO_TICKS, prevRoam=window.__FABLE_ROAM;
   window.__FABLE_NO_TICKS=!!roam;
+  window.__FABLE_ROAM=!!roam;   // v73 engine hook: damp in-gait bob while the director drives the lane
   try{ return A.render(mid,t); }
-  finally{ window.__FABLE_NO_TICKS=prev; }
+  finally{ window.__FABLE_NO_TICKS=prev; window.__FABLE_ROAM=prevRoam; }
 }
 function fableDur(A,mid){ const mo=A&&A.motions&&A.motions.find(m=>m.id===mid); return (mo&&mo.dur)||1; }
 function fableCollect(){
@@ -4033,6 +4294,16 @@ function renderMeadow(force,opt){
   }
   // STONES · middle-distance layer — grounded on the meadow floor (after the snow blanket so they rest ON snow in
   // winter), BEHIND the env plants which draw next and sit in front of them. Foreground layer comes later.
+  // grass layer 1 — a FINE, sparse band on the mid-distance floor: smaller, quieter, less
+  // contrast than the carpet (real aerial perspective), never in water/on the trail
+  { const bclear=x=>(Math.abs(x-(HABX.future+34))<130 || Math.abs(x-HABX.calm)<190 || Math.abs(x-904)<84);
+    const BGC=(dusky?['#42604A','#3B5843']:['#679C55','#5D9049']).map(c=>nightTint(c,_phase));
+    for(let bx=54,bi=0; bx<W; bx+=84+((bi*19)%30), bi++){
+      if(bclear(bx)) continue;
+      const byy=434+((bi*13)%22), bsc=(0.16+((bi*7)%9)/100);
+      st+=`<g transform="translate(${bx.toFixed(0)} ${byy}) scale(${bsc.toFixed(2)})" opacity=".85">${grassClump(0,0,BGC[bi%2],true,bi*11+5)}</g>`;
+    }
+  }
   st+=drawFarStones(W,dusky);
   // per-habitat environments (kept in id'd groups so they read the same as before)
   const gG={}; HAB.forEach(id=>gG[id]=growthOf(id));
@@ -4049,11 +4320,14 @@ function renderMeadow(force,opt){
     st+=grassClump(mx-16,490)+grassClump(mx+22,494);
     st+=`<g class="sway" style="animation-duration:8s;animation-delay:${-i}s"><g transform="translate(${mx} 494)">${wildflower(TSP[i%TSP.length][0],TSP[i%TSP.length][1],.5,64,tgr)}</g></g>`;
   }
+  // a lone dogwood on the stream's west bank (fully inside the Future camera frame) — its bare
+  // RED stems carry the winter waterside, exactly where a dogwood belongs
+  st+=gaShrub(HABX.future-96,510,'dogwood',.34,12);
   // a denser carpet of LOW grass in the OPEN foreground — kept clear of the water (stream + pool), the
   // home trail, and the habitat cores where the env plants live, so tufts only fill genuinely empty ground
   { const clear=x=>(Math.abs(x-(HABX.future+34))<120 || Math.abs(x-HABX.calm)<190 || Math.abs(x-800)<74);   // stream · pool incl. rim · the trail's FOREGROUND run
     const GC=(dusky?['#3E5B46','#47654E','#39543F','#43604A']:['#5DA24C','#6FB05A','#559A46','#66A852']).map(c=>nightTint(c,_phase));
-    for(let gx=30,gi=0; gx<W; gx+=42+((gi*13)%22), gi++){
+    for(let gx=30,gi=0; gx<W; gx+=36+((gi*13)%20), gi++){
       if(clear(gx)) continue;
       const gy=522+((gi*17)%24), gsc=(0.32+((gi*11)%16)/100);   // low foreground band, below the env plants
       st+=`<g transform="translate(${gx.toFixed(0)} ${gy}) scale(${gsc.toFixed(2)})">${grassClump(0,0,GC[gi%4],true,gi*7+3)}</g>`;
@@ -4063,6 +4337,19 @@ function renderMeadow(force,opt){
   //  the only ground-season treatment we add on the static canvas is the winter snow blanket up above, which
   //  must sit UNDER the plants/stones — something an on-top overlay cannot do.)
   st+=drawNearStones(W,dusky);   // STONES · near layer — cairn + sparse foreground rocks, in FRONT of the plants (never hiding them)
+  // grass layer 3 — FRONT accents: a handful of the atlas's rich grasses (meadow · fescue ·
+  // fountain) in the lowest open ground. Few and distinct — depth, not a wall of green.
+  { const cores2=HAB.map(id=>HABX[id]+(HAB_TX[id]||0));
+    const fclear=x=> cores2.some(c=>Math.abs(x-c)<110)
+      || Math.abs(x-(HABX.future+34))<150 || Math.abs(x-HABX.calm)<200 || Math.abs(x-800)<80
+      || Math.abs(x-BEARX)<BEARAMP+18 || FABLE_RUNS.some(r=>x>r[0]-30&&x<r[1]+30);
+    const FG=['meadow','fescue','fountain'];
+    for(let fx=120,fi=0; fx<W-90; fx+=196+((fi*53)%88), fi++){
+      if(fclear(fx)) continue;
+      const fy=550+((fi*23)%26), fsc=0.26+((fi*13)%12)/100;
+      st+=gaGrass(fx,fy,FG[fi%3],fsc,0.8+((fi*7)%20)/100);
+    }
+  }
   // the six growth-trees: static host (accent tint + contact shadow + tree art). Their transient
   // rising glow sparkles ride on the LIVE overlay (lvGlow) so they animate + fade without re-rastering.
   let lvGlow='';
@@ -4112,7 +4399,9 @@ function renderMeadow(force,opt){
        and each other (see FABLE_RUNS, which also keeps near stones out from under their feet).
      Painter's order = the y-sort below (farther first); deliberate occluder tufts are added
      AFTER the animals so a walker visibly passes BEHIND the nearest plants. */
-  const CAST=[
+  const night = phase==='night';
+  const CAST=[];
+  if(!night) CAST.push(
     // far hillside
     {id:'deer',     x:1000, y:336, sc:.74, off:.60, amp:80, yd:12, extra:` opacity="${dusky?.5:.72}"`},
     {id:'deer',     x:1380, y:320, sc:.58, off:.15, amp:34, yd:8, extra:` opacity="${dusky?.45:.62}"`},
@@ -4129,7 +4418,11 @@ function renderMeadow(force,opt){
     {id:'bee',      mid:'patrol', x:HABX.craft-140, y:HABY.craft-36, sc:.44, off:.12, flt:14,fltAmp:16,fltSeed:221},
     {id:'bee',      mid:'waggle', x:HABX.craft+40,  y:HABY.craft-52, sc:.42, off:.55, flt:13,fltAmp:14,fltSeed:222},
     {id:'bee',      mid:'patrol', x:HABX.craft+176, y:HABY.craft-70, sc:.4,  off:.30, flt:13,fltAmp:15,fltSeed:223},
-    {id:'dragonfly',mid:'hover',  x:HABX.future-30, y:HABY.future-40, sc:.78, off:.80, flt:14,fltAmp:30,fltSeed:205},
+    // the odonata trio from the v73 pack — the hawker hovers the stream head, the darter keeps
+    // its sit-and-sally perch by the east reeds, the demoiselle flutters low over the water
+    {id:'dragonfly',mid:'hover',  x:HABX.future+6,  y:HABY.future-40, sc:.78, off:.80, flt:14,fltAmp:26,fltSeed:205},
+    {id:'darter',   mid:'perch',  x:HABX.future+96, y:HABY.future-4, sc:.52, off:.35, flt:19,fltAmp:3, fltSeed:231},   // on the east reed tops
+    {id:'demoiselle',mid:'flutter',x:HABX.future+40, y:HABY.future+2,  sc:.5,  off:.70, flt:16,fltAmp:14,fltSeed:232},
     // near foreground — one open-ground territory per walker (FABLE_RUNS mirrors these)
     {id:'fox',      x:100,  y:500, sc:.92, off:.35, amp:62, yd:10},   // open ground left of Body's flower tiers
     {id:'ladybug',  x:395,  y:526, sc:.45, off:.05, amp:30, yd:6},
@@ -4141,15 +4434,41 @@ function renderMeadow(force,opt){
     {id:'fish',     x:HABX.calm-92, y:508, sc:.45, off:.25, amp:22, yd:4, extra:' opacity=".8"'},
     {id:'mallard',  x:HABX.calm-4,  y:522, sc:.92, off:.30, amp:45, yd:3},
     {id:'frog',     x:HABX.calm-102, y:528, sc:.70, off:.55, amp:16, yd:4},   // west lily-corner, body-width clear of the mallard's range
-    {id:'snail',    x:2900, y:566, sc:.55, off:.85, amp:24, yd:2},    // crosses in FRONT of the pond's rim, above the HUD dot row's screen band
-  ];
-  if(dusky) CAST.push({id:'owl',mid:'perch',x:1452,y:320,sc:.45,off:.5,amp:0,yd:0,extra:' opacity=".85"'});
-  if(total>=12) CAST.push({id:'swallowtail',mid:'flit',x:HABX.meaning-90,y:HABY.meaning-150,sc:.5,off:.33,flt:20});
-  if(total>=20) CAST.push({id:'peacock',mid:'flutter',x:HABX.future-60,y:HABY.future-130,sc:.5,off:.5,flt:21,fltAmp:24});
-  if(total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-170,y:HABY.calm-170,sc:.52,off:.66,flt:22});   // over the pond's west edge, clear of the pine crown
+    {id:'snail',    x:2900, y:566, sc:.55, off:.85, amp:24, yd:2}     // crosses in FRONT of the pond's rim, above the HUD dot row's screen band
+  );
+  if(!night && phase==='dusk') CAST.push({id:'bird', mid:'sing', x:682, y:415, sc:.58, off:.4, flt:22, fltAmp:2, fltSeed:233});   // the evening songbird sings from the hedgerow lilac's crown
+  if(night){
+    /* ── THE GARDEN SLEEPS (deep night): a deliberately SPARSER cast, not a dimmed day.
+       Nocturnal animals stay out (fox, hedgehog, mouse, snail, the croaking frog — and the
+       owl below); deer, bear, rabbit, turtle, ladybug and every butterfly/bee rest OUT OF
+       SIGHT until dawn; and a few sleepers remain to be found, each in the pack's dedicated
+       night pose (motions flagged night:true): the duck head-tucked on the water, the stork's
+       one-legged roost, the songbird asleep where it sang at dusk, the fish settled deep,
+       the odonata roosting on the reeds. All are gentle in-place floats on the same flipbook
+       engine — same reduced-motion / motion-calm gates, no new animation machinery. */
+    CAST.push(
+    // nocturnal — awake and about
+    {id:'fox',      x:100,  y:500, sc:.92, off:.35, amp:62, yd:10},
+    {id:'hedgehog', x:640,  y:512, sc:.80, off:.65, amp:40, yd:8},
+    {id:'mouse',    x:800,  y:526, sc:.50, off:.48, amp:34, yd:6},
+    {id:'snail',    x:2900, y:566, sc:.55, off:.85, amp:24, yd:2},
+    {id:'frog',     mid:'croak', x:HABX.calm-120, y:530, sc:.70, off:.55, flt:18, fltAmp:2, fltSeed:302},   // the night chorus at the water's edge
+    // asleep where you'd find them — the pack's dedicated night poses, breathing in place
+    {id:'mallard',  mid:'sleep', x:HABX.calm+26,  y:521, sc:.92, off:.30, flt:30, fltAmp:3, fltSeed:301, extra:' opacity=".9"'},   // head tucked, adrift on the dark pond
+    {id:'stork',    mid:'sleep', x:2520, y:533, sc:1, off:.45, flt:34, fltAmp:2, fltSeed:305, extra:' opacity=".85"'},             // one-legged roost in the shallows
+    {id:'bird',     mid:'sleep', x:682,  y:415, sc:.60, off:.40, flt:26, fltAmp:1.5, fltSeed:306, extra:' opacity=".92"'},          // asleep on the lilac where it sang at dusk
+    {id:'fish',     mid:'rest',  x:HABX.calm-92, y:520, sc:.45, off:.25, flt:24, fltAmp:2, fltSeed:307, extra:' opacity=".3"'},    // settled low under the dark water
+    {id:'darter',    mid:'roost', x:HABX.future+96, y:HABY.future-4, sc:.52, off:.20, flt:26, fltAmp:2, fltSeed:303},  // asleep on the east reeds
+    {id:'demoiselle',mid:'roost', x:HABX.calm-158,  y:HABY.calm+26,  sc:.48, off:.60, flt:28, fltAmp:2, fltSeed:304}    // asleep on the lavender
+    );
+  }
+  if(dusky) CAST.push({id:'owl',mid:'perch',x:1560,y:320,sc:.45,off:.5,amp:0,yd:0,extra:' opacity=".85"'});   // in the Meaning frame, over the knoll treeline
+  if(!night && total>=12) CAST.push({id:'swallowtail',mid:'flit',x:HABX.meaning-90,y:HABY.meaning-150,sc:.5,off:.33,flt:20});
+  if(!night && total>=20) CAST.push({id:'peacock',mid:'flutter',x:HABX.future-60,y:HABY.future-130,sc:.5,off:.5,flt:21,fltAmp:24});
+  if(!night && total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-170,y:HABY.calm-170,sc:.52,off:.66,flt:22});   // over the pond's west edge, clear of the pine crown
   // the dusk owl gets a bare perch-branch reaching out of the treeline (drawn BEFORE the birds,
   // so the owl sits on it) — it was floating on the canopy texture
-  if(dusky) lv+=`<g opacity=".8" pointer-events="none"><path d="M1408 340 C 1428 335 1448 333 1464 334" stroke="#241E38" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M1424 337 C 1432 331 1441 328 1450 327" stroke="#241E38" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>`;
+  if(dusky) lv+=`<g opacity=".8" pointer-events="none"><path d="M1516 340 C 1536 335 1556 333 1572 334" stroke="#241E38" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M1532 337 C 1540 331 1549 328 1558 327" stroke="#241E38" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>`;
   // painter's order: farther (smaller y) first, nearer last — a nearer animal always crosses IN FRONT
   // (deterministic, so fableCollect's id|x|off snapshot keys survive every rebuild unchanged)
   CAST.slice().sort((a,b)=>a.y-b.y).forEach(o=>{ lv+=FB(o); });
