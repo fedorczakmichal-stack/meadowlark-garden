@@ -196,9 +196,17 @@
   .scene-cap{text-align:center;font-family:var(--ff-brand);font-weight:500;font-size:16px;letter-spacing:-.01em;color:var(--ink);padding:6px 18px 0;transition:opacity .3s var(--ease)}
   .scene-cap b{color:var(--accent,var(--gold-text));font-weight:600}
   .scene-hint{text-align:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-text);opacity:.8;padding:3px 0 0}
-  .greeting{padding:11px 18px 2px}
-  .greeting .hello{font-family:var(--ff-brand);font-weight:600;font-size:clamp(19px,5vw,23px);letter-spacing:-.02em;margin:0;line-height:1.15}
-  .greeting .season{color:var(--muted);font-size:13px;margin:4px 0 0}
+  /* a gentle greeting that surfaces over the meadow on open, then fades — no fixed text above the scene */
+  .scene-greet{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;
+    padding:22px;pointer-events:none;opacity:0;visibility:hidden;transition:opacity 1s var(--ease),visibility 1s}
+  .scene-greet.show{opacity:1;visibility:visible;transition:opacity .8s var(--ease)}
+  .scene-greet .sg-card{max-width:min(86%,30rem);text-align:center;
+    background:color-mix(in srgb,var(--surface) 78%,transparent);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+    border:1px solid color-mix(in srgb,#fff 50%,transparent);border-radius:22px;padding:16px 22px;
+    box-shadow:0 16px 40px -18px rgba(90,70,110,.45);transform:translateY(6px);transition:transform .8s var(--ease)}
+  .scene-greet.show .sg-card{transform:none}
+  .scene-greet .sg-hello{font-family:var(--ff-brand);font-weight:600;font-size:clamp(20px,5.2vw,25px);letter-spacing:-.015em;color:var(--ink);line-height:1.15}
+  .scene-greet .sg-sub{margin-top:7px;font-size:13.5px;color:var(--muted);line-height:1.42}
   .welcome{
     margin:14px 18px 0;background:var(--surface);border:1px solid rgba(232,148,62,.28);
     border-radius:16px;padding:13px 15px;display:flex;gap:11px;align-items:flex-start;
@@ -809,12 +817,8 @@
   <main>
     <!-- ░░ MEADOW ░░ -->
     <section class="view active" id="view-meadow" aria-label="Your meadow">
-      <div class="greeting">
-        <h1 class="hello" id="greetHello">A quiet meadow</h1>
-        <p class="season" id="greetSeason"></p>
-      </div>
-      <div id="welcomeSlot"></div>
       <div class="scene-stage">
+        <div class="scene-greet" id="sceneGreet" aria-live="polite"></div>
         <div class="scene-wrap" id="sceneWrap"></div>
         <div class="zoom-ctl">
           <button id="zoomIn" aria-label="Zoom in">+</button>
@@ -3216,6 +3220,15 @@ function renderMeadow(force,opt){
     st+=grassClump(mx-16,490)+grassClump(mx+22,494);
     st+=`<g class="sway" style="animation-duration:8s;animation-delay:${-i}s"><g transform="translate(${mx} 494)">${wildflower(TSP[i%TSP.length][0],TSP[i%TSP.length][1],.5,64,tgr)}</g></g>`;
   }
+  // a denser carpet of LOW grass across the meadow foreground — short tufts so the field reads fuller
+  { const nearWater=x=>Math.abs(x-(HABX.future+34))<92, nearTrail=x=>Math.abs(x-(HABX.home+124))<78;
+    const GC=(dusky?['#3E5B46','#47654E','#39543F','#43604A']:['#5DA24C','#6FB05A','#559A46','#66A852']).map(c=>nightTint(c,_phase));
+    for(let gx=26,gi=0; gx<W; gx+=38+((gi*13)%20), gi++){
+      if(nearWater(gx)||nearTrail(gx)) continue;
+      const gy=(gi%2?512:482)+((gi*17)%34), gsc=(0.3+((gi*11)%18)/100);
+      st+=`<g transform="translate(${gx.toFixed(0)} ${gy}) scale(${gsc.toFixed(2)})">${grassClump(0,0,GC[gi%4],true)}</g>`;
+    }
+  }
   // the six growth-trees: static host (accent tint + contact shadow + tree art). Their transient
   // rising glow sparkles ride on the LIVE overlay (lvGlow) so they animate + fade without re-rastering.
   let lvGlow='';
@@ -3259,16 +3272,20 @@ function renderMeadow(force,opt){
   const CAST=[
     {id:'rabbit',   x:HABX.connection-88, y:HABY.connection+34, sc:.95, off:.10, amp:70, yd:16},
     {id:'fox',      x:HABX.body-268, y:HABY.body+24,  sc:.90, off:.35, amp:130, yd:14},
-    {id:'swallowtail',mid:'flit',x:HABX.body+130, y:HABY.body-150, sc:.66,off:.50, flt:20,fltAmp:24,fltSeed:201},
+    {id:'swallowtail',mid:'flit',x:HABX.body+130, y:HABY.body-150, sc:.6,off:.50, flt:20,fltAmp:24,fltSeed:201},
+    {id:'commonblue',mid:'flit',  x:HABX.body-40,  y:HABY.body-90,  sc:.5, off:.15, flt:18,fltAmp:20,fltSeed:211},
+    {id:'butterfly', mid:'flutter',x:HABX.home+150, y:HABY.home-120, sc:.54,off:.62, flt:19,fltAmp:22,fltSeed:212},
     {id:'ladybug',  x:HABX.body+55,  y:HABY.body+68,  sc:.45, off:.05, amp:30, yd:8},
-    {id:'bee',      mid:'patrol', x:HABX.home+70,  y:HABY.home-118, sc:.90, off:.20, flt:16,fltAmp:18,fltSeed:202},
+    {id:'bee',      mid:'patrol', x:HABX.home+70,  y:HABY.home-118, sc:.58, off:.20, flt:16,fltAmp:18,fltSeed:202},
+    {id:'bee',      mid:'patrol', x:HABX.body+40,  y:HABY.body-70,  sc:.5,  off:.05, flt:15,fltAmp:16,fltSeed:213},
+    {id:'bee',      mid:'waggle', x:HABX.meaning+60,y:HABY.meaning-96,sc:.52,off:.42, flt:15,fltAmp:17,fltSeed:214},
     {id:'hedgehog', x:HABX.home-158, y:HABY.home+56,  sc:.80, off:.65, amp:46, yd:12},
     {id:'mouse',    x:HABX.home+128, y:HABY.home+66,  sc:.50, off:.48, amp:40, yd:9},
-    {id:'peacock',mid:'sail',   x:HABX.connection+70, y:HABY.connection-150, sc:.68, off:.75, flt:22,fltAmp:27,fltSeed:203},
+    {id:'peacock',mid:'flutter', x:HABX.connection+70, y:HABY.connection-150, sc:.62, off:.75, flt:22,fltAmp:27,fltSeed:203},
     {id:'deer',     x:1000, y:336, sc:.72, off:.60, amp:80, yd:14, extra:` opacity="${dusky?.5:.72}"`},
     {id:'deer',     x:1380, y:320, sc:.80, off:.15, amp:34, yd:8, extra:` opacity="${dusky?.5:.7}"`},
     {id:'bear',     x:BEARX,y:352, sc:.74, off:.40, amp:BEARAMP, yd:7, extra:` opacity="${dusky?.6:.9}"`},
-    {id:'bee',      mid:'waggle', x:HABX.craft+168, y:HABY.craft-56, sc:.62, off:.90, flt:14,fltAmp:15,fltSeed:204},
+    {id:'bee',      mid:'waggle', x:HABX.craft+168, y:HABY.craft-56, sc:.46, off:.90, flt:14,fltAmp:15,fltSeed:204},
     {id:'dragonfly',mid:'hover',  x:HABX.future-30, y:HABY.future-40, sc:.95, off:.80, flt:14,fltAmp:30,fltSeed:205},
     {id:'stork',    x:HABX.future+32, y:HABY.future+62, sc:1, off:.45, amp:46, yd:5, extra:` opacity="${dusky?.9:1}"`},
     {id:'turtle',   x:HABX.future-124,y:HABY.future+64, sc:.60, off:.70, amp:26, yd:3},
@@ -3278,8 +3295,9 @@ function renderMeadow(force,opt){
     {id:'snail',    x:HABX.calm+118,  y:HABY.calm+106, sc:.55, off:.85, amp:16, yd:3},
   ];
   if(dusky) CAST.push({id:'owl',mid:'perch',x:1452,y:320,sc:.45,off:.5,amp:0,yd:0,extra:' opacity=".85"'});
-  if(total>=12) CAST.push({id:'commonblue',mid:'flit',x:HABX.meaning-90,y:HABY.meaning-150,sc:.56,off:.33,flt:20});
-  if(total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-30,y:HABY.calm-150,sc:.6,off:.66,flt:22});
+  if(total>=12) CAST.push({id:'swallowtail',mid:'flit',x:HABX.meaning-90,y:HABY.meaning-150,sc:.5,off:.33,flt:20});
+  if(total>=20) CAST.push({id:'peacock',mid:'flutter',x:HABX.future-60,y:HABY.future-130,sc:.5,off:.5,flt:21,fltAmp:24});
+  if(total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-30,y:HABY.calm-150,sc:.52,off:.66,flt:22});
   CAST.forEach(o=>{ lv+=FB(o); });
   // golden-hour light wash (tints the animals + the canvas beneath, exactly as before)
   lv+=`<rect width="${W}" height="${H}" fill="url(#glow)" pointer-events="none"/>`;
@@ -3430,22 +3448,29 @@ const SEASON_NOTE={
   winter:"It's winter — the meadow's quiet, and that's all it is. Winter is rest, not falling behind."
 };
 function renderGreeting(){
-  document.getElementById('greetHello').textContent = GREET[dayPhase()];
-  document.getElementById('greetSeason').textContent = SEASON_NOTE[season()];
+  showSceneGreet();
+}
+// the greeting no longer lives above the scene — it surfaces briefly OVER the meadow on open, then fades,
+// and changes with the time of day and the season (a returning welcome takes precedence when you've been away)
+let _greetAt=0;
+function welcomeBackMsg(){
+  const gap=Date.now()-(store.meta.lastSeenAt||0), tended=store.journal.length>0;
+  if(tended && gap>=30*DAY) return "You're back — the garden held its place. However long it's been, none of it was lost.";
+  if(tended && gap>=WEEK) return "Welcome back. The meadow kept growing — nothing lapsed, nothing to catch up on.";
+  if(!tended && store.meta.firstOpenAt===store.meta.lastSeenAt) return "Welcome. This is your garden — seven quiet corners of a life. Tap one small thing, or just sit here a while.";
+  return null;
+}
+function showSceneGreet(force){
+  const el=document.getElementById('sceneGreet'); if(!el) return;
+  const now=Date.now(); if(!force && now-_greetAt<5000) return; _greetAt=now;
+  const wb=welcomeBackMsg(), hello=wb||GREET[dayPhase()], sub=wb?'':SEASON_NOTE[season()];
+  el.innerHTML=`<div class="sg-card"><div class="sg-hello">${esc(hello)}</div>${sub?`<div class="sg-sub">${esc(sub)}</div>`:''}</div>`;
+  requestAnimationFrame(()=>el.classList.add('show'));
+  clearTimeout(el._t); el._t=setTimeout(()=>{ const e=document.getElementById('sceneGreet'); if(e)e.classList.remove('show'); }, wb?4800:3400);
 }
 function maybeWelcomeBack(){
-  const slot=document.getElementById('welcomeSlot'); slot.innerHTML='';
-  const gap = Date.now()-(store.meta.lastSeenAt||0);
-  const tended = store.journal.length>0;
-  let msg=null;
-  if(tended && gap>=30*DAY) msg="You're back, and the garden held its place for you. However long it's been, none of it was lost.";
-  else if(tended && gap>=WEEK) msg="Welcome back. The meadow kept growing — nothing lapsed, nothing to catch up on.";
-  else if(!tended && store.meta.firstOpenAt===store.meta.lastSeenAt) msg="Welcome. This is your garden — seven quiet corners of a life. Tap one small thing below, or just sit here a while.";
-  if(msg){
-    slot.innerHTML=`<div class="welcome"><svg class="wb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-3 3-5 6-5 9a5 5 0 0 0 10 0c0-3-2-6-5-9z"/><path d="M12 12v9"/></svg><p>${msg}</p><button class="wb-x" aria-label="Dismiss">close</button></div>`;
-    slot.querySelector('.wb-x').addEventListener('click',()=>slot.innerHTML='');
-  }
-  store.meta.lastSeenAt=Date.now(); save();   // stamp AFTER the check
+  showSceneGreet(true);
+  store.meta.lastSeenAt=Date.now(); save();   // stamp AFTER the greeting has read the gap
 }
 
 /* ---- craft invitation band: the one hero card no other area gets, near the top of the Meadow.
