@@ -207,6 +207,100 @@
   .scene-greet.show .sg-card{transform:none}
   .scene-greet .sg-hello{font-family:var(--ff-brand);font-weight:600;font-size:clamp(20px,5.2vw,25px);letter-spacing:-.015em;color:var(--ink);line-height:1.15}
   .scene-greet .sg-sub{margin-top:7px;font-size:13.5px;color:var(--muted);line-height:1.42}
+
+  /* ── immersive garden mode: the meadow IS the screen; chrome becomes a quiet HUD ──
+     body.immersive is set once at boot; body.scene-full tracks "the meadow view is up".
+     Everything below the old fold (cards, craft band, test bar) lives in a bottom drawer. */
+  body.immersive header.bar,body.immersive nav.tabs{display:none}
+  body.immersive.scene-full{overflow:hidden;overscroll-behavior:none}
+  body.immersive:not(.scene-full) main{padding-top:calc(max(env(safe-area-inset-top),8px) + 48px)}
+  body.immersive .scene-wrap{--scene-h:100vh;border-bottom:0}
+  @supports (height:100dvh){ body.immersive .scene-wrap{--scene-h:100dvh} }
+  body.immersive .scene-cap,body.immersive .scene-hint{display:none}
+  /* a soft vignette over the scene — the "through a lens" calm, pure CSS, zero per-frame cost */
+  body.immersive .scene-stage::after{content:'';position:absolute;inset:0;z-index:5;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 42%,transparent 60%,rgba(46,32,58,.17) 100%)}
+  /* HUD chrome — glassy pills floating over the world (outside #app so sheets can aria-hide the app) */
+  .hud-gate,.hud-back,.hud-heavy{display:none}
+  body.immersive .hud-gate{position:fixed;top:max(env(safe-area-inset-top),12px);left:max(12px,calc(50% - var(--maxw)/2 + 12px));z-index:52;
+    display:grid;place-items:center;width:44px;height:44px;border-radius:15px;border:1px solid rgba(255,255,255,.55);
+    background:rgba(251,247,242,.74);backdrop-filter:blur(10px) saturate(150%);-webkit-backdrop-filter:blur(10px) saturate(150%);
+    box-shadow:0 10px 26px -14px rgba(90,70,110,.6);color:var(--ink);padding:0;border-radius:15px}
+  body.immersive .hud-gate svg{width:24px;height:24px}
+  body.immersive:not(.scene-full) .hud-gate{display:none}
+  body.immersive:not(.scene-full) .hud-back{position:fixed;top:max(env(safe-area-inset-top),12px);left:max(12px,calc(50% - var(--maxw)/2 + 12px));z-index:52;
+    display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(255,255,255,.55);background:rgba(251,247,242,.82);
+    backdrop-filter:blur(10px) saturate(150%);-webkit-backdrop-filter:blur(10px) saturate(150%);border-radius:999px;padding:10px 15px;
+    font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.05em;color:var(--ink);box-shadow:0 10px 26px -14px rgba(90,70,110,.6)}
+  body.immersive .hud-heavy{display:inline-flex;position:fixed;top:max(env(safe-area-inset-top),12px);right:max(12px,calc(50% - var(--maxw)/2 + 12px));z-index:52;
+    background:rgba(251,247,242,.74);backdrop-filter:blur(10px) saturate(150%);-webkit-backdrop-filter:blur(10px) saturate(150%)}
+  /* the garden-gate panel: the one way "out" of the meadow — Returns · Look back · Settings */
+  .gate-panel{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;justify-content:center;gap:10px;
+    padding:24px 22px calc(max(env(safe-area-inset-bottom),16px) + 10px);max-width:var(--maxw);margin:0 auto;
+    background:rgba(251,247,242,.9);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);
+    opacity:0;visibility:hidden;transition:opacity .35s var(--ease),visibility .35s}
+  .gate-panel.show{opacity:1;visibility:visible}
+  .gate-brand{display:flex;align-items:center;gap:9px;font-family:var(--ff-brand);font-weight:600;font-size:20px;letter-spacing:-.02em;color:var(--ink);margin:0 4px 8px}
+  .gate-brand svg{width:30px;height:25px;flex:none}
+  .gate-panel .gp-item{display:flex;align-items:center;gap:13px;text-align:left;background:var(--surface);border:1px solid var(--hairline);
+    border-radius:18px;padding:15px 16px;box-shadow:0 18px 36px -30px rgba(120,92,150,.6);font:inherit;
+    transform:translateY(8px);opacity:0;transition:transform .4s var(--ease),opacity .4s var(--ease)}
+  .gate-panel.show .gp-item{transform:none;opacity:1}
+  .gate-panel.show .gp-item:nth-child(3){transition-delay:.05s}
+  .gate-panel.show .gp-item:nth-child(4){transition-delay:.1s}
+  .gp-item .gp-ico{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(232,148,62,.12);color:var(--gold-text)}
+  .gp-item .gp-ico svg{width:22px;height:22px}
+  .gp-item b{display:block;font-size:15.5px;color:var(--ink);line-height:1.3}
+  .gp-item span span{display:block;font-size:12.5px;color:var(--muted);line-height:1.4;font-weight:400}
+  .gate-panel .gp-close{margin-top:12px;align-self:center;background:none;border:0;font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.06em;color:var(--gold-text);padding:11px 15px}
+  /* habitat dots + zoom become bottom HUD */
+  body.immersive #habDots{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(max(env(safe-area-inset-bottom),12px) + 58px);z-index:42;
+    padding:3px 13px;background:rgba(251,247,242,.62);border:1px solid rgba(255,255,255,.5);border-radius:999px;
+    backdrop-filter:blur(10px) saturate(150%);-webkit-backdrop-filter:blur(10px) saturate(150%);box-shadow:0 10px 24px -16px rgba(90,70,110,.5)}
+  body.immersive .zoom-ctl{bottom:calc(max(env(safe-area-inset-bottom),12px) + 106px);right:10px}
+  /* the tend drawer: everything that used to scroll under the meadow, one pull away */
+  #drawerHandle,#meadowDrawer .drawer-grab{display:none}
+  body.immersive #drawerHandle{position:fixed;left:50%;transform:translateX(-50%);bottom:max(env(safe-area-inset-bottom),12px);z-index:43;
+    display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.55);background:rgba(251,247,242,.84);
+    backdrop-filter:blur(10px) saturate(150%);-webkit-backdrop-filter:blur(10px) saturate(150%);border-radius:999px;padding:11px 17px;
+    font-family:var(--ff-brand);font-weight:600;font-size:14px;letter-spacing:-.01em;color:var(--ink);
+    box-shadow:0 12px 28px -16px rgba(90,70,110,.65);white-space:nowrap}
+  body.immersive #drawerHandle svg{width:16px;height:16px;color:var(--gold-text);flex:none}
+  body.immersive #meadowDrawer{position:fixed;left:0;right:0;bottom:0;z-index:48;max-width:var(--maxw);margin:0 auto;
+    background:rgba(251,247,242,.96);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);
+    border:1px solid var(--hairline);border-bottom:0;border-radius:22px 22px 0 0;
+    transform:translateY(102%);transition:transform .5s var(--ease);box-shadow:0 -20px 50px -30px rgba(90,70,110,.55)}
+  body.immersive #meadowDrawer.open{transform:none}
+  body.immersive #meadowDrawer .drawer-grab{display:block;width:100%;background:none;border:0;padding:11px 0 5px;cursor:pointer}
+  body.immersive #meadowDrawer .drawer-grab i{display:block;width:44px;height:5px;border-radius:3px;background:rgba(58,52,80,.18);margin:0 auto}
+  body.immersive #meadowDrawer .drawer-body{max-height:min(74vh,74dvh);overflow-y:auto;overscroll-behavior:contain;
+    padding-bottom:calc(max(env(safe-area-inset-bottom),10px) + 8px)}
+  body.immersive #meadowDrawer:not(.open) .drawer-body{visibility:hidden;transition:visibility 0s .5s}
+  /* ── in-scene tending: the bubble by the tree + the tap ring + the watering can ── */
+  .tend-bubble{position:absolute;z-index:3;transform:translate(-50%,-100%) translateY(8px);opacity:0;pointer-events:none;
+    width:max-content;max-width:240px;text-align:center;
+    background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    border:1px solid color-mix(in srgb,#fff 55%,transparent);border-radius:16px;padding:10px 13px 12px;
+    box-shadow:0 14px 34px -16px rgba(90,70,110,.55);transition:opacity .3s var(--ease),transform .3s var(--ease)}
+  .tend-bubble.show{opacity:1;transform:translate(-50%,-100%);pointer-events:auto}
+  .tend-bubble::after{content:'';position:absolute;left:50%;bottom:-6px;width:11px;height:11px;transform:translateX(-50%) rotate(45deg);
+    background:color-mix(in srgb,var(--surface) 88%,transparent);
+    border-right:1px solid color-mix(in srgb,#fff 55%,transparent);border-bottom:1px solid color-mix(in srgb,#fff 55%,transparent)}
+  .tend-bubble .tb-name{font-family:var(--ff-brand);font-weight:600;font-size:15px;color:var(--ink);line-height:1.2}
+  .tend-bubble .tb-word{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:3px 0 9px}
+  .tend-bubble .tb-water{display:inline-flex;align-items:center;gap:6px;background:var(--accent,#C1663B);color:#fff;border:0;border-radius:999px;
+    padding:8px 16px;font:inherit;font-size:13.5px;font-weight:600;box-shadow:0 8px 18px -8px var(--accent,#C1663B)}
+  .tend-bubble .tb-water svg{width:15px;height:15px}
+  .tap-ring circle{transform-box:fill-box;transform-origin:center;animation:tapRing .8s ease-out forwards}
+  @keyframes tapRing{from{transform:scale(.35);opacity:.7}to{transform:scale(2.6);opacity:0}}
+  .water-pour .can{transform-box:fill-box;transform-origin:60% 55%;animation:canPour 2.3s var(--ease) both}
+  @keyframes canPour{0%{transform:rotate(0);opacity:0}10%{opacity:1}22%{transform:rotate(18deg)}75%{transform:rotate(18deg);opacity:1}92%{transform:rotate(2deg)}100%{transform:rotate(0);opacity:0}}
+  .water-pour .wdrop{opacity:0;animation:wdropFall .72s linear infinite}
+  @keyframes wdropFall{0%{transform:translateY(0);opacity:0}18%{opacity:.9}88%{opacity:.8}100%{transform:translateY(76px);opacity:0}}
+  body.motion-calm .water-pour,body.motion-calm .tap-ring{display:none!important}
+  .godray{opacity:.07;animation:rayBreath 8s ease-in-out infinite alternate}
+  @keyframes rayBreath{from{opacity:.035}to{opacity:.1}}
+  body.motion-calm .godray{animation:none!important;opacity:.05}
   .welcome{
     margin:14px 18px 0;background:var(--surface);border:1px solid rgba(232,148,62,.28);
     border-radius:16px;padding:13px 15px;display:flex;gap:11px;align-items:flex-start;
@@ -854,6 +948,13 @@
       <div class="scene-cap" id="sceneCap"></div>
       <div id="habDots" aria-label="Wander to a habitat"></div>
       <div class="scene-hint">← swipe to wander · tap a place to tend →</div>
+      <button id="drawerHandle" aria-expanded="false" aria-controls="meadowDrawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c-3 4-5 7-5 10a5 5 0 0 0 10 0c0-3-2-6-5-10z"/><path d="M12 13v8"/></svg>
+        Tend one small thing
+      </button>
+      <div id="meadowDrawer">
+        <button class="drawer-grab" aria-label="Close the tending drawer"><i></i></button>
+        <div class="drawer-body" tabindex="-1">
       <details class="test-bar" id="testBar" open>
         <summary>Preview · season, time &amp; growth</summary>
         <div class="tb-row"><span class="tb-label">Season</span>
@@ -872,6 +973,8 @@
       <footer class="appfoot">
         <div>A calm garden for hard seasons. Nothing here ever expires.</div>
       </footer>
+        </div>
+      </div>
     </section>
 
     <!-- ░░ RETURNS / JOURNAL ░░ -->
@@ -1040,6 +1143,31 @@
       More
     </button>
   </nav>
+</div>
+
+<!-- immersive HUD: gate out of the meadow (top-left), back pill on inner views, heavy link (top-right) -->
+<button class="hud-gate" id="gateBtn" aria-label="Beyond the meadow — returns, look back, settings" aria-haspopup="dialog">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V10a8 8 0 0 1 16 0v11"/><path d="M4 21h16"/><path d="M8 21v-8.5M12 21v-9.5M16 21v-8.5"/><path d="M4 13.5h16"/></svg>
+</button>
+<button class="hud-back" id="hudBack">← Back to the meadow</button>
+<a class="heavy-link hud-heavy" href="#" id="heavyHud">If today is heavy</a>
+
+<!-- the garden gate panel: the calm way out — everything that isn't the meadow lives behind it -->
+<div class="gate-panel" id="gatePanel" role="dialog" aria-modal="true" aria-label="Beyond the meadow" tabindex="-1">
+  <div class="gate-brand"><svg><use href="#larkMark"/></svg>Meadowlark</div>
+  <button class="gp-item" data-go="journal">
+    <span class="gp-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h13a3 3 0 0 1 3 3v11H7a3 3 0 0 0-3 3z"/><path d="M4 5v14"/></svg></span>
+    <span><b>Small returns</b><span>Every time you showed up, kept.</span></span>
+  </button>
+  <button class="gp-item" data-go="path">
+    <span class="gp-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21c0-5 12-5 12-11a4 4 0 0 0-8 0"/><circle cx="6" cy="21" r="1.4" fill="currentColor"/><circle cx="14" cy="6" r="1.4" fill="currentColor"/></svg></span>
+    <span><b>Look back</b><span>The sky of your returns.</span></span>
+  </button>
+  <button class="gp-item" data-go="more">
+    <span class="gp-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M12 11v5"/></svg></span>
+    <span><b>Settings &amp; support</b><span>The promise, safety lines, and your garden's care.</span></span>
+  </button>
+  <button class="gp-close" id="gateClose">← Back to the meadow</button>
 </div>
 
 <!-- tend sheet -->
@@ -3970,6 +4098,12 @@ function renderMeadow(force,opt){
   CAST.forEach(o=>{ lv+=FB(o); });
   // golden-hour light wash (tints the animals + the canvas beneath, exactly as before)
   lv+=`<rect width="${W}" height="${H}" fill="url(#glow)" pointer-events="none"/>`;
+  // golden-hour god-rays: three soft light wedges leaning across the meadow (overlay-only, motion-gated)
+  if(phase==='golden'){
+    let rays=''; for(let i=0;i<3;i++){ const x=520+i*880;
+      rays+=`<polygon class="godray" style="animation-delay:${(-i*2.7).toFixed(1)}s" points="${x},0 ${x+150},0 ${x+430},${H} ${x+160},${H}"/>`; }
+    lv+=`<g fill="#FFE3AE" pointer-events="none">${rays}</g>`;
+  }
   // motes: pollen drifting by day, fireflies by dusk/night (spread across the world)
   {
     if(dusky){
@@ -4006,8 +4140,9 @@ function renderMeadow(force,opt){
   fableCollect();
   growAreaId=null;
 
-  // pointer-only (the cards are the keyboard/screen-reader controls) — so no focus ring/line on the scene
-  svg.querySelectorAll('.treeTap').forEach(el=>{ el.addEventListener('click',()=>openTend(el.dataset.area)); });
+  // pointer-only (the cards in the drawer are the keyboard/screen-reader controls) — first tap raises
+  // the in-scene bubble by the tree; the bubble's Water button (or a second tap) opens the tend sheet
+  svg.querySelectorAll('.treeTap').forEach(el=>{ el.addEventListener('click',()=>sceneTap(el.dataset.area)); });
   updateHabDots();
 }
 
@@ -4075,6 +4210,74 @@ function patchGlow(id){
   const glw=document.querySelector('#sceneWrap svg #glw-'+id); if(!glw) return;
   const st=stageOf(careOf(id));
   glw.innerHTML=glowSparkles(st,treeScale(id),AREA[id].accent,glowStrength(id));
+}
+
+/* ── in-scene tending (diegetic): first tap on a habitat raises a soft ring + a small
+   bubble by the tree; its Water button (or a second tap) opens the tend sheet. Pointer-only
+   sugar — the cards in the drawer stay the keyboard / screen-reader path, so the bubble is
+   aria-hidden and never in the tab order. No numbers here, only the stage word. ── */
+let bubbleArea=null, bubbleTimer=null;
+function sceneTap(id){
+  if(bubbleArea===id){ hideTendBubble(); openTend(id); return; }   // second tap goes straight in
+  tapRing(id); showTendBubble(id);
+}
+function showTendBubble(id){
+  const a=AREA[id]; if(!a||!store.areas[id]) return;
+  const plane=ensureSceneLayers().plane;
+  let b=plane.querySelector('.tend-bubble');
+  if(!b){ b=document.createElement('div'); b.className='tend-bubble'; b.setAttribute('aria-hidden','true'); plane.appendChild(b); }
+  const st=stageOf(careOf(id));
+  const cx=HABX[id]+(HAB_TX[id]||0);
+  const topY=Math.max(120, HABY[id]-TREE_HT[st]*treeScale(id)-42);
+  b.style.left=(cx/PANO_W*100).toFixed(3)+'%';
+  b.style.top=(topY/PANO_H*100).toFixed(3)+'%';
+  b.style.setProperty('--accent',a.accent);
+  b.innerHTML=`<div class="tb-name">${a.label}</div><div class="tb-word">${STAGE_WORD[st]}</div>`
+    +`<button class="tb-water" tabindex="-1"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3c-3.4 4.2-6 8-6 11a6 6 0 0 0 12 0c0-3-2.6-6.8-6-11z"/></svg>Water ${a.label}</button>`;
+  b.querySelector('.tb-water').addEventListener('click',ev=>{ ev.stopPropagation(); hideTendBubble(); openTend(id); });
+  b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+  bubbleArea=id;
+  if(bubbleTimer) clearTimeout(bubbleTimer);
+  bubbleTimer=setTimeout(hideTendBubble, 9000);   // quietly fold away if left alone
+}
+function hideTendBubble(){
+  bubbleArea=null;
+  if(bubbleTimer){ clearTimeout(bubbleTimer); bubbleTimer=null; }
+  const b=document.querySelector('#sceneWrap .tend-bubble'); if(b) b.classList.remove('show');
+}
+/* a soft expanding ring where the habitat was tapped — "the garden heard you" */
+function tapRing(id){
+  if(store.settings.motion==='calm'||reduceMotion()) return;
+  const svg=document.querySelector('#sceneWrap svg.scene-svg'); if(!svg) return;
+  const NS='http://www.w3.org/2000/svg';
+  const g=document.createElementNS(NS,'g'); g.setAttribute('class','tap-ring'); g.setAttribute('aria-hidden','true');
+  const cx=HABX[id]+(HAB_TX[id]||0);
+  g.innerHTML=`<circle cx="${cx}" cy="${HABY[id]}" r="30" fill="none" stroke="${AREA[id].accent}" stroke-width="4"/>`;
+  svg.appendChild(g); setTimeout(()=>{ if(g.isConnected) g.remove(); },900);
+}
+/* the watering moment: a small can tips over the crown and a few drops fall, then the
+   habitat's cross-fade growth takes over. Overlay-only, removed after ~2.4s; skipped
+   entirely in Calm / reduced-motion (the soul contract: sugar, never a requirement). */
+function wateringCan(id){
+  if(store.settings.motion==='calm'||reduceMotion()) return;
+  const svg=document.querySelector('#sceneWrap svg.scene-svg'); if(!svg) return;
+  const st=stageOf(careOf(id));
+  const cx=HABX[id]+(HAB_TX[id]||0);
+  const topY=Math.max(140, HABY[id]-TREE_HT[st]*treeScale(id)-34);
+  const NS='http://www.w3.org/2000/svg';
+  const g=document.createElementNS(NS,'g'); g.setAttribute('class','water-pour'); g.setAttribute('aria-hidden','true');
+  g.setAttribute('transform',`translate(${(cx-66).toFixed(0)} ${(topY-52).toFixed(0)})`);
+  let drops='';
+  for(let i=0;i<6;i++){ drops+=`<circle class="wdrop" style="animation-delay:${(0.28+i*0.22).toFixed(2)}s" cx="${60+(i%3)*5}" cy="24" r="${i%2?2.6:3.4}" fill="#8FC7E8"/>`; }
+  g.innerHTML=`<g class="can">`
+    +`<path d="M10 22 h28 a5 5 0 0 1 5 5 v14 a5 5 0 0 1 -5 5 H12 a5 5 0 0 1 -5 -5 V27 a5 5 0 0 1 3 -5 Z" fill="#7A9BB5"/>`
+    +`<path d="M40 28 L56 14 L60 19 L46 32 Z" fill="#7A9BB5"/>`
+    +`<circle cx="58" cy="16.5" r="5" fill="#6889A3"/>`
+    +`<path d="M16 22 C 16 10 34 10 34 22" fill="none" stroke="#6889A3" stroke-width="3.6"/>`
+    +`<path d="M12 30 h26" stroke="#8FB2CB" stroke-width="2" opacity=".7"/>`
+    +`</g>${drops}`;
+  svg.appendChild(g);
+  setTimeout(()=>{ if(g.isConnected) g.remove(); },2450);
 }
 /* pan the camera to centre a habitat */
 function scrollToHabitat(id,smooth){
@@ -4184,6 +4387,7 @@ function renderCards(){
   wrap.innerHTML=h;
   wrap.querySelectorAll('.card').forEach(el=>el.addEventListener('click',ev=>{
     if(ev.target.closest('.c-road')){ openCraftPath(); return; }   // the in-card road affordance skips the tend sheet
+    if(ev.detail>0) closeDrawer();   // pointer taps fold the drawer so the meadow (and the watering) is visible; keyboard keeps it open for focus return
     scrollToHabitat(el.dataset.area); openTend(el.dataset.area);
   }));
 }
@@ -4678,6 +4882,7 @@ function modalTrap(e){
 let sheetArea=null, sheetSel=null;
 function openTend(areaId){
   const a=AREA[areaId]; if(!a||!store.areas[areaId]) return;
+  hideTendBubble();
   sheetArea=areaId; sheetSel=null;
   const st=stageOf(store.areas[areaId].care);
   document.documentElement.style.setProperty('--accent',a.accent);
@@ -4724,6 +4929,7 @@ function doTend(){
   const area=sheetArea, a=AREA[area];
   const res=tend(area, text, custom);
   closeTend();
+  wateringCan(area);                  // the little can tips over the crown (overlay-only, motion-gated)
   growHabitat(area); renderCards();   // smooth cross-fade re-raster: the tree AND its habitat's flowers grow — no full rebuild/flash
   showTendToast(a, res);
 }
@@ -4768,14 +4974,46 @@ function toast(msg){
 function go(view){
   const target=document.getElementById('view-'+view);
   if(!target) return;   // unknown view id → no-op, never blank the app
+  closeGate(); closeDrawer(); hideTendBubble();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   target.classList.add('active');
+  document.body.classList.toggle('scene-full', view==='meadow');   // immersive HUD: gate on the meadow, back-pill elsewhere
   document.querySelectorAll('nav.tabs button').forEach(b=>{ const on=b.dataset.go===view;
     b.classList.toggle('on',on); if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
   window.scrollTo({top:0,behavior:'instant'in window?'instant':'auto'});
   if(view==='meadow'){ renderGreeting(); renderMeadow(true); renderCards(); renderCraftInvite(); }
   if(view==='journal') renderJournal();
   if(view==='path') renderPath();
+}
+/* the 'if today is heavy' door — same destination from the header link and the HUD pill */
+function openHeavy(){ go('more'); showMoreSub('support'); setTimeout(()=>document.getElementById('safety').scrollIntoView({behavior:'smooth',block:'start'}),120); }
+
+/* ── immersive HUD: the garden-gate panel + the bottom tend-drawer ── */
+function openGate(){ const p=document.getElementById('gatePanel'); if(!p||p.classList.contains('show')) return;
+  p.classList.add('show'); openModal(p, p.querySelector('.gp-item')); }
+function closeGate(){ const p=document.getElementById('gatePanel'); if(!p||!p.classList.contains('show')) return;
+  p.classList.remove('show'); closeModal(p); }
+function openDrawer(){ const d=document.getElementById('meadowDrawer'); if(!d||d.classList.contains('open')) return;
+  hideTendBubble(); d.classList.add('open');
+  const h=document.getElementById('drawerHandle'); if(h) h.setAttribute('aria-expanded','true');
+  const bd=d.querySelector('.drawer-body'); if(bd){ bd.scrollTop=0; setTimeout(()=>{ try{ bd.focus({preventScroll:true}); }catch(_){} },80); } }
+function closeDrawer(){ const d=document.getElementById('meadowDrawer'); if(!d||!d.classList.contains('open')) return;
+  d.classList.remove('open');
+  const h=document.getElementById('drawerHandle'); if(h) h.setAttribute('aria-expanded','false'); }
+function wireImmersive(){
+  document.body.classList.add('immersive','scene-full');   // the meadow is the first view
+  const gb=document.getElementById('gateBtn');
+  if(gb) gb.addEventListener('click',()=>{ const p=document.getElementById('gatePanel');
+    p&&p.classList.contains('show') ? closeGate() : openGate(); });
+  document.querySelectorAll('#gatePanel .gp-item').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+  const gc=document.getElementById('gateClose'); if(gc) gc.addEventListener('click',closeGate);
+  const hb=document.getElementById('hudBack'); if(hb) hb.addEventListener('click',()=>go('meadow'));
+  const hh=document.getElementById('heavyHud'); if(hh) hh.addEventListener('click',e=>{ e.preventDefault(); openHeavy(); });
+  const dh=document.getElementById('drawerHandle');
+  if(dh) dh.addEventListener('click',()=>{ const d=document.getElementById('meadowDrawer');
+    d&&d.classList.contains('open') ? closeDrawer() : openDrawer(); });
+  const dg=document.querySelector('#meadowDrawer .drawer-grab'); if(dg) dg.addEventListener('click',()=>{ closeDrawer();
+    const h=document.getElementById('drawerHandle'); if(h){ try{ h.focus({preventScroll:true}); }catch(_){} } });
 }
 
 /* ============================== SETTINGS ================================= */
@@ -4965,13 +5203,14 @@ function init(){
 
   document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
   document.getElementById('brandBtn').addEventListener('click',()=>go('meadow'));
-  document.getElementById('heavyLink').addEventListener('click',e=>{ e.preventDefault(); go('more'); showMoreSub('support'); setTimeout(()=>document.getElementById('safety').scrollIntoView({behavior:'smooth',block:'start'}),120); });
+  document.getElementById('heavyLink').addEventListener('click',e=>{ e.preventDefault(); openHeavy(); });
+  wireImmersive();
   document.getElementById('scrim').addEventListener('click',()=>{ closeCraftPick(); closeCraftPath(); closeTend(); });
   document.getElementById('closeBtn').addEventListener('click',closeTend);
   document.getElementById('craftPathClose').addEventListener('click',closeCraftPath);
   wireCraftPick();
   document.getElementById('tendBtn').addEventListener('click',doTend);
-  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeTend(); closeCraftPick(); closeCraftPath(); } });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeTend(); closeCraftPick(); closeCraftPath(); closeGate(); closeDrawer(); hideTendBubble(); } });
   document.addEventListener('keydown',modalTrap);   // keep Tab inside whichever sheet is open
   const ot=document.getElementById('ownText');
   ot.addEventListener('input',()=>{ document.getElementById('ownCount').textContent=String(120-ot.value.length); if(ot.value){ document.querySelectorAll('#quick button').forEach(x=>x.classList.remove('sel')); sheetSel=null; } });

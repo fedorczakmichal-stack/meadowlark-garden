@@ -399,3 +399,19 @@ o morning/night; `dayPhase`/`phaseBlend` mapują (morning→dawn, night→night)
 **v70** (2026-07-09): **korzeń dębu Home nie nachodzi na krzak** (żywopłot `envHome` przesunięty w lewo, najbliższy ~dx-72,
 poza zasięgiem korzeni); **ostatnie zimowe kępy oszronione** — „głowa drogi w las" (`envHome` hc/hl) + „źródło rzeki"
 (`envStream` fc/fl) owinięte w `frost()` → cała zima spójnie ośnieżona. CACHE `v70`.
+**v71** (2026-07-09): **TRYB OGRODU (immersive)** — łąka = pełny ekran jak gra. `body.immersive` (na stałe od bootu) +
+`body.scene-full` (gdy widok=meadow, przełącza `go()`): `--scene-h:100dvh` (fallback 100vh), header/taby UKRYTE, winieta CSS
+na `.scene-stage::after`. **HUD** (poza `#app`, fixed z-52): furtka `#gateBtn` (lewy-górny, otwiera `#gatePanel` z Returns /
+Look back / Settings — `openGate/closeGate` przez `openModal`), pigułka `#hudBack` „← Back to the meadow" na widokach
+wewnętrznych, `#heavyHud` (prawy-górny, `openHeavy()` wspólny z headerem). Kropki `#habDots`=szklana pigułka fixed dół;
+zoom podniesiony. **SZUFLADKA `#meadowDrawer`** (fixed dół, z-48, `translateY(102%)`→`.open`): test-bar + craft band +
+karty + stopka; uchwyt `#drawerHandle` „Tend one small thing"; karty = nadal jedyna ścieżka klawiatura/czytniki (drawer-body
+`tabindex=-1`, focus przy otwarciu; klik myszą w kartę składa szufladkę `ev.detail>0`, klawiatura nie). **PODLEWANIE
+DIEGETYCZNE**: tap w `.treeTap` → `sceneTap()` = pierścień `tapRing()` + dymek `.tend-bubble` w `.scene-plane`
+(pozycja %, jedzie ze światem i zoomem; aria-hidden, auto-hide 9 s; przycisk „Water X" → `openTend`; DRUGI tap w to samo
+siedlisko = od razu arkusz). Po „Tend this" → **`wateringCan()`**: konewka (SVG w overlayu, `.can` tilt 18° keyframes
+`canPour` 2.3 s, `transform-box:fill-box`) + 6 kropel `.wdrop` staggered → potem istniejący cross-fade `growHabitat`.
+**God-rays** przy `phase==='golden'` (3 kliny `.godray`, oddech opacity). WSZYSTKO motion-gated (guardy JS
+`motion==='calm'||reduceMotion()` + CSS `body.motion-calm`). Kontrakt duszy nietknięty (dymek= tylko słowo fazy, 0 liczb).
+Zweryfikowane interakcyjnie (localhost, viewport 375×812): pełny ekran, furtka↔widoki, dymek→arkusz→konewka→wzrost,
+szufladka, heavy, Escape; 0 błędów konsoli. CACHE `v71`.
