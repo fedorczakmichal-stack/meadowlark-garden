@@ -1956,7 +1956,7 @@ const CANOPY={
   winter:['#8FA39A','#97A9A0','#A0B0A7','#A8B6AD','#AFBCB3','#B7C2B9','#BFC9C0','#C7D0C7','#CFD6CE'],
 };
 // a dedicated cherry-blossom palette (Connection's tree) — NOT a green/pink mix, which muddies to grey-brown
-const BLOSSOM=['#D9789F','#DE82A8','#E38EB1','#E89ABB','#EDA6C4','#F1B2CD','#F4BED6','#F8CADF','#FCD9EA'];
+const BLOSSOM=['#E7D8C0','#EEE1CE','#F2E7D8','#F6ECE0','#F9F1E8','#FCF7F0','#F2E7D8','#F9F1E8','#FFFDF8'];
 const HILLS={
   day:['#C4DEA8','#A6CF86','#88BE6A','#6FAB52'],
   golden:['#BCD6A0','#9DC97D','#7FB45E','#669B4E'],
@@ -2080,7 +2080,7 @@ const HABX={body:340,home:780,connection:1220,meaning:1660,craft:2080,future:250
 const HABY={body:458,home:454,connection:460,meaning:432,craft:452,future:472,calm:456};
 const BEARX=600, BEARAMP=78;   // the bear ambles this stretch just below the treeline — drawMidground carves a clearing here so it never stands on a shrub
 const FORM={body:'fruit',home:'round',connection:'blossom',meaning:'round',craft:'fruit',future:'willow',calm:'round'};
-const HAB_DESC={body:'a wildflower meadow',home:'a homestead garden',connection:'a blossom thicket',meaning:'a sunlit knoll',craft:'a working garden',future:'a stream to the horizon',calm:'a still, quiet pool'};
+const HAB_DESC={body:'a wildflower meadow',home:'a homestead garden',connection:'a white-blossom thicket',meaning:'a sunlit knoll',craft:'a working garden',future:'a stream to the horizon',calm:'a still, quiet pool'};
 const HAB_TX={future:84}; // nudge the willow onto the right bank so it isn't standing in the river
 const PANO_W=3100, PANO_H=600;
 let lastSceneSig='', growAreaId=null, sceneStarted=false, _phase='day';
@@ -2102,7 +2102,17 @@ function wavy(baseY,amp){
     d+=` C ${mx.toFixed(0)} ${y.toFixed(0)} ${mx.toFixed(0)} ${ny.toFixed(0)} ${cx.toFixed(0)} ${ny.toFixed(0)}`; x=cx; y=ny; up=!up; }
   d+=` L${PANO_W} ${PANO_H} L0 ${PANO_H} Z`; return d;
 }
-function grassClump(x,y,c,still){ c=nightTint(c||'#4E8B3E',_phase); return `<g${still?'':` class="sway" style="animation-duration:8.2s;animation-delay:${-(x%5)}s"`}><g stroke="${c}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".8"><path d="M${x} ${y} C ${x-4} ${y-22} ${x-6} ${y-32} ${x-8} ${y-44} M${x} ${y} C ${x} ${y-24} ${x+1} ${y-34} ${x+2} ${y-46} M${x} ${y} C ${x+4} ${y-22} ${x+7} ${y-32} ${x+10} ${y-44}"/></g></g>`; }
+// several tuft shapes (2–5 blades, different spread/height) so grass never reads as one repeated stamp;
+// variant is deterministic from `seed` (or x when drawn in place)
+function grassClump(x,y,c,still,seed){ c=nightTint(c||'#4E8B3E',_phase);
+  const v=Math.abs(Math.round(seed==null?x:seed))%6; let d;
+  if(v===0)      d=`M${x} ${y} C ${x-3} ${y-13} ${x-4} ${y-19} ${x-5} ${y-26} M${x} ${y} C ${x+3} ${y-14} ${x+5} ${y-20} ${x+7} ${y-27}`;                                                                                     // 2 short
+  else if(v===1) d=`M${x} ${y} C ${x-4} ${y-22} ${x-6} ${y-32} ${x-8} ${y-44} M${x} ${y} C ${x} ${y-24} ${x+1} ${y-34} ${x+2} ${y-46} M${x} ${y} C ${x+4} ${y-22} ${x+7} ${y-32} ${x+10} ${y-44}`;                            // 3 upright (classic)
+  else if(v===2) d=`M${x} ${y} C ${x-6} ${y-15} ${x-9} ${y-22} ${x-13} ${y-29} M${x} ${y} C ${x-2} ${y-19} ${x-2} ${y-29} ${x-3} ${y-38} M${x} ${y} C ${x+2} ${y-19} ${x+3} ${y-29} ${x+3} ${y-37} M${x} ${y} C ${x+6} ${y-15} ${x+10} ${y-22} ${x+14} ${y-28}`;  // 4 wide fan
+  else if(v===3) d=`M${x} ${y} C ${x-5} ${y-11} ${x-9} ${y-15} ${x-14} ${y-17} M${x} ${y} C ${x-2} ${y-15} ${x-3} ${y-23} ${x-4} ${y-29} M${x} ${y} C ${x+3} ${y-14} ${x+5} ${y-21} ${x+8} ${y-26} M${x} ${y} C ${x+6} ${y-10} ${x+11} ${y-13} ${x+16} ${y-14}`;   // 4 low sprawl
+  else if(v===4) d=`M${x} ${y} C ${x-2} ${y-16} ${x-3} ${y-26} ${x-4} ${y-38} M${x} ${y} C ${x+2} ${y-16} ${x+3} ${y-26} ${x+4} ${y-38}`;                                                                                    // 2 tall slim
+  else           d=`M${x} ${y} C ${x-3} ${y-18} ${x-4} ${y-27} ${x-6} ${y-36} M${x} ${y} C ${x} ${y-20} ${x} ${y-30} ${x} ${y-40} M${x} ${y} C ${x+3} ${y-18} ${x+5} ${y-27} ${x+7} ${y-36} M${x} ${y} C ${x-6} ${y-13} ${x-9} ${y-19} ${x-12} ${y-23} M${x} ${y} C ${x+6} ${y-13} ${x+9} ${y-19} ${x+12} ${y-23}`;  // 5 full
+  return `<g${still?'':` class="sway" style="animation-duration:8.2s;animation-delay:${-(Math.abs(Math.round(x))%5)}s"`}><g stroke="${c}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".8"><path d="${d}"/></g></g>`; }
 
 /* ════ detailed wildflower models (ported from Michał's flowerModels.js) ════ */
 const FG={ st:'#6FA85A', std:'#4C8A3C', sth:'#9FCE82', lf:'#7FB46E', lfd:'#4F8A3E', lfh:'#C6E3A8' };
@@ -2215,8 +2225,8 @@ const GA={
       bloomCol:{},
       season:'Jan – Mar', sizeText:'7 – 15 cm', note:'A midwinter pearl that hangs its single white drop above the snow, green-tipped and imperturbable.' },
     { id:'cherry', common:'Cherry Blossom', latin:'Prunus serrulata', family:'Rosaceae', type:'tree', kind:'cherry',
-      canopy:['#DE82A8','#E38EB1','#E89ABB','#E38EB1','#EDA6C4','#F1B2CD','#E89ABB','#F4BED6','#F8CADF'],
-      season:'April', sizeText:'8 – 12 m', note:'An ornamental cherry that clouds itself in soft pink blossom for one fleeting week each spring.' },
+      canopy:['#E7D8C0','#EEE1CE','#F2E7D8','#EEE1CE','#F6ECE0','#FCF7F0','#F2E7D8','#F9F1E8','#FFFDF8'],
+      season:'April', sizeText:'8 – 12 m', note:'A wild cherry that clouds itself in soft white blossom for one fleeting week each spring.' },
     { id:'oak', common:'English Oak', latin:'Quercus robur', family:'Fagaceae', type:'tree', kind:'oak',
       canopy:['#4E8A45','#579551','#63A257','#579551','#6FB062','#73B366','#63A257','#82BF6F','#87C176'],
       season:'—', sizeText:'20 – 40 m', note:'The English oak grows slowly into a broad, long-lived giant — an entire ecosystem held in a single tree.' },
@@ -2409,7 +2419,7 @@ const GA={
     s+=`<ellipse cx="-14" cy="-30" rx="48" ry="36" fill="url(#gaCanopyHi)"/>`;
     [[-58,44],[-20,54],[22,52],[56,40],[-38,10],[36,8],[0,-14]].forEach(t=>{ s+=`<path d="M ${t[0]-9} ${t[1]} q 4.5 5 9 0 q 4.5 5 9 0" stroke="${dk}" stroke-width="1.1" fill="none" opacity="0.3"/>`; });
     const extra=this.sm(0.6,1,g);
-    if(sp.kind==='cherry' && extra>0.02){ [[-44,14],[40,6],[-12,-34],[14,-12],[-30,-18],[30,22],[-58,-4],[52,-28],[-2,40],[20,-42]].forEach(p=>s+=`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#FCE3EC" opacity="${extra.toFixed(2)}"/>`); }
+    if(sp.kind==='cherry' && extra>0.02){ [[-44,14],[40,6],[-12,-34],[14,-12],[-30,-18],[30,22],[-58,-4],[52,-28],[-2,40],[20,-42]].forEach(p=>s+=`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#FFFDF8" opacity="${extra.toFixed(2)}"/>`); }
     if(sp.kind==='apple' && extra>0.02){ [[-40,18],[28,30],[-8,-6],[46,-8],[-52,-16],[12,-32]].forEach(p=>s+=`<g transform="translate(${p[0]} ${p[1]})" opacity="${extra.toFixed(2)}"><circle r="4" fill="#C63A2A"/><circle cx="-1.2" cy="-1.2" r="1.3" fill="#E8836E" opacity="0.8"/><path d="M0 -3.8 q 1 -2 2.4 -2.6" stroke="#4A3A20" stroke-width="0.8" fill="none"/></g>`); }
     if(sp.kind==='oak' && extra>0.02){ [[-42,40],[22,46],[-8,34],[44,26]].forEach(p=>s+=`<g transform="translate(${p[0]} ${p[1]})" opacity="${extra.toFixed(2)}"><ellipse rx="3.6" ry="4.6" cy="2" fill="#B98A4E"/><path d="M-3.6 -1 a 3.6 2.8 0 0 1 7.2 0 Z" fill="#7A5A34"/></g>`); }
     if(sp.kind==='willow'){ const L=this.lp(10,140,this.sm(0.4,1,g)); if(L>6){ let i=0;
@@ -2434,7 +2444,7 @@ const GA={
       s+=`</g>`; }
     if(canScale>0.02) s+=`<g transform="translate(0 ${(th-8).toFixed(0)}) scale(${canScale.toFixed(3)})">${this.canopy(sp,g)}</g>`;
     const fall=this.sm(0.86,1,g);
-    if(fall>0.02){ if(sp.kind==='cherry'){ [[-52,-3],[38,-2],[-20,-1],[58,-4],[6,-2]].forEach((p,i)=>s+=`<ellipse cx="${p[0]}" cy="${p[1]}" rx="2.6" ry="1.2" fill="#F4BED6" opacity="${(fall*0.9).toFixed(2)}" transform="rotate(${i*14-20} ${p[0]} ${p[1]})"/>`); }
+    if(fall>0.02){ if(sp.kind==='cherry'){ [[-52,-3],[38,-2],[-20,-1],[58,-4],[6,-2]].forEach((p,i)=>s+=`<ellipse cx="${p[0]}" cy="${p[1]}" rx="2.6" ry="1.2" fill="#F3E9DA" opacity="${(fall*0.9).toFixed(2)}" transform="rotate(${i*14-20} ${p[0]} ${p[1]})"/>`); }
       if(sp.kind==='maple'){ [[-56,-2,20],[44,-3,-30],[14,-1,60]].forEach(p=>s+=`<g transform="translate(${p[0]} ${p[1]}) rotate(${p[2]})" opacity="${(fall*0.9).toFixed(2)}"><path d="M0 0 Q 7 -2.6 10.5 1.6 Q 6 2.6 0 0 Z" fill="#C6863E"/></g>`); }
       if(sp.kind==='apple'){ [[-40,-3],[30,-2]].forEach(p=>s+=`<circle cx="${p[0]}" cy="${p[1]}" r="3.4" fill="#C63A2A" opacity="${fall.toFixed(2)}"/>`); } }
     return s; },
@@ -2658,11 +2668,11 @@ function envHome(cx,by,phase,gr){ // Home — a tended homestead garden
   g+=scatterFlowers(cx,[[-176,by+18,'tulip',null,.56,62],[-140,by+26,'daffodil',null,.56,56],[-104,by+30,'rose',null,.5,60],[132,by+22,'daisy','cream',.56],[166,by+30,'tulip',null,.5,58]],gr);
   return g;
 }
-function envThicket(cx,by,phase,gr){ // Connection — a warm pink blossom thicket
-  let g=''; const tk=nightTint('#7E6A3E',phase), p1=nightTint('#E89BB8',phase), p2=nightTint('#F2B8CE',phase), p3=nightTint('#FCE3EC',phase);
-  [[-150,30],[146,26]].forEach(b=>{ const bx=cx+b[0],r=b[1]; g+=`<g transform="translate(${bx} ${by+12})"><rect x="-3" y="-30" width="6" height="36" fill="${tk}"/><ellipse cx="0" cy="-42" rx="${r}" ry="${(r*0.85).toFixed(0)}" fill="${p1}"/><ellipse cx="-8" cy="-48" rx="${(r*0.6).toFixed(0)}" ry="${(r*0.55).toFixed(0)}" fill="${p2}"/><ellipse cx="9" cy="-46" rx="${(r*0.5).toFixed(0)}" ry="${(r*0.45).toFixed(0)}" fill="${p3}"/></g>`; });
-  for(let i=0;i<9;i++){ const px=cx-150+i*38, py=by+30+(i%3)*6; g+=`<ellipse cx="${px}" cy="${py}" rx="3.6" ry="2.1" fill="${p2}" opacity=".7" transform="rotate(${i*40} ${px} ${py})"/>`; }
-  g+=scatterFlowers(cx,[[-138,by+24,'cosmos','pink',.62],[-92,by+30,'foxglove',null,.5,70],[-44,by+30,'daisy','cream',.46],[78,by+26,'cosmos','pink',.6],[128,by+22,'bluebell',null,.52,52]],gr);
+function envThicket(cx,by,phase,gr){ // Connection — a green hedgerow thicket in soft WHITE blossom (hawthorn/elder, not pink)
+  let g=''; const tk=nightTint('#6E5A3E',phase), l1=nightTint('#7FB268',phase), l2=nightTint('#8FC078',phase), l3=nightTint('#6BA354',phase), wf=nightTint('#FBF3E8',phase), cf=nightTint('#EAD9C2',phase);
+  [[-150,30],[146,26]].forEach(b=>{ const bx=cx+b[0],r=b[1]; g+=`<g transform="translate(${bx} ${by+12})"><rect x="-3" y="-30" width="6" height="36" fill="${tk}"/><ellipse cx="0" cy="-42" rx="${r}" ry="${(r*0.85).toFixed(0)}" fill="${l1}"/><ellipse cx="-8" cy="-48" rx="${(r*0.6).toFixed(0)}" ry="${(r*0.55).toFixed(0)}" fill="${l2}"/><ellipse cx="9" cy="-46" rx="${(r*0.5).toFixed(0)}" ry="${(r*0.45).toFixed(0)}" fill="${l3}"/>`+[[-9,-46],[6,-50],[12,-42],[-4,-38],[-13,-44],[3,-44],[9,-49]].map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="${(1.9-(i%2)*0.5).toFixed(1)}" fill="${i%3?wf:cf}"/>`).join('')+`</g>`; });
+  for(let i=0;i<9;i++){ const px=cx-150+i*38, py=by+30+(i%3)*6; g+=`<circle cx="${px}" cy="${py}" r="2" fill="${i%2?wf:l2}" opacity=".8"/>`; }
+  g+=scatterFlowers(cx,[[-138,by+24,'daisy','cream',.58],[-92,by+30,'lavender',null,.5,70],[-44,by+30,'buttercup',null,.46],[78,by+26,'daisy','cream',.6],[128,by+22,'bluebell',null,.52,52]],gr);
   return g;
 }
 function envKnoll(cx,by,phase,gr){ // Meaning — a sunlit knoll with a stone cairn
@@ -2678,33 +2688,18 @@ function envKnoll(cx,by,phase,gr){ // Meaning — a sunlit knoll with a stone ca
   g+=scatterFlowers(cx,[[-150,by+22,'sunflower',null,.6,84],[-104,by+30,'daisy','gold',.5],[-50,by+30,'buttercup',null,.5,52],[64,by+30,'daisy','gold',.5],[168,by+22,'sunflower',null,.52,76]],gr);
   return g;
 }
-function envCraft(cx,by,phase,gr){ // Craft — a working garden: raised beds filling in with care, a beehive, tools at rest
+function envCraft(cx,by,phase,gr){ // Craft — a quiet apiary: a few straw hives, a spade at rest, warm marigold-gold flowers
   gr=(gr==null?1:clamp(gr,0,1));
-  const soil=nightTint('#8A6844',phase), soilD=nightTint('#6E5236',phase), wood=nightTint('#A98757',phase);
+  const wood=nightTint('#A98757',phase);
   let g='';
-  // two raised beds (left and right of the tree) — rows of little crops that fill in as the area is tended
-  [[-168,22,120],[44,30,110]].forEach(([dx,dy,w],bi)=>{
-    const bx=cx+dx, byy=by+dy;
-    g+=`<rect x="${bx}" y="${byy}" width="${w}" height="26" rx="8" fill="${soil}"/>`;
-    g+=`<rect x="${bx}" y="${byy}" width="${w}" height="5" rx="2.5" fill="${soilD}" opacity=".55"/>`;
-    for(let r=0;r<3;r++){ const ry=byy+10+r*6;
-      for(let k=0;k<7;k++){ const px=bx+10+(w-20)*(k/6);
-        const grow=clamp(gr*1.3-((k+bi)%3)*0.12-r*0.08,0,1);
-        if(grow<0.08){ g+=`<circle cx="${px.toFixed(0)}" cy="${ry}" r="1.2" fill="${soilD}"/>`; continue; }
-        const h=3+9*grow, lg=nightTint(grow>0.7?'#5E9A4E':'#7FB863',phase);
-        g+=`<path d="M${px.toFixed(0)} ${ry} C ${(px-2.5).toFixed(1)} ${ry-h*0.6} ${(px-3).toFixed(1)} ${(ry-h).toFixed(1)} ${(px-3.5).toFixed(1)} ${(ry-h).toFixed(1)} M${px.toFixed(0)} ${ry} C ${(px+2.5).toFixed(1)} ${ry-h*0.6} ${(px+3).toFixed(1)} ${(ry-h).toFixed(1)} ${(px+3.5).toFixed(1)} ${(ry-h).toFixed(1)}" stroke="${lg}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
-        if(grow>0.85) g+=`<circle cx="${px.toFixed(0)}" cy="${(ry-h-3).toFixed(1)}" r="1.6" fill="${nightTint('#E8943E',phase)}" opacity=".9"/>`;
-      }
-    }
-  });
-  // a straw beehive on a little stool, off to the right — quiet industry
-  g+=`<g transform="translate(${cx+176} ${by+6})">`
+  // a row of straw skeps (beehives) on little stools — the quiet industry at the heart of this corner
+  const hive=(hx,hy,sc)=>`<g transform="translate(${hx} ${hy}) scale(${sc})">`
     +`<rect x="-10" y="12" width="20" height="4" rx="2" fill="${wood}"/><rect x="-8" y="16" width="3" height="8" fill="${wood}"/><rect x="5" y="16" width="3" height="8" fill="${wood}"/>`
     +`<ellipse cx="0" cy="8" rx="15" ry="6" fill="${nightTint('#C9924A',phase)}"/><ellipse cx="0" cy="1" rx="13" ry="6" fill="${nightTint('#D9A85C',phase)}"/><ellipse cx="0" cy="-5.5" rx="10.5" ry="5.4" fill="${nightTint('#C9924A',phase)}"/><ellipse cx="0" cy="-11" rx="7.5" ry="4.6" fill="${nightTint('#D9A85C',phase)}"/><circle cx="0" cy="-16" r="3.4" fill="${nightTint('#C9924A',phase)}"/>`
     +`<path d="M-3 10 A 3 3 0 0 1 3 10 Z" fill="${nightTint('#5A4026',phase)}"/></g>`;
-  // a spade resting in the soil + a basket of the day's small harvest
-  g+=`<g transform="translate(${cx-182} ${by+18}) rotate(9)"><rect x="-1.6" y="-32" width="3.2" height="28" rx="1.6" fill="${wood}"/><rect x="-5" y="-36" width="10" height="4.4" rx="2.2" fill="${wood}"/><path d="M-5 -4 L5 -4 L4 8 C 2 11 -2 11 -4 8 Z" fill="${nightTint('#9AA1A8',phase)}"/></g>`;
-  g+=`<g transform="translate(${cx+20} ${by+66})"><path d="M-14 0 C -12 9 12 9 14 0 Z" fill="${wood}"/><path d="M-14 0 L14 0" stroke="${soilD}" stroke-width="1.2"/><circle cx="-5" cy="-3" r="3.4" fill="${nightTint('#C9503C',phase)}"/><circle cx="2" cy="-4" r="3.4" fill="${nightTint('#D9713F',phase)}"/><circle cx="8" cy="-2.6" r="3" fill="${nightTint('#C9503C',phase)}"/></g>`;
+  g+=hive(cx-152,by+18,1)+hive(cx+34,by+30,0.84)+hive(cx+176,by+8,1.08);
+  // a spade resting in the soil, off to one side
+  g+=`<g transform="translate(${cx-196} ${by+24}) rotate(9)"><rect x="-1.6" y="-32" width="3.2" height="28" rx="1.6" fill="${wood}"/><rect x="-5" y="-36" width="10" height="4.4" rx="2.2" fill="${wood}"/><path d="M-5 -4 L5 -4 L4 8 C 2 11 -2 11 -4 8 Z" fill="${nightTint('#9AA1A8',phase)}"/></g>`;
   // marigold-gold flowers at the edges, in the working garden's warm tones
   g+=scatterFlowers(cx,[[-206,by+32,'buttercup',null,.5,50],[188,by+52,'daisy','gold',.5],[-196,by+58,'daisy','gold',.44],[122,by+62,'buttercup',null,.44,44]],gr);
   g+=grassClump(cx-220,by+44)+grassClump(cx+214,by+40);
@@ -3220,13 +3215,14 @@ function renderMeadow(force,opt){
     st+=grassClump(mx-16,490)+grassClump(mx+22,494);
     st+=`<g class="sway" style="animation-duration:8s;animation-delay:${-i}s"><g transform="translate(${mx} 494)">${wildflower(TSP[i%TSP.length][0],TSP[i%TSP.length][1],.5,64,tgr)}</g></g>`;
   }
-  // a denser carpet of LOW grass across the meadow foreground — short tufts so the field reads fuller
-  { const nearWater=x=>Math.abs(x-(HABX.future+34))<92, nearTrail=x=>Math.abs(x-(HABX.home+124))<78;
+  // a denser carpet of LOW grass in the OPEN foreground — kept clear of the water (stream + pool), the
+  // home trail, and the habitat cores where the env plants live, so tufts only fill genuinely empty ground
+  { const clear=x=>(Math.abs(x-(HABX.future+34))<120 || Math.abs(x-HABX.calm)<140 || Math.abs(x-(HABX.home+124))<80);
     const GC=(dusky?['#3E5B46','#47654E','#39543F','#43604A']:['#5DA24C','#6FB05A','#559A46','#66A852']).map(c=>nightTint(c,_phase));
-    for(let gx=26,gi=0; gx<W; gx+=38+((gi*13)%20), gi++){
-      if(nearWater(gx)||nearTrail(gx)) continue;
-      const gy=(gi%2?512:482)+((gi*17)%34), gsc=(0.3+((gi*11)%18)/100);
-      st+=`<g transform="translate(${gx.toFixed(0)} ${gy}) scale(${gsc.toFixed(2)})">${grassClump(0,0,GC[gi%4],true)}</g>`;
+    for(let gx=30,gi=0; gx<W; gx+=42+((gi*13)%22), gi++){
+      if(clear(gx)) continue;
+      const gy=522+((gi*17)%24), gsc=(0.32+((gi*11)%16)/100);   // low foreground band, below the env plants
+      st+=`<g transform="translate(${gx.toFixed(0)} ${gy}) scale(${gsc.toFixed(2)})">${grassClump(0,0,GC[gi%4],true,gi*7+3)}</g>`;
     }
   }
   // the six growth-trees: static host (accent tint + contact shadow + tree art). Their transient
@@ -3285,7 +3281,10 @@ function renderMeadow(force,opt){
     {id:'deer',     x:1000, y:336, sc:.72, off:.60, amp:80, yd:14, extra:` opacity="${dusky?.5:.72}"`},
     {id:'deer',     x:1380, y:320, sc:.80, off:.15, amp:34, yd:8, extra:` opacity="${dusky?.5:.7}"`},
     {id:'bear',     x:BEARX,y:352, sc:.74, off:.40, amp:BEARAMP, yd:7, extra:` opacity="${dusky?.6:.9}"`},
-    {id:'bee',      mid:'waggle', x:HABX.craft+168, y:HABY.craft-56, sc:.46, off:.90, flt:14,fltAmp:15,fltSeed:204},
+    {id:'bee',      mid:'waggle', x:HABX.craft+168, y:HABY.craft-40, sc:.46, off:.90, flt:14,fltAmp:15,fltSeed:204},
+    {id:'bee',      mid:'patrol', x:HABX.craft-140, y:HABY.craft-36, sc:.44, off:.12, flt:14,fltAmp:16,fltSeed:221},
+    {id:'bee',      mid:'waggle', x:HABX.craft+40,  y:HABY.craft-52, sc:.42, off:.55, flt:13,fltAmp:14,fltSeed:222},
+    {id:'bee',      mid:'patrol', x:HABX.craft+176, y:HABY.craft-70, sc:.4,  off:.30, flt:13,fltAmp:15,fltSeed:223},
     {id:'dragonfly',mid:'hover',  x:HABX.future-30, y:HABY.future-40, sc:.95, off:.80, flt:14,fltAmp:30,fltSeed:205},
     {id:'stork',    x:HABX.future+32, y:HABY.future+62, sc:1, off:.45, amp:46, yd:5, extra:` opacity="${dusky?.9:1}"`},
     {id:'turtle',   x:HABX.future-124,y:HABY.future+64, sc:.60, off:.70, amp:26, yd:3},
