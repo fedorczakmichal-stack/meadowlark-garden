@@ -415,3 +415,44 @@ siedlisko = od razu arkusz). Po „Tend this" → **`wateringCan()`**: konewka (
 `motion==='calm'||reduceMotion()` + CSS `body.motion-calm`). Kontrakt duszy nietknięty (dymek= tylko słowo fazy, 0 liczb).
 Zweryfikowane interakcyjnie (localhost, viewport 375×812): pełny ekran, furtka↔widoki, dymek→arkusz→konewka→wzrost,
 szufladka, heavy, Escape; 0 błędów konsoli. CACHE `v71`.
+**v72** (2026-07-09): **HUD rozplątany + PRAWDZIWA bliż-głębia sceny + Look Back „jedno spotkanie naraz".**
+- **HUD (Meadow)**: `#habDots` = SMUKŁY goły wskaźnik na samym dole (`bottom:max(safe,6px)`, bez pigułki; kropki 7px
+  z ciemnym halo `#habDots::before` + obrys, touch 40px; aktywna=belka akcentu 19px). `#drawerHandle` PRZENIESIONY do
+  górnego HUD obok furtki (`left:gate+52px`, wys. 44px; ≥480px pełny „Tend one small thing", <480px `.dh-short` „Tend",
+  <360px sama ikona; `.dh-long/.dh-short` w markupie). Zoom w prawy dolny róg (`bottom:safe+48px` — nie kisses edge).
+  Winieta/scrim: na widokach WEWNĘTRZNYCH `body.immersive:not(.scene-full)::before` = cream-fade 58px pod pigułkami
+  (scrollowany tekst nie koliduje z „Back/heavy"). Kontrast kropek podbity (bg .8 + ring).
+- **BLIŻ-GŁĘBIA (pass kompozycyjny)**: (1) **CAST posortowany malarsko po y** (`CAST.slice().sort((a,b)=>a.y-b.y)` —
+  deterministycznie, klucze snapshotu `id|x|off` fableCollect przeżywają rebuild); komentarz-model FAR (jelenie/niedźwiedź
+  y≈320-360, dalszy jeleń sc .58<.74 — koniec inwersji skali) / MID (owady przy koronach) / NEAR (walkery y≈500-580).
+  (2) **Rewiry przeprojektowane**: fox [38,162] y500 (czysty lewy skraj), hedgehog [600,680] y512, mouse [766,834] y526
+  (patroluje STOPĘ ścieżki — spójne z korytarzem czyszczenia), rabbit [1005,1115] y508 (otwarty pas przed gąszczem, nie
+  pod pniem Connection), turtle [2322,2378] (poza pałką wodną), stork [2482,2558] y534 (BRODZI w strumieniu, czysty od
+  pnia wierzby), frog x=calm-102 amp16 (szerokość ciała od kaczki), snail [2876,2924] y576 (PRZED stawem, nie na rimie),
+  dragonfly sc .78. **`FABLE_RUNS`** (const przy drawFarStones, SYNC z CAST!) = rewiry walkerów jako strefy wykluczenia
+  kamieni near (`clear()` ±24). (3) **Kamienie**: drawFarStones NIE wpada już w strumień/staw/ścieżkę + `placed[]`
+  min-odstęp 70 (koniec zbitki przy szwie modulo); near-stones + dywan trawy czyszczą FOREGROUNDOWY bieg ścieżki
+  (`|x-800|<74`, nie 904) i staw ±190 (rim). (4) **Cienie kontaktowe** pod krzakami Home i ulami Craft (jak drzewa/walkery).
+  (5) **Sowa ma gałąź** (dusky: perch-branch w overlayu PRZED castem). (6) **OKLUDERY**: 10 kęp trawy w overlayu PO
+  zwierzętach (`pointer-events:none`, kolory ciemniejsze od dywanu, nightTint) w rewirach walkerów → zwierzę widocznie
+  przechodzi ZA roślinnością; tapy `.treeTap` appendowane później = klik nietknięty. Harness ruchu: **15 walkerów ×120 s
+  symulacji: 0 NaN, 0 out-of-bounds, 0 moonwalk, 0 flip-w-ruchu**.
+- **LOOK BACK „jedno żywe spotkanie naraz"**: (1) **Tap gwiazdy → `.sky-meet`** — ciemna szklana karta W niebie
+  (cytat + obszar·fuzzy-data + akcje: **Press this** [toggle pressed, PRESS_ICON] · **Another light** [shuffle-pool
+  lbMemPool → zapala inną gwiazdę] · ✕; `skyMeetShow/skyMeetClose`, Escape zamyka, cairnCap chowany na czas spotkania;
+  gwiazdy mają `data-id`); to WCHŁONĘŁO kartę „A memory, resurfaced" (renderMemoryCard USUNIĘTY). Gwiazdy-powroty
+  WYRAŹNIEJSZE: rr 2.6-4.8 (tonight 5.0), mix accent .38/.42, glow .46+, i **nigdy w pasie haze** (gy ≤ HZ-150).
+  (2) **JEDEN rytuał naraz** `#lbRitual` (`renderRitual`): przybyły list (`letter-arrived`) > kompas tygodnia
+  (`compassDue()`+`renderCompassInto`) > nic. (3) **Foldy `<details.lb-fold>`**: How it's grown · Chapters · Pressed
+  flowers · A letter to your future self · A keepsake — domyślnie ZWINIĘTE, `syncFolds()` chowa puste; renderery bez
+  własnych nagłówków (summary=nagłówek). (4) **Jedna ciepła linia** pod niebem: `noticedLine()` (dawny renderNoticed,
+  zwraca string) || „Since …"; `.lb-under` USUNIĘTY (dublował „not a race"), martwe CSS `.lb-stats/.lb-memory/.noticed`
+  wycięte. (5) **Pusty stan** = 1 linia + przycisk `#lbBegin` „Tend one small thing →" (`go('meadow')`), cairnCap ukryty
+  (visibility), wszystkie foldy schowane (listy widoczne tylko gdy istnieją). `openLetter` odświeża ritual+fold i otwiera
+  foldLetters. KONTRAKT: zero liczb care, zero obowiązku (kompas raz/tydz., dismissible; nic nie jest timerem).
+- **Weryfikacja (file://, headless system Chrome + CDP, Emulation.setDeviceMetricsOverride!):** 390×844@3 + 320×693@2
+  (⚠ `--window-size<500` NIE działa — Chrome min-width 500; używać Emulation), macierz 5 sezonów/pór × 3 kamery,
+  zoom-tap (`elementFromPoint`→treeTap), Look Back empty/few/many + meet/press/another/Escape/klawiatura (Enter na
+  gwieździe), drawer, 0 błędów konsoli we wszystkich sesjach. **Panel 3 sędziów** (scena/HUD/LookBack na zrzutach) →
+  poprawki: zoom wyżej, kropki kontrastowe, gwiazdy-powroty jaśniejsze+nad haze, sky-meet bg .92, top-scrim, frog↔duck
+  rozsunięte. Zrzuty przed/po: `shots/v72/`. Raport: `REPORT-v72.md`. CACHE `v72`.

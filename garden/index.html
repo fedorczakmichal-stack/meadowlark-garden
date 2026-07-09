@@ -214,6 +214,10 @@
   body.immersive header.bar,body.immersive nav.tabs{display:none}
   body.immersive.scene-full{overflow:hidden;overscroll-behavior:none}
   body.immersive:not(.scene-full) main{padding-top:calc(max(env(safe-area-inset-top),8px) + 48px)}
+  /* inner views: a soft cream fade under the floating HUD pills, so scrolled text never collides with them */
+  body.immersive:not(.scene-full)::before{content:'';position:fixed;top:0;left:0;right:0;z-index:51;pointer-events:none;
+    height:calc(max(env(safe-area-inset-top),12px) + 58px);
+    background:linear-gradient(180deg,var(--cream) 34%,rgba(251,247,242,0))}
   body.immersive .scene-wrap{--scene-h:100vh;border-bottom:0}
   @supports (height:100dvh){ body.immersive .scene-wrap{--scene-h:100dvh} }
   body.immersive .scene-cap,body.immersive .scene-hint{display:none}
@@ -253,19 +257,31 @@
   .gp-item b{display:block;font-size:15.5px;color:var(--ink);line-height:1.3}
   .gp-item span span{display:block;font-size:12.5px;color:var(--muted);line-height:1.4;font-weight:400}
   .gate-panel .gp-close{margin-top:12px;align-self:center;background:none;border:0;font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.06em;color:var(--gold-text);padding:11px 15px}
-  /* habitat dots + zoom become bottom HUD */
-  body.immersive #habDots{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(max(env(safe-area-inset-bottom),12px) + 58px);z-index:42;
-    padding:3px 13px;background:rgba(251,247,242,.62);border:1px solid rgba(255,255,255,.5);border-radius:999px;
-    backdrop-filter:blur(10px) saturate(150%);-webkit-backdrop-filter:blur(10px) saturate(150%);box-shadow:0 10px 24px -16px rgba(90,70,110,.5)}
-  body.immersive .zoom-ctl{bottom:calc(max(env(safe-area-inset-bottom),12px) + 106px);right:10px}
-  /* the tend drawer: everything that used to scroll under the meadow, one pull away */
+  /* habitat dots = a SLIM place-indicator hugging the very bottom edge — no pill box, just quiet
+     dots with a soft dark halo for contrast on any sky. Touch targets stay ≥40px tall via button
+     height + generous per-dot padding, but the visual footprint is a few pixels. */
+  body.immersive #habDots{position:fixed;left:50%;transform:translateX(-50%);bottom:max(env(safe-area-inset-bottom),6px);z-index:42;
+    padding:0 8px;gap:5px}
+  body.immersive #habDots::before{content:'';position:absolute;inset:-10px -22px -6px;border-radius:999px;z-index:-1;pointer-events:none;
+    background:radial-gradient(60% 130% at 50% 100%,rgba(22,17,38,.30),rgba(22,17,38,0) 78%)}
+  body.immersive #habDots button{height:40px;padding:0 6px}
+  body.immersive #habDots button i{width:7px;height:7px;background:rgba(253,250,246,.8);box-shadow:0 0 0 1px rgba(22,17,38,.14),0 1px 3px rgba(20,15,35,.42)}
+  body.immersive #habDots button.on i{background:var(--accent);width:19px;border-radius:4px;box-shadow:0 0 0 1px rgba(255,255,255,.35),0 1px 4px rgba(20,15,35,.45)}
+  /* zoom in the freed bottom-right corner, lifted clear of the screen edge / home-indicator */
+  body.immersive .zoom-ctl{bottom:calc(max(env(safe-area-inset-bottom),12px) + 48px);right:10px}
+  /* the tend drawer: everything that used to scroll under the meadow, one pull away.
+     Its handle lives in the TOP HUD row (next to the gate) so the bottom stays open meadow —
+     full label when there's room, "Tend" on narrow phones, icon-only on the narrowest. */
   #drawerHandle,#meadowDrawer .drawer-grab{display:none}
-  body.immersive #drawerHandle{position:fixed;left:50%;transform:translateX(-50%);bottom:max(env(safe-area-inset-bottom),12px);z-index:43;
-    display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.55);background:rgba(251,247,242,.84);
-    backdrop-filter:blur(10px) saturate(150%);-webkit-backdrop-filter:blur(10px) saturate(150%);border-radius:999px;padding:11px 17px;
-    font-family:var(--ff-brand);font-weight:600;font-size:14px;letter-spacing:-.01em;color:var(--ink);
-    box-shadow:0 12px 28px -16px rgba(90,70,110,.65);white-space:nowrap}
+  body.immersive #drawerHandle{position:fixed;top:max(env(safe-area-inset-top),12px);left:calc(max(12px,50% - var(--maxw)/2 + 12px) + 52px);z-index:52;
+    display:inline-flex;align-items:center;gap:7px;height:44px;border:1px solid rgba(255,255,255,.55);background:rgba(251,247,242,.84);
+    backdrop-filter:blur(10px) saturate(150%);-webkit-backdrop-filter:blur(10px) saturate(150%);border-radius:15px;padding:0 14px;
+    font-family:var(--ff-brand);font-weight:600;font-size:13.5px;letter-spacing:-.01em;color:var(--ink);
+    box-shadow:0 10px 26px -14px rgba(90,70,110,.6);white-space:nowrap}
   body.immersive #drawerHandle svg{width:16px;height:16px;color:var(--gold-text);flex:none}
+  #drawerHandle .dh-short{display:none}
+  @media (max-width:479px){ #drawerHandle .dh-long{display:none} #drawerHandle .dh-short{display:inline} }
+  @media (max-width:359px){ body.immersive #drawerHandle{width:44px;padding:0;justify-content:center} #drawerHandle .dh-short{display:none} }
   body.immersive #meadowDrawer{position:fixed;left:0;right:0;bottom:0;z-index:48;max-width:var(--maxw);margin:0 auto;
     background:rgba(251,247,242,.96);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);
     border:1px solid var(--hairline);border-bottom:0;border-radius:22px 22px 0 0;
@@ -401,7 +417,23 @@
     text-align:center;color:#CFC9E6;font-size:14px;min-height:22px;transition:opacity .3s;pointer-events:none;
     background:linear-gradient(0deg,rgba(9,8,24,.72),rgba(9,8,24,.34) 55%,rgba(9,8,24,0))}
   .cairn-cap{text-align:center;color:var(--muted);font-size:14px;margin-top:8px;min-height:22px;transition:opacity .3s}
-  .lb-under{margin-top:16px}
+  /* the sky-meeting card: tap a light → its memory appears IN the sky, with 1-2 gentle actions.
+     This replaced the old "A memory, resurfaced" text card — the sky itself resurfaces memories now. */
+  .sky-meet{position:absolute;left:14px;right:14px;bottom:12px;z-index:3;display:none;
+    background:rgba(17,14,32,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,.14);border-left:3px solid var(--accent,#E8943E);
+    border-radius:16px;padding:12px 13px;color:#F0EDFA;box-shadow:0 18px 40px -18px rgba(0,0,0,.6)}
+  .sky-meet.show{display:block;animation:skyMeetIn .35s var(--ease)}
+  @keyframes skyMeetIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  body.motion-calm .sky-meet.show{animation:none}
+  .sky-meet .sm-text{font-size:15px;line-height:1.5;color:#F6F3FF;font-style:italic}
+  .sky-meet .sm-meta{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#B9B2DC;margin:5px 0 10px}
+  .sky-meet .sm-actions{display:flex;gap:8px;align-items:center}
+  .sky-meet .sm-press{display:inline-flex;align-items:center;gap:6px;min-height:38px;background:rgba(232,148,62,.16);border:1px solid rgba(232,148,62,.4);color:#FFD9A8;border-radius:999px;padding:0 13px;font:inherit;font-size:12.5px;font-weight:600}
+  .sky-meet .sm-press svg{width:14px;height:14px}
+  .sky-meet .sm-press.on{background:rgba(232,148,62,.34);color:#FFE9C8}
+  .sky-meet .sm-next{min-height:38px;background:none;border:1px solid rgba(255,255,255,.22);color:#E4DFF6;border-radius:999px;padding:0 13px;font:inherit;font-size:12.5px;font-weight:600}
+  .sky-meet .sm-close{margin-left:auto;background:none;border:0;color:#B9B2DC;font-size:16px;min-width:38px;min-height:38px;display:grid;place-items:center;border-radius:10px}
   /* Night Sky of Returns — a tapped light swells gently and its halo blooms */
   .path-wrap .cairnTap{cursor:pointer}
   .path-wrap .rt-scale{transform-box:fill-box;transform-origin:center;transition:transform .5s cubic-bezier(.2,.9,.25,1)}
@@ -426,27 +458,28 @@
   .path-wrap .rt-reveal{animation:rtReveal 2.3s ease-out both}
   @keyframes rtReveal{0%{opacity:0}55%{opacity:.45}100%{opacity:1}}
   @media (prefers-reduced-motion:reduce){.path-wrap .rt-scale{transition:none}.path-wrap .rt-halo{transition:none}}
-  .lb-summary{margin-top:16px}
-  .lb-stats{display:flex;gap:10px}
-  .lb-stat{flex:1;background:var(--cream);border:1px solid var(--hairline);border-radius:14px;padding:12px 8px;text-align:center;position:relative;overflow:hidden}
-  .lb-stat::before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),#F4C24C)}
-  .lb-n{display:block;font-family:var(--mono);font-size:24px;font-weight:500;color:var(--gold-text);line-height:1.05}
-  .lb-l{display:block;font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.25}
+  .lb-summary{margin-top:10px}
   .lb-line{margin:13px 0 0;font-size:14.5px;line-height:1.5;color:var(--ink);text-wrap:pretty}
   .lb-line b{color:var(--gold-text);font-weight:600}
+  .lb-begin{display:inline-flex;align-items:center;gap:7px;margin:12px 0 4px;min-height:44px;background:var(--gold);border:0;color:#fff;
+    border-radius:999px;padding:0 19px;font:inherit;font-size:14.5px;font-weight:600;box-shadow:0 10px 22px -10px rgba(200,120,31,.6)}
   .lb-sec{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);margin:20px 0 8px}
+  /* one quiet ritual at a time; everything else folds away until asked for */
+  #lbRitual{margin-top:4px}
+  #lbRitual:not(:empty){margin-bottom:14px}
+  .lb-fold{border-top:1px solid var(--hairline)}
+  .lb-fold:last-of-type{border-bottom:1px solid var(--hairline)}
+  .lb-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:9px;min-height:52px;
+    font-family:var(--ff-brand);font-weight:600;font-size:15px;letter-spacing:-.01em;color:var(--ink);-webkit-tap-highlight-color:transparent}
+  .lb-fold>summary::-webkit-details-marker{display:none}
+  .lb-fold>summary::before{content:"›";display:inline-block;transition:transform .2s var(--ease);font-size:17px;color:var(--gold);flex:none}
+  .lb-fold[open]>summary::before{transform:rotate(90deg)}
+  .lb-fold>.fold-body{padding:0 0 16px}
   .lb-thennow{display:flex;align-items:center;gap:8px}
   .lb-mini{flex:1;min-width:0;background:var(--cream);border:1px solid var(--hairline);border-radius:14px;padding:8px 6px 7px;text-align:center}
   .lb-mini svg{display:block;width:100%;height:auto}
   .lb-mini .cap{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-top:5px}
   .lb-arrow{flex:none;width:20px;height:20px;color:var(--gold)}
-  .lb-memory{background:linear-gradient(135deg,#FFF6E6,#FBEFD9);border:1px solid rgba(232,148,62,.26);border-radius:16px;padding:15px 16px 13px}
-  .lb-memory .q{font-size:16.5px;line-height:1.5;color:var(--ink);font-style:italic}
-  .lb-mem-meta{margin-top:9px;font-size:12.5px;color:var(--muted);display:flex;gap:7px;align-items:center}
-  .lb-mem-meta .lb-dot{width:8px;height:8px;border-radius:50%;background:var(--accent,#E8943E);flex:none}
-  .lb-mem-line{margin-top:7px;font-size:12.5px;color:var(--faint)}
-  .lb-mem-btn{margin-top:11px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;background:transparent;border:1px solid var(--hairline);border-radius:999px;padding:7px 13px;color:var(--gold-text);cursor:pointer}
-  .lb-mem-btn:active{transform:scale(.97)}
   .lb-ch{display:flex;gap:12px;padding:10px 2px;border-bottom:1px dashed var(--hairline)}
   .lb-ch:last-child{border-bottom:none}
   .lb-ch .d{width:9px;height:9px;border-radius:50%;flex:none;margin-top:5px}
@@ -496,11 +529,6 @@
   @media(max-width:430px){.safe-line{flex-direction:column;align-items:flex-start;gap:3px}.safe-line .reg{min-width:0}}
 
   /* ── "the garden noticed…" — a quiet weekly observation (no numbers, never a score) ── */
-  .noticed{background:linear-gradient(180deg,rgba(158,124,194,.08),rgba(158,124,194,.02));border:1px solid var(--hairline);border-radius:18px;padding:15px 17px;margin:16px 0}
-  .noticed-head{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#7C63A8}
-  .noticed-head svg{width:16px;height:16px;flex:none}
-  .noticed-body{margin:9px 0 0;font-size:15px;line-height:1.5;color:var(--ink);text-wrap:pretty}
-  .noticed-body b{color:#6E559C;font-weight:600}
 
   /* ── letters to your future self (private, sleeps in localStorage, surfaces only when its day arrives) ── */
   .letter-arrived{background:linear-gradient(135deg,#FFF3DD,#FBE7C6);border:1px solid rgba(232,148,62,.4);border-radius:18px;padding:16px 17px;margin:16px 0;box-shadow:0 18px 40px -30px rgba(207,111,76,.6)}
@@ -948,9 +976,9 @@
       <div class="scene-cap" id="sceneCap"></div>
       <div id="habDots" aria-label="Wander to a habitat"></div>
       <div class="scene-hint">← swipe to wander · tap a place to tend →</div>
-      <button id="drawerHandle" aria-expanded="false" aria-controls="meadowDrawer">
+      <button id="drawerHandle" aria-expanded="false" aria-controls="meadowDrawer" aria-label="Tend one small thing">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c-3 4-5 7-5 10a5 5 0 0 0 10 0c0-3-2-6-5-10z"/><path d="M12 13v8"/></svg>
-        Tend one small thing
+        <span class="dh-long">Tend one small thing</span><span class="dh-short" aria-hidden="true">Tend</span>
       </button>
       <div id="meadowDrawer">
         <button class="drawer-grab" aria-label="Close the tending drawer"><i></i></button>
@@ -997,19 +1025,17 @@
           <h1 class="lb-title">The sky was always full</h1>
           <p class="lb-invite">Every night you came back is still up there. Come look up a while.</p>
         </div>
-        <p class="cairn-cap" id="cairnCap" aria-live="polite">Tap a light to return to that day.</p>
+        <div class="sky-meet" id="skyMeet" role="group" aria-label="A remembered return"></div>
+      <p class="cairn-cap" id="cairnCap" aria-live="polite">Tap a light to return to that day.</p>
       </div>
       <div class="pad">
-        <p class="sub lb-under">The nights you came back — not a race, not a finish line. Each small return is a light that stayed.</p>
         <div class="lb-summary" id="pathSummary"></div>
-        <div id="lbNoticed"></div>
-        <div id="lbLetters"></div>
-        <div id="lbThenNow"></div>
-        <div id="lbMemory"></div>
-        <div id="lbCompass"></div>
-        <div id="lbPressed"></div>
-        <div id="lbChapters"></div>
-        <div id="lbKeepsake"></div>
+        <div id="lbRitual"></div>
+        <details class="lb-fold" id="foldGrown"><summary>How it's grown</summary><div class="fold-body" id="lbThenNow"></div></details>
+        <details class="lb-fold" id="foldChapters"><summary>Chapters of this garden</summary><div class="fold-body" id="lbChapters"></div></details>
+        <details class="lb-fold" id="foldPressed"><summary>Pressed flowers</summary><div class="fold-body" id="lbPressed"></div></details>
+        <details class="lb-fold" id="foldLetters"><summary>A letter to your future self</summary><div class="fold-body" id="lbLetters"></div></details>
+        <details class="lb-fold" id="foldKeepsake"><summary>A keepsake</summary><div class="fold-body" id="lbKeepsake"></div></details>
       </div>
       <div style="height:24px"></div>
     </section>
@@ -3370,10 +3396,20 @@ function stoneAndPebble(cx,by,seed,sc,kind,side){ side=side||1; const T=GA.STONE
    FAR: small hazy rocks up on the slope (drawn before the midground, low opacity = aerial perspective).
    NEAR: the knoll cairn + a SPARSE, well-spaced scatter of single rocks in the open LOW foreground (below the
    plant roots, in front of them), avoiding every tree, water body and path. No overlapping clusters. ══ */
+/* the ground walkers' foreground territories (KEEP IN SYNC with CAST in renderMeadow) — the animal
+   overlay always paints above the canvas, so no near stone may spawn under a walker's feet:
+   fox · ladybug · hedgehog · mouse(trail) · rabbit · turtle · stork(stream) · snail(pond front) */
+const FABLE_RUNS=[[38,162],[365,425],[600,680],[766,834],[1005,1115],[2322,2378],[2482,2558],[2876,2924]];
 function drawFarStones(W,dusky){ let g='';
   const cores=HAB.map(id=>HABX[id]+(HAB_TX[id]||0));
+  const placed=[];
   for(let i=0;i<16;i++){ const dsx=(i*577+150)%(W-180)+90;
     if(cores.some(c=>Math.abs(dsx-c)<66)) continue;      // sit in the open inter-habitat gaps, never under a tree
+    // never in the stream channel, on the pool, or on the trail — a mid-distance rock under the
+    // water wash read as a murky blob (the stream ribbon is drawn after us and washes over)
+    if(Math.abs(dsx-(HABX.future+34))<150 || Math.abs(dsx-HABX.calm)<190 || Math.abs(dsx-(HABX.home+124))<80) continue;
+    if(placed.some(p=>Math.abs(dsx-p)<70)) continue;     // spread out — no accidental clumps at the modulo seams
+    placed.push(dsx);
     const r=v=>{ const t=Math.sin(dsx*0.043+i*6.7+v*3.1)*43758.5; return t-Math.floor(t); };
     // grounded on the meadow floor in the MIDDLE distance — env plants (drawn AFTER) sit in front, so these read
     // as small distant rocks resting ON the ground, not floating on a hillside. Lighter rounded kinds only.
@@ -3388,9 +3424,10 @@ function drawNearStones(W,dusky){ let g='';
   // a sparse scatter of single rocks in the open low foreground — well spaced, never on tree/water/path/plant band
   const cores=HAB.map(id=>HABX[id]+(HAB_TX[id]||0));
   const clear=x=> cores.some(c=>Math.abs(x-c)<104)                          // clear of every growth-tree
-    || Math.abs(x-(HABX.future+34))<150 || Math.abs(x-HABX.calm)<176        // clear of stream + pool
-    || Math.abs(x-(HABX.home+124))<70  || Math.abs(x-BEARX)<BEARAMP+18      // clear of the trail + bear clearing
-    || Math.abs(x-(HABX.meaning+120))<70;                                   // clear of the cairn above
+    || Math.abs(x-(HABX.future+34))<150 || Math.abs(x-HABX.calm)<190        // clear of stream + pool (incl. the rim arc)
+    || Math.abs(x-800)<74              || Math.abs(x-BEARX)<BEARAMP+18      // clear of the trail's FOREGROUND run (x≈770-830 down here) + bear clearing
+    || Math.abs(x-(HABX.meaning+120))<70                                    // clear of the cairn above
+    || FABLE_RUNS.some(r=>x>r[0]-24&&x<r[1]+24);                            // clear of every ground walker's territory — no rock floats under an animal
   let sx=150, si=0;
   while(sx<W-110){ const step=150+((si*47)%92); sx+=step; si++;   // tighter spacing → more rocks, still well apart
     if(clear(sx)) continue;
@@ -3416,9 +3453,11 @@ function envHome(cx,by,phase,gr){ // Home — a tended homestead garden
   const hgB=nightTint(frost('#5E9A4E'),phase), hgL=nightTint(frost('#79B25C'),phase), hgD=nightTint(frost('#4C8440'),phase);
   let g='<g>';
   // (shifted left so the nearest bush clears the oak's flared base + root buttresses — no root-on-bush overlap)
+  const bsh=DUSKY(phase)?.07:.12;   // contact shadows ground the bushes like the trees + walkers
   [[-232,0,19],[-198,4,24],[-164,-2,21],[-130,3,25],[-100,-1,20],[-72,4,16]].forEach(([dx,dy,r],i)=>{
     const bx=cx+dx, byy=by-2+dy;
-    g+=`<ellipse cx="${(bx-r*0.45).toFixed(0)}" cy="${byy+3}" rx="${(r*0.62).toFixed(0)}" ry="${(r*0.5).toFixed(0)}" fill="${hgD}"/>`+
+    g+=`<ellipse cx="${bx}" cy="${(byy+r*0.5+3).toFixed(0)}" rx="${(r*0.82).toFixed(0)}" ry="${(r*0.16).toFixed(1)}" fill="rgba(58,44,26,${bsh})"/>`+
+       `<ellipse cx="${(bx-r*0.45).toFixed(0)}" cy="${byy+3}" rx="${(r*0.62).toFixed(0)}" ry="${(r*0.5).toFixed(0)}" fill="${hgD}"/>`+
        `<ellipse cx="${(bx+r*0.4).toFixed(0)}" cy="${byy+4}" rx="${(r*0.55).toFixed(0)}" ry="${(r*0.45).toFixed(0)}" fill="${i%2?hgD:hgB}"/>`+
        `<ellipse cx="${bx}" cy="${(byy-r*0.28).toFixed(0)}" rx="${(r*0.66).toFixed(0)}" ry="${(r*0.55).toFixed(0)}" fill="${hgB}"/>`+
        `<ellipse cx="${(bx+r*0.15).toFixed(0)}" cy="${(byy-r*0.42).toFixed(0)}" rx="${(r*0.3).toFixed(0)}" ry="${(r*0.24).toFixed(0)}" fill="${hgL}" opacity=".75"/>`;
@@ -3475,6 +3514,7 @@ function envCraft(cx,by,phase,gr){ // Craft — a quiet apiary: a few straw hive
   let g='';
   // a row of straw skeps (beehives) on little stools — the quiet industry at the heart of this corner
   const hive=(hx,hy,sc)=>`<g transform="translate(${hx} ${hy}) scale(${sc})">`
+    +`<ellipse cx="0" cy="24" rx="16" ry="3.2" fill="rgba(58,44,26,${DUSKY(phase)?.07:.12})"/>`
     +`<rect x="-10" y="12" width="20" height="4" rx="2" fill="${wood}"/><rect x="-8" y="16" width="3" height="8" fill="${wood}"/><rect x="5" y="16" width="3" height="8" fill="${wood}"/>`
     +`<ellipse cx="0" cy="8" rx="15" ry="6" fill="${nightTint('#C9924A',phase)}"/><ellipse cx="0" cy="1" rx="13" ry="6" fill="${nightTint('#D9A85C',phase)}"/><ellipse cx="0" cy="-5.5" rx="10.5" ry="5.4" fill="${nightTint('#C9924A',phase)}"/><ellipse cx="0" cy="-11" rx="7.5" ry="4.6" fill="${nightTint('#D9A85C',phase)}"/><circle cx="0" cy="-16" r="3.4" fill="${nightTint('#C9924A',phase)}"/>`
     +`<path d="M-3 10 A 3 3 0 0 1 3 10 Z" fill="${nightTint('#5A4026',phase)}"/></g>`;
@@ -4011,7 +4051,7 @@ function renderMeadow(force,opt){
   }
   // a denser carpet of LOW grass in the OPEN foreground — kept clear of the water (stream + pool), the
   // home trail, and the habitat cores where the env plants live, so tufts only fill genuinely empty ground
-  { const clear=x=>(Math.abs(x-(HABX.future+34))<120 || Math.abs(x-HABX.calm)<140 || Math.abs(x-(HABX.home+124))<80);
+  { const clear=x=>(Math.abs(x-(HABX.future+34))<120 || Math.abs(x-HABX.calm)<190 || Math.abs(x-800)<74);   // stream · pool incl. rim · the trail's FOREGROUND run
     const GC=(dusky?['#3E5B46','#47654E','#39543F','#43604A']:['#5DA24C','#6FB05A','#559A46','#66A852']).map(c=>nightTint(c,_phase));
     for(let gx=30,gi=0; gx<W; gx+=42+((gi*13)%22), gi++){
       if(clear(gx)) continue;
@@ -4063,39 +4103,66 @@ function renderMeadow(force,opt){
     lv+=skyBird(-11,120,118,1)+skyBird(-24,210,128,0.72,0.78,true);
     lv+=skyBird(-38,90,102,0.58,0.65);
   }
+  /* ── THE CAST on a real depth model (v72 composition pass) ────────────────────────────
+     FAR hillside (y≈320-360): deer + bear — the higher (farther) an animal stands, the smaller
+       and softer it is (deer2 up the slope is now the small one).
+     MID crown-level (y≈280-430): butterflies/bees/dragonfly float by their habitat's tree.
+     NEAR foreground (y≈500-580): ground walkers. Every walker owns a territory [x-amp,x+amp]
+       carved out of genuinely OPEN ground — clear of trunks, water, the trail, env flower beds
+       and each other (see FABLE_RUNS, which also keeps near stones out from under their feet).
+     Painter's order = the y-sort below (farther first); deliberate occluder tufts are added
+     AFTER the animals so a walker visibly passes BEHIND the nearest plants. */
   const CAST=[
-    {id:'rabbit',   x:HABX.connection-88, y:HABY.connection+34, sc:.95, off:.10, amp:70, yd:16},
-    {id:'fox',      x:HABX.body-268, y:HABY.body+24,  sc:.90, off:.35, amp:130, yd:14},
+    // far hillside
+    {id:'deer',     x:1000, y:336, sc:.74, off:.60, amp:80, yd:12, extra:` opacity="${dusky?.5:.72}"`},
+    {id:'deer',     x:1380, y:320, sc:.58, off:.15, amp:34, yd:8, extra:` opacity="${dusky?.45:.62}"`},
+    {id:'bear',     x:BEARX,y:352, sc:.74, off:.40, amp:BEARAMP, yd:7, extra:` opacity="${dusky?.6:.9}"`},
+    // mid — crown-level floaters
     {id:'swallowtail',mid:'flit',x:HABX.body+130, y:HABY.body-150, sc:.6,off:.50, flt:20,fltAmp:24,fltSeed:201},
     {id:'commonblue',mid:'flit',  x:HABX.body-40,  y:HABY.body-90,  sc:.5, off:.15, flt:18,fltAmp:20,fltSeed:211},
     {id:'butterfly', mid:'flutter',x:HABX.home+150, y:HABY.home-120, sc:.54,off:.62, flt:19,fltAmp:22,fltSeed:212},
-    {id:'ladybug',  x:HABX.body+55,  y:HABY.body+68,  sc:.45, off:.05, amp:30, yd:8},
     {id:'bee',      mid:'patrol', x:HABX.home+70,  y:HABY.home-118, sc:.58, off:.20, flt:16,fltAmp:18,fltSeed:202},
     {id:'bee',      mid:'patrol', x:HABX.body+40,  y:HABY.body-70,  sc:.5,  off:.05, flt:15,fltAmp:16,fltSeed:213},
     {id:'bee',      mid:'waggle', x:HABX.meaning+60,y:HABY.meaning-96,sc:.52,off:.42, flt:15,fltAmp:17,fltSeed:214},
-    {id:'hedgehog', x:HABX.home-158, y:HABY.home+56,  sc:.80, off:.65, amp:46, yd:12},
-    {id:'mouse',    x:HABX.home+128, y:HABY.home+66,  sc:.50, off:.48, amp:40, yd:9},
     {id:'peacock',mid:'flutter', x:HABX.connection+70, y:HABY.connection-150, sc:.62, off:.75, flt:22,fltAmp:27,fltSeed:203},
-    {id:'deer',     x:1000, y:336, sc:.72, off:.60, amp:80, yd:14, extra:` opacity="${dusky?.5:.72}"`},
-    {id:'deer',     x:1380, y:320, sc:.80, off:.15, amp:34, yd:8, extra:` opacity="${dusky?.5:.7}"`},
-    {id:'bear',     x:BEARX,y:352, sc:.74, off:.40, amp:BEARAMP, yd:7, extra:` opacity="${dusky?.6:.9}"`},
     {id:'bee',      mid:'waggle', x:HABX.craft+168, y:HABY.craft-40, sc:.46, off:.90, flt:14,fltAmp:15,fltSeed:204},
     {id:'bee',      mid:'patrol', x:HABX.craft-140, y:HABY.craft-36, sc:.44, off:.12, flt:14,fltAmp:16,fltSeed:221},
     {id:'bee',      mid:'waggle', x:HABX.craft+40,  y:HABY.craft-52, sc:.42, off:.55, flt:13,fltAmp:14,fltSeed:222},
     {id:'bee',      mid:'patrol', x:HABX.craft+176, y:HABY.craft-70, sc:.4,  off:.30, flt:13,fltAmp:15,fltSeed:223},
-    {id:'dragonfly',mid:'hover',  x:HABX.future-30, y:HABY.future-40, sc:.95, off:.80, flt:14,fltAmp:30,fltSeed:205},
-    {id:'stork',    x:HABX.future+32, y:HABY.future+62, sc:1, off:.45, amp:46, yd:5, extra:` opacity="${dusky?.9:1}"`},
-    {id:'turtle',   x:HABX.future-124,y:HABY.future+64, sc:.60, off:.70, amp:26, yd:3},
-    {id:'mallard',  x:HABX.calm-4,    y:HABY.calm+66,  sc:.92, off:.30, amp:45, yd:3},
-    {id:'frog',     x:HABX.calm-74,   y:HABY.calm+72,  sc:.70, off:.55, amp:22, yd:4},
-    {id:'fish',     x:HABX.calm-92,   y:HABY.calm+52,  sc:.45, off:.25, amp:22, yd:4, extra:' opacity=".8"'},
-    {id:'snail',    x:HABX.calm+118,  y:HABY.calm+106, sc:.55, off:.85, amp:16, yd:3},
+    {id:'dragonfly',mid:'hover',  x:HABX.future-30, y:HABY.future-40, sc:.78, off:.80, flt:14,fltAmp:30,fltSeed:205},
+    // near foreground — one open-ground territory per walker (FABLE_RUNS mirrors these)
+    {id:'fox',      x:100,  y:500, sc:.92, off:.35, amp:62, yd:10},   // open ground left of Body's flower tiers
+    {id:'ladybug',  x:395,  y:526, sc:.45, off:.05, amp:30, yd:6},
+    {id:'hedgehog', x:640,  y:512, sc:.80, off:.65, amp:40, yd:8},    // between Home's bushes and the trail
+    {id:'mouse',    x:800,  y:526, sc:.50, off:.48, amp:34, yd:6},    // patrols the trail's painted foot
+    {id:'rabbit',   x:1060, y:508, sc:.95, off:.10, amp:55, yd:12},   // the open run before the blossom thicket
+    {id:'turtle',   x:2350, y:536, sc:.60, off:.70, amp:28, yd:3},    // clear of the cattail + bank flowers
+    {id:'stork',    x:2520, y:534, sc:1,   off:.45, amp:38, yd:5, extra:` opacity="${dusky?.9:1}"`},  // wades the stream, clear of the willow trunk
+    {id:'fish',     x:HABX.calm-92, y:508, sc:.45, off:.25, amp:22, yd:4, extra:' opacity=".8"'},
+    {id:'mallard',  x:HABX.calm-4,  y:522, sc:.92, off:.30, amp:45, yd:3},
+    {id:'frog',     x:HABX.calm-102, y:528, sc:.70, off:.55, amp:16, yd:4},   // west lily-corner, body-width clear of the mallard's range
+    {id:'snail',    x:2900, y:566, sc:.55, off:.85, amp:24, yd:2},    // crosses in FRONT of the pond's rim, above the HUD dot row's screen band
   ];
   if(dusky) CAST.push({id:'owl',mid:'perch',x:1452,y:320,sc:.45,off:.5,amp:0,yd:0,extra:' opacity=".85"'});
   if(total>=12) CAST.push({id:'swallowtail',mid:'flit',x:HABX.meaning-90,y:HABY.meaning-150,sc:.5,off:.33,flt:20});
   if(total>=20) CAST.push({id:'peacock',mid:'flutter',x:HABX.future-60,y:HABY.future-130,sc:.5,off:.5,flt:21,fltAmp:24});
-  if(total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-30,y:HABY.calm-150,sc:.52,off:.66,flt:22});
-  CAST.forEach(o=>{ lv+=FB(o); });
+  if(total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-170,y:HABY.calm-170,sc:.52,off:.66,flt:22});   // over the pond's west edge, clear of the pine crown
+  // the dusk owl gets a bare perch-branch reaching out of the treeline (drawn BEFORE the birds,
+  // so the owl sits on it) — it was floating on the canopy texture
+  if(dusky) lv+=`<g opacity=".8" pointer-events="none"><path d="M1408 340 C 1428 335 1448 333 1464 334" stroke="#241E38" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M1424 337 C 1432 331 1441 328 1450 327" stroke="#241E38" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>`;
+  // painter's order: farther (smaller y) first, nearer last — a nearer animal always crosses IN FRONT
+  // (deterministic, so fableCollect's id|x|off snapshot keys survive every rebuild unchanged)
+  CAST.slice().sort((a,b)=>a.y-b.y).forEach(o=>{ lv+=FB(o); });
+  // ── deliberate occlusion layer: a few foreground tufts ABOVE the animals, placed inside the
+  // walkers' runs, so each ground animal visibly passes BEHIND near vegetation. Non-interactive;
+  // the treeTap columns are appended later and stay on top for taps.
+  {
+    const OGC=(dusky?['#33503C','#3C5844']:['#4F9040','#5C9E4A']).map(c=>nightTint(c,_phase));
+    const OCC=[[148,544,.62,3],[612,548,.58,9],[672,552,.5,5],[1042,548,.66,11],[1102,552,.55,7],
+               [2338,554,.6,13],[2492,558,.52,17],[2560,556,.68,15],[2888,588,.52,19],[2932,592,.46,21]];
+    let og=''; OCC.forEach(([ox,oy,osc,seed],i)=>{ og+=`<g transform="translate(${ox} ${oy}) scale(${osc})">${grassClump(0,0,OGC[i%2],true,seed)}</g>`; });
+    lv+=`<g pointer-events="none" opacity=".96">${og}</g>`;
+  }
   // golden-hour light wash (tints the animals + the canvas beneath, exactly as before)
   lv+=`<rect width="${W}" height="${H}" fill="url(#glow)" pointer-events="none"/>`;
   // golden-hour god-rays: three soft light wedges leaning across the meadow (overlay-only, motion-gated)
@@ -4442,8 +4509,7 @@ function renderPressed(){
   const map={}; store.journal.forEach(e=>map[e.id]=e);
   const items=getPressed().map(id=>map[id]).filter(Boolean);
   if(!items.length){ box.innerHTML=''; return; }
-  box.innerHTML=`<div class="eyebrow" style="margin-top:22px">Pressed flowers</div>
-    <p class="sub" style="margin:6px 0 10px">Small returns you chose to keep — pressed like flowers between the pages. Press any entry in Returns.</p>
+  box.innerHTML=`<p class="sub" style="margin:0 0 10px">Small returns you chose to keep — pressed like flowers between the pages. Press any entry in Returns, or any light in the sky above.</p>
     <div class="pressed-grid">`+items.map(e=>{ const a=AREA[e.area]||{accent:'#E8943E'};
       return `<div class="pressed-card">${pressedFlowerSVG(a.accent)}<div class="pressed-date">${niceDay(e.ymd,{day:'numeric',month:'short'})}</div><div class="pressed-text">“${esc(e.text)}”</div></div>`; }).join('')+`</div>`;
 }
@@ -4468,29 +4534,61 @@ function miniGardenSVG(current){
 function renderThenNow(){
   const box=document.getElementById('lbThenNow'); if(!box) return;
   if(!store.journal.length){ box.innerHTML=''; return; }
-  box.innerHTML=`<div class="lb-sec">How it's grown</div><div class="lb-thennow">
+  box.innerHTML=`<div class="lb-thennow">
     <div class="lb-mini">${miniGardenSVG(false)}<div class="cap">When you began</div></div>
     <svg class="lb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
     <div class="lb-mini">${miniGardenSVG(true)}<div class="cap">Today</div></div>
   </div>`;
 }
 
-/* a memory resurfaced — one of the user's own notes, different each visit (the reason to come back here) */
-let lbMemPool=[], lbMemI=0;
-function renderMemoryCard(reshuffle){
-  const box=document.getElementById('lbMemory'); if(!box) return;
-  const J=store.journal;
-  if(!J.length){ box.innerHTML=''; return; }
-  if(reshuffle||!lbMemPool.length){ lbMemPool=[...J].sort(()=>Math.random()-.5); lbMemI=0; }
-  const e=lbMemPool[lbMemI%lbMemPool.length], a=AREA[e.area];
-  box.innerHTML=`<div class="lb-sec">A memory, resurfaced</div><div class="lb-memory" style="--accent:${a.accent}">
-    <div class="q">“${esc(e.text)}”</div>
-    <div class="lb-mem-meta"><span class="lb-dot"></span>${a.label} · ${fuzzyGroup(e.ymd)}</div>
-    <div class="lb-mem-line">A small thing you did for yourself — still part of this garden. A different moment surfaces each time you look back.</div>
-    ${J.length>1?'<button class="lb-mem-btn" id="lbMemBtn">Remember another</button>':''}
-  </div>`;
-  const b=document.getElementById('lbMemBtn');
-  if(b) b.addEventListener('click',()=>{ lbMemI++; renderMemoryCard(false); });
+/* ── the SKY MEETING — tap a light and its memory surfaces IN the sky, one at a time, with two
+   gentle actions: press it (a keepsake) or visit another light. This is the resurfaced-memory
+   ritual folded into the hero itself (the old "A memory, resurfaced" card is gone). ── */
+let lbMemPool=[], lbMemI=0, meetId=null;
+const PRESS_ICON='<svg viewBox="-13 -13 26 26" fill="currentColor" aria-hidden="true"><g opacity=".95"><ellipse cx="0" cy="-6" rx="3" ry="5.2"/><ellipse cx="0" cy="-6" rx="3" ry="5.2" transform="rotate(60)"/><ellipse cx="0" cy="-6" rx="3" ry="5.2" transform="rotate(120)"/><ellipse cx="0" cy="-6" rx="3" ry="5.2" transform="rotate(180)"/><ellipse cx="0" cy="-6" rx="3" ry="5.2" transform="rotate(240)"/><ellipse cx="0" cy="-6" rx="3" ry="5.2" transform="rotate(300)"/></g></svg>';
+function litStar(id){
+  const wrap=document.getElementById('pathWrap'); if(!wrap) return;
+  wrap.querySelectorAll('.cairnTap').forEach(o=>o.classList.toggle('lit', o.dataset.id===id));
+}
+function skyMeetShow(id){
+  const e=store.journal.find(x=>x&&x.id===id); if(!e) return;
+  const card=document.getElementById('skyMeet'); if(!card) return;
+  meetId=id;
+  const a=AREA[e.area]||{accent:'#E8943E',label:'A return'};
+  litStar(id);
+  card.style.setProperty('--accent',a.accent);
+  const on=isPressed(id), many=store.journal.length>1;
+  card.innerHTML=`<div class="sm-text">“${esc(e.text)}”</div>
+    <div class="sm-meta">${a.label} · ${fuzzyGroup(e.ymd).toLowerCase()}</div>
+    <div class="sm-actions">
+      <button class="sm-press${on?' on':''}" aria-pressed="${on}">${PRESS_ICON}<span>${on?'Pressed':'Press this'}</span></button>
+      ${many?'<button class="sm-next">Another light</button>':''}
+      <button class="sm-close" aria-label="Back to the whole sky">✕</button>
+    </div>`;
+  card.classList.remove('show'); void card.offsetWidth; card.classList.add('show');
+  const cap=document.getElementById('cairnCap'); if(cap) cap.style.display='none';
+  card.querySelector('.sm-press').addEventListener('click',()=>{
+    const nowOn=togglePressed(id);
+    const b=card.querySelector('.sm-press');
+    b.classList.toggle('on',nowOn); b.setAttribute('aria-pressed',nowOn?'true':'false');
+    b.querySelector('span').textContent=nowOn?'Pressed':'Press this';
+    renderPressed(); syncFolds();
+    toast(nowOn?'Pressed — kept with your flowers below.':'Unpressed — no longer a keepsake.');
+  });
+  const nx=card.querySelector('.sm-next');
+  if(nx) nx.addEventListener('click',()=>{
+    if(!lbMemPool.length){ lbMemPool=[...store.journal].sort(()=>Math.random()-.5); lbMemI=0; }
+    let next=lbMemPool[lbMemI%lbMemPool.length]; lbMemI++;
+    if(next && next.id===meetId && lbMemPool.length>1){ next=lbMemPool[lbMemI%lbMemPool.length]; lbMemI++; }
+    if(next) skyMeetShow(next.id);
+  });
+  card.querySelector('.sm-close').addEventListener('click',skyMeetClose);
+}
+function skyMeetClose(){
+  const card=document.getElementById('skyMeet'); if(!card||!card.classList.contains('show')) return;
+  card.classList.remove('show'); meetId=null;
+  litStar(null);
+  const cap=document.getElementById('cairnCap'); if(cap) cap.style.display='';
 }
 
 /* the garden's story so far, told as gentle chapters (stages as WORDS, never care numbers) */
@@ -4508,10 +4606,9 @@ const COMPASS_Q=[
 ];
 function compassSeenWeek(){ try{ return +(localStorage.getItem('meadowlark.compass')||0); }catch(_){ return 0; } }
 function setCompassSeen(w){ try{ localStorage.setItem('meadowlark.compass', String(w)); }catch(_){} }
-function renderCompass(){
-  const box=document.getElementById('lbCompass'); if(!box) return;
+function compassDue(){ return store.journal.length>=3 && compassSeenWeek()!==isoWeek(); }
+function renderCompassInto(box){
   const wk=isoWeek();
-  if(store.journal.length<3 || compassSeenWeek()===wk){ box.innerHTML=''; return; }   // only after a little history; once a week
   const q=COMPASS_Q[wk%COMPASS_Q.length];
   box.innerHTML=`<div class="compass">
     <div class="eyebrow">This week's quiet question</div>
@@ -4522,14 +4619,42 @@ function renderCompass(){
       <button class="compass-skip" id="compassSkip">Maybe another time</button>
     </div>
   </div>`;
-  document.getElementById('compassSkip').addEventListener('click',()=>{ setCompassSeen(wk); renderCompass(); });
+  document.getElementById('compassSkip').addEventListener('click',()=>{ setCompassSeen(wk); renderRitual(); });
   document.getElementById('compassKeep').addEventListener('click',()=>{
     const t=(document.getElementById('compassText').value||'').trim();
     if(t){ tend('meaning', t, true); }
     setCompassSeen(wk);
     toast(t ? 'Kept — a reflection, folded into your garden.' : "That's okay. It'll be here next week.");
-    renderCompass();
-    if(t){ lastSceneSig=''; if(document.getElementById('view-path').classList.contains('active')) renderPath(); }
+    if(t){ lastSceneSig=''; }
+    if(document.getElementById('view-path').classList.contains('active')) renderPath(); else renderRitual();
+  });
+}
+/* ONE quiet ritual at a time under the sky — never a queue of cards. Priority:
+   an arrived letter (rare, precious) > this week's quiet question (once, dismissible) > nothing. */
+function renderRitual(){
+  const box=document.getElementById('lbRitual'); if(!box) return;
+  const today=localYMD(new Date());
+  const arrived=getLetters().filter(l=>l&&!l.opened&&l.openYMD<=today);
+  if(arrived.length){
+    const l=arrived[0];
+    box.innerHTML=`<div class="letter-arrived">
+      <div class="eyebrow" style="margin-bottom:5px">A letter has arrived</div>
+      <p class="la-lead">You left this for yourself on ${niceDay(l.createdYMD,{day:'numeric',month:'long',year:'numeric'})} — meant for a day like today. It’s ready whenever you are.</p>
+      <button class="la-open" data-open="${l.id}">Open it, gently</button></div>`;
+    box.querySelector('.la-open').addEventListener('click',()=>openLetter(l.id));
+    return;
+  }
+  if(compassDue()){ renderCompassInto(box); return; }
+  box.innerHTML='';
+}
+/* a fold only shows when there's something inside it — an empty section never asks to be opened */
+function syncFolds(){
+  [['foldGrown','lbThenNow'],['foldChapters','lbChapters'],['foldPressed','lbPressed'],
+   ['foldLetters','lbLetters'],['foldKeepsake','lbKeepsake']].forEach(([fid,bid])=>{
+    const f=document.getElementById(fid), b=document.getElementById(bid); if(!f||!b) return;
+    let show=!!b.innerHTML.trim();
+    if(fid==='foldLetters') show = show && (store.journal.length>0 || getLetters().length>0);   // empty garden = simple invitation only
+    f.style.display=show?'':'none';
   });
 }
 function renderChapters(){
@@ -4549,17 +4674,16 @@ function renderChapters(){
   if(deep&&deep.c>0) ch.push({c:deep.a.accent,t:'Deepest roots',d:`${deep.a.label} has grown the furthest — ${STAGE_WORD[stageOf(deep.c)]}.`});
   const last=J[J.length-1];
   ch.push({c:AREA[last.area].accent,t:'The latest light',d:`${fuzzyGroup(last.ymd)} — “${esc(last.text)}” (${AREA[last.area].label}).`});
-  box.innerHTML=`<div class="lb-sec">Chapters of this garden</div>`+ch.map(x=>`<div class="lb-ch"><span class="d" style="background:${x.c}"></span><div><b>${x.t}</b><span>${x.d}</span></div></div>`).join('');
+  box.innerHTML=ch.map(x=>`<div class="lb-ch"><span class="d" style="background:${x.c}"></span><div><b>${x.t}</b><span>${x.d}</span></div></div>`).join('');
 }
 
 /* "The garden noticed…" — one warm weekly observation drawn ONLY from data already here.
    No numbers, no score, never "you're behind" — just gentle noticing. Rotated by iso-week so it's
-   stable within a week and quietly changes; stages are WORDS (STAGE_WORD), never care values. */
-const NOTICE_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="2.6"/></svg>';
-function renderNoticed(){
-  const box=document.getElementById('lbNoticed'); if(!box) return;
+   stable within a week and quietly changes; stages are WORDS (STAGE_WORD), never care values.
+   Since v72 it IS the one warm line under the sky (renderSummaryLine) — no separate card. */
+function noticedLine(){
   const J=store.journal;
-  if(J.length<3){ box.innerHTML=''; return; }   // needs a little history before there's anything true to notice
+  if(J.length<3) return '';   // needs a little history before there's anything true to notice
   const obs=[];
   // deepest-rooted corner (care order only decides which — the number itself is never shown)
   const deep=AREAS.map(a=>({a,c:store.areas[a.id]?store.areas[a.id].care:0})).filter(x=>x.c>0).sort((x,y)=>y.c-x.c)[0];
@@ -4576,9 +4700,8 @@ function renderNoticed(){
   // the most recent place your care landed
   const lastE=[...J].sort((a,b)=>b.t-a.t).find(e=>AREA[e.area]);
   if(lastE) obs.push(`Lately your care has been landing on <b>${AREA[lastE.area].label}</b>. Wherever you show up counts.`);
-  if(!obs.length){ box.innerHTML=''; return; }
-  const pick=obs[isoWeek()%obs.length];   // stable within the week, gently rotates
-  box.innerHTML=`<div class="noticed"><div class="noticed-head">${NOTICE_ICON}<span>The garden noticed…</span></div><p class="noticed-body">${pick}</p></div>`;
+  if(!obs.length) return '';
+  return obs[isoWeek()%obs.length];   // stable within the week, gently rotates
 }
 
 /* Letter to your future self — a private note that sleeps in localStorage and surfaces, gently, only
@@ -4599,27 +4722,22 @@ function renderLetters(){
   const box=document.getElementById('lbLetters'); if(!box) return;
   const today=localYMD(new Date());
   const letters=getLetters();
-  const arrived=letters.filter(l=>l&&!l.opened&&l.openYMD<=today);
+  // (an ARRIVED letter surfaces as the one ritual under the sky — renderRitual — not here)
   const opened =letters.filter(l=>l&&l.opened).sort((a,b)=>(b.openedAt||0)-(a.openedAt||0));
   const sealed =letters.filter(l=>l&&!l.opened&&l.openYMD>today).sort((a,b)=>a.openYMD<b.openYMD?-1:1);
   let h='';
-  arrived.forEach(l=>{ h+=`<div class="letter-arrived">
-      <div class="eyebrow" style="margin-bottom:5px">A letter has arrived</div>
-      <p class="la-lead">You left this for yourself on ${niceDay(l.createdYMD,{day:'numeric',month:'long',year:'numeric'})} — meant for a day like today. It’s ready whenever you are.</p>
-      <button class="la-open" data-open="${l.id}">Open it, gently</button></div>`; });
-  h+=`<div class="lb-sec">A letter to your future self</div>`;
   opened.forEach(l=>{ h+=`<div class="letter-open"><div class="lo-meta">Written ${niceDay(l.createdYMD,{day:'numeric',month:'short',year:'numeric'})} · opened ${fuzzyGroup(localYMD(new Date(l.openedAt||Date.now())))}</div><p class="lo-text">${esc(l.text)}</p></div>`; });
   if(sealed.length){ h+=`<div class="letter-sealed">`+sealed.map(l=>`<div class="ls-row"><span class="ls-wax" aria-hidden="true">✎</span><span>A letter is sealed until <b>${niceDay(l.openYMD,{day:'numeric',month:'long',year:'numeric'})}</b> — it’ll be waiting here then.</span></div>`).join('')+`</div>`; }
   h+=`<div id="letterCompose"></div>
       <button class="letter-write" id="letterWriteBtn">${letters.length?'Write another letter':'Write a letter to open later'}</button>`;
   box.innerHTML=h;
-  box.querySelectorAll('.la-open').forEach(b=>b.addEventListener('click',()=>openLetter(b.dataset.open)));
   const wb=document.getElementById('letterWriteBtn'); if(wb) wb.addEventListener('click',showLetterCompose);
 }
 function openLetter(id){
   const letters=getLetters(); const l=letters.find(x=>x&&x.id===id); if(!l) return;
   l.opened=true; l.openedAt=Date.now(); saveLetters(letters);
-  renderLetters();
+  renderRitual(); renderLetters(); syncFolds();
+  const fl=document.getElementById('foldLetters'); if(fl){ fl.open=true; fl.scrollIntoView({behavior:'smooth',block:'nearest'}); }
   toast('A letter from you, opened. It stays here now — a keepsake.');
 }
 function showLetterCompose(){
@@ -4655,8 +4773,7 @@ const KEEPSAKE_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 function renderKeepsake(){
   const box=document.getElementById('lbKeepsake'); if(!box) return;
   if(!store.journal.length){ box.innerHTML=''; return; }
-  box.innerHTML=`<div class="lb-sec">A keepsake</div>
-    <div class="keepsake-card">
+  box.innerHTML=`<div class="keepsake-card">
       <p class="ks-line">Make a warm, frameable page of your garden as it stands — the whole vignette, and a few of your own returns. Print it, or save it as a PDF. It never leaves this device.</p>
       <button class="ks-btn" id="keepsakeBtn">${KEEPSAKE_ICON}<span>Print or save a keepsake</span></button>
     </div>`;
@@ -4694,22 +4811,28 @@ function renderPath(){
   const dayKeys=Object.keys(byDay).sort();
   const totalReturns=store.journal.length, daysBack=dayKeys.length, corners=new Set(store.journal.map(e=>e.area)).size;
 
-  // ── the warm reflection above the path (satisfaction lives here, not in a scoreboard) ──
+  // ── ONE warm line under the sky (the old summary + "garden noticed" merged; no card wall) ──
   const sum=document.getElementById('pathSummary');
   if(sum){
     if(totalReturns===0){
-      sum.innerHTML=`<p class="lb-line">Your sky begins the moment you tend one small thing. Nothing to catch up on — just a first light, whenever you like.</p>`;
+      // empty state = a simple invitation to the first small return — no wall of instructions
+      sum.innerHTML=`<p class="lb-line">Your sky begins the moment you tend one small thing — a first light, whenever you like.</p>
+        <button class="lb-begin" id="lbBegin">Tend one small thing →</button>`;
+      const bb=document.getElementById('lbBegin'); if(bb) bb.addEventListener('click',()=>go('meadow'));
+    } else if(daysBack===1){
+      sum.innerHTML=`<p class="lb-line">You came back and tended something small — <b>one light in the dark</b>, and a good beginning.</p>`;
     } else {
-      // No scoreboard, no counters — just the warm reflection. (Every return still becomes a light below.)
+      const nl=noticedLine();
       const firstNice=niceDay(dayKeys[0],{day:'numeric',month:'long'});
-      const line = daysBack===1
-        ? `You came back and tended something small — <b>one light in the dark</b>, and a good beginning.`
-        : `Since ${firstNice}, you've kept coming back, a little at a time. <b>None of it was lost</b> — every small return became a light up there.`;
-      sum.innerHTML=`<p class="lb-line">${line}</p>`;
+      sum.innerHTML=`<p class="lb-line">${nl || `Since ${firstNice}, you've kept coming back, a little at a time — every small return became a light up there.`}</p>`;
     }
   }
-  renderThenNow(); renderMemoryCard(true); renderCompass(); renderPressed(); renderChapters();
-  renderNoticed(); renderLetters(); renderKeepsake();   // v57: weekly noticing · letter to future self · printable keepsake
+  // fresh shuffle for "Another light", the one ritual, and the folded sections
+  lbMemPool=[...store.journal].sort(()=>Math.random()-.5); lbMemI=0;
+  skyMeetClose();
+  renderRitual();
+  renderThenNow(); renderChapters(); renderPressed(); renderLetters(); renderKeepsake();
+  syncFolds();
 
   // ── Nocne Niebo Powrotów (v59 HERO) — the sky is the emotional centerpiece of Look Back ──
   // A private night sky where every small return is a faint star. No beginning, no end, no axis, no
@@ -4796,23 +4919,23 @@ function renderPath(){
     let rt='';
     entries.forEach((e,idx)=>{
       let gx=34+hh(idx,61)*(W-68);
-      let gy=26+Math.pow(hh(idx,67),0.92)*((HZ-46)-26);
-      if(moonClear(gx,gy,104)){ const ang=Math.atan2(gy-MY,gx-MX)||0.6; gx=clamp(MX+Math.cos(ang)*104,34,W-34); gy=clamp(MY+Math.sin(ang)*104,26,HZ-46); }
+      let gy=26+Math.pow(hh(idx,67),0.92)*((HZ-150)-26);   // stay above the horizon-glow haze, where a light would drown
+      if(moonClear(gx,gy,104)){ const ang=Math.atan2(gy-MY,gx-MX)||0.6; gx=clamp(MX+Math.cos(ang)*104,34,W-34); gy=clamp(MY+Math.sin(ang)*104,26,HZ-150); }
       const latest=idx===N-1;
       const a=AREA[e.area]||{accent:'#E8943E',label:'A return'};
       const bright=hh(idx,73);
-      const rr=latest?4.4:(2.0+bright*2.0);
-      const core=mix('#FFF6DE', a.accent, latest?0.32:0.24);
-      const cap=`“${e.text}” — ${a.label}, ${fuzzyGroup(e.ymd).toLowerCase()}`;
+      // returns must read clearly WARMER and BIGGER than the background pinpricks — they are the characters
+      const rr=latest?5.0:(2.6+bright*2.2);
+      const core=mix('#FFF6DE', a.accent, latest?0.42:0.38);
       const aria=a.label+', '+niceDay(e.ymd,{day:'numeric',month:'long'});
-      let g=`<g class="cairnTap" data-cap="${esc(cap)}" role="button" tabindex="0" aria-label="${esc(aria)}">`;
+      let g=`<g class="cairnTap" data-id="${esc(e.id)}" role="button" tabindex="0" aria-label="${esc(aria)}">`;
       g+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="16" fill="#000" opacity="0" pointer-events="all"/>`;
       g+=`<circle class="rt-halo" cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*5.2).toFixed(1)}" fill="url(#skyGlowW)"/>`;
       g+=`<g class="rt-scale">`;
       // every return carries a soft glow tinted by its area — a warm point of light, a character of the sky,
       // distinct from the pinprick background; the latest is "tonight's light" and shimmers on its own beat.
-      g+=`<circle${latest?' class="sky-tonight"':''} cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*(latest?3.4:1.9)).toFixed(1)}" fill="url(#skyGlowW)" opacity="${latest?0.92:(0.34+bright*0.24)}"/>`;
-      g+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*2.2).toFixed(1)}" fill="${a.accent}" opacity="${latest?0.22:0.12}"/>`;
+      g+=`<circle${latest?' class="sky-tonight"':''} cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*(latest?3.4:1.9)).toFixed(1)}" fill="url(#skyGlowW)" opacity="${latest?0.92:(0.46+bright*0.26)}"/>`;
+      g+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*2.2).toFixed(1)}" fill="${a.accent}" opacity="${latest?0.22:0.2}"/>`;
       if(latest) g+=`<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${(rr*4.4).toFixed(1)}" fill="none" stroke="${a.accent}" stroke-width="1" opacity=".28"/>`;
       const twk=(!latest && hh(idx,79)>0.72);
       const st=twk?` class="twinkle" style="--d:${(4+hh(idx,83)*4).toFixed(1)}s;animation-delay:-${(hh(idx,89)*5).toFixed(1)}s"`:'';
@@ -4824,11 +4947,11 @@ function renderPath(){
     s+=`<g class="rt-reveal">${rt}</g>`;
     s+=`</svg>`;
     wrap.innerHTML=s;
+    // the idle hint only makes sense when there are lights to tap; the empty sky invites below instead
     const cap=document.getElementById('cairnCap');
-    const all=wrap.querySelectorAll('.cairnTap');
-    all.forEach(el=>{
-      const set=()=>{ all.forEach(o=>o.classList.remove('lit')); el.classList.add('lit');
-        cap.style.opacity=0; setTimeout(()=>{ cap.textContent=el.dataset.cap; cap.style.opacity=1; },150); };
+    if(cap) cap.style.visibility = N?'':'hidden';
+    wrap.querySelectorAll('.cairnTap').forEach(el=>{
+      const set=()=>skyMeetShow(el.dataset.id);   // the star lights up + its memory surfaces in the sky
       el.addEventListener('click',set);
       el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); set(); } });
     });
@@ -5210,7 +5333,7 @@ function init(){
   document.getElementById('craftPathClose').addEventListener('click',closeCraftPath);
   wireCraftPick();
   document.getElementById('tendBtn').addEventListener('click',doTend);
-  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeTend(); closeCraftPick(); closeCraftPath(); closeGate(); closeDrawer(); hideTendBubble(); } });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeTend(); closeCraftPick(); closeCraftPath(); closeGate(); closeDrawer(); hideTendBubble(); skyMeetClose(); } });
   document.addEventListener('keydown',modalTrap);   // keep Tab inside whichever sheet is open
   const ot=document.getElementById('ownText');
   ot.addEventListener('input',()=>{ document.getElementById('ownCount').textContent=String(120-ot.value.length); if(ot.value){ document.querySelectorAll('#quick button').forEach(x=>x.classList.remove('sel')); sheetSel=null; } });
