@@ -2070,7 +2070,8 @@ function tree(stage, frac, areaId, seasonName, phase, form){
   // THE GROWTH ATLAS tree, exactly as designed — one distinct kind per habitat, continuous growth physics
   const g=clamp((stage+(frac||0))/4,0,1);
   const sp=GA_SP[GA_TREE_KIND[areaId]||'oak'];
-  const art=(sp.kind==='pine')?GA.coniferAbove(sp,g):GA.treeAbove(sp,g);
+  const S=mdwSeason(seasonName);   // spring→blossom, autumn→gold + fallen leaves, winter→frosted crown + snow
+  const art=(sp.kind==='pine')?GA.coniferAbove(sp,g,S):GA.treeAbove(sp,g,S);
   return gaTint(art);
 }
 
@@ -2102,9 +2103,15 @@ function wavy(baseY,amp){
     d+=` C ${mx.toFixed(0)} ${y.toFixed(0)} ${mx.toFixed(0)} ${ny.toFixed(0)} ${cx.toFixed(0)} ${ny.toFixed(0)}`; x=cx; y=ny; up=!up; }
   d+=` L${PANO_W} ${PANO_H} L0 ${PANO_H} Z`; return d;
 }
+// gently shift a grass colour to match the season (fresh in spring, gold in autumn, straw under winter snow)
+function seasonGrass(c){ const k=_gaSeason&&_gaSeason.key;
+  if(k==='Spring') return mix(c,'#8FC24C',0.22);
+  if(k==='Autumn') return mix(c,'#B98A34',0.5);
+  if(k==='Winter') return mix(c,'#BBAB82',0.62);
+  return c; }
 // several tuft shapes (2–5 blades, different spread/height) so grass never reads as one repeated stamp;
 // variant is deterministic from `seed` (or x when drawn in place)
-function grassClump(x,y,c,still,seed){ c=nightTint(c||'#4E8B3E',_phase);
+function grassClump(x,y,c,still,seed){ c=nightTint(seasonGrass(c||'#4E8B3E'),_phase);
   const v=Math.abs(Math.round(seed==null?x:seed))%6; let d;
   if(v===0)      d=`M${x} ${y} C ${x-3} ${y-13} ${x-4} ${y-19} ${x-5} ${y-26} M${x} ${y} C ${x+3} ${y-14} ${x+5} ${y-20} ${x+7} ${y-27}`;                                                                                     // 2 short
   else if(v===1) d=`M${x} ${y} C ${x-4} ${y-22} ${x-6} ${y-32} ${x-8} ${y-44} M${x} ${y} C ${x} ${y-24} ${x+1} ${y-34} ${x+2} ${y-46} M${x} ${y} C ${x+4} ${y-22} ${x+7} ${y-32} ${x+10} ${y-44}`;                            // 3 upright (classic)
@@ -2137,30 +2144,101 @@ const tintSvgNight=(svg)=>svg.replace(/#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\b/g,m=
 
 /* ── THE GROWTH ATLAS — ported VERBATIM (full growth physics for every plant and tree).
    Only the glue below is ours: id-prefixing (ga*), night tinting, and scale wrappers. ── */
-const GA={
-  props:{},
-  DEFS:`<defs>
-<linearGradient id="gaStem" x1="0" y1="1" x2="0.25" y2="0"><stop offset="0" stop-color="#3E6B2E"/><stop offset="1" stop-color="#6FA24B"/></linearGradient>
-<linearGradient id="gaLeaf" x1="0" y1="0" x2="0.9" y2="0.7"><stop offset="0" stop-color="#93C169"/><stop offset="1" stop-color="#4C7A34"/></linearGradient>
-<linearGradient id="gaTrunk" x1="0" y1="1" x2="0.35" y2="0"><stop offset="0" stop-color="#6A552F"/><stop offset="1" stop-color="#8C7A46"/></linearGradient>
-<linearGradient id="gaSoil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7E5C3B"/><stop offset="0.5" stop-color="#5A4026"/><stop offset="1" stop-color="#40301C"/></linearGradient>
-<linearGradient id="gaWater" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C6DCDF" stop-opacity="0.8"/><stop offset="1" stop-color="#8DB9C0" stop-opacity="0.92"/></linearGradient>
-<radialGradient id="gaCanopyHi" cx="38%" cy="24%" r="66%"><stop offset="0" stop-color="#FFF6D8" stop-opacity="0.72"/><stop offset="0.55" stop-color="#EBD9A8" stop-opacity="0.15"/><stop offset="1" stop-color="#86C067" stop-opacity="0"/></radialGradient>
-<filter id="gaSoft" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="2.4" stdDeviation="3" flood-color="rgba(58,42,20,0.22)"/></filter>
-</defs>`,
-  PAL: {
+const GA=(()=>{ class GA_CLS {
+  props = { showRoots:false, showRuler:false };
+  state = { season:'Summer' };
+
+  SEASONS = {
+    Spring: { key:'Spring', accent:'#7FA24B', leaf:['#B4DD6E','#5FA23C'], stem:['#4E8233','#7DB255'], canopyMix:['#C6E884',0.18], canopyHi:'#FFFBDE', vein:'#3E6B2A', snow:0, fallen:0, blossom:true, fruit:false, padCol:'#7BB255', wash:'rgba(150,196,110,0.05)' },
+    Summer: { key:'Summer', accent:'#C7A23A', leaf:['#93C169','#4C7A34'], stem:['#3E6B2E','#6FA24B'], canopyMix:null, canopyHi:'#FFF8DC', vein:'#3B6329', snow:0, fallen:0, blossom:false, fruit:false, padCol:'#5E8E4E', wash:null },
+    Autumn: { key:'Autumn', accent:'#C06A24', leaf:['#E8BC52','#AE521C'], stem:['#6E5A2E','#9C8442'], canopyMix:['#CE7A28',0.64], canopyHi:'#FBE6A6', vein:'#7A4A1E', snow:0, fallen:1, blossom:false, fruit:true, padCol:'#B79A3E', wash:'rgba(192,120,36,0.07)' },
+    Winter: { key:'Winter', accent:'#7E93A6', leaf:['#AEBBA6','#77877A'], stem:['#6E6046','#9A8A6C'], canopyMix:['#8FA0A6',0.5], canopyHi:'#EEF4F7', vein:'#5E6E62', snow:1, fallen:0, blossom:false, fruit:false, bare:true, padCol:'#8FA79A', wash:'rgba(150,178,198,0.09)' }
+  };
+
+  PAL = {
     stemLight:'#8FBE64', vein:'#3B6329', cotyledon:'#A9CE77',
     rootLt:'#E7DAC0', rootDk:'#CBB891', groundLine:'#6B4A2C',
     calyx:'#6E8A54', calyxDk:'#4F6B3B'
-  },
-  BARK: {
+  };
+  BARK = {
     default:{ lo:'#5C4728', hi:'#8C7A46', line:'#4A3A20' },
-    cherry:{ lo:'#54402E', hi:'#7E6248', line:'#3E2C1E' },
+    oak:{ lo:'#524027', hi:'#7E6E44', line:'#382A16' },
+    cherry:{ lo:'#5A3E30', hi:'#8A6250', line:'#3E2418' },
     birch:{ lo:'#B9B2A0', hi:'#EFEADC', line:'#8F887A' },
     apple:{ lo:'#5E4A2C', hi:'#8A744A', line:'#463418' },
-    pine:{ lo:'#66452A', hi:'#96693F', line:'#4A3018' }
-  },
-  SPECIES: [
+    maple:{ lo:'#5A4A30', hi:'#877348', line:'#3C2C18' },
+    willow:{ lo:'#5C5638', hi:'#897E54', line:'#423A22' },
+    pine:{ lo:'#7A4E2A', hi:'#A8743E', line:'#4A3018' }
+  };
+  TRUNK_FORM = {
+    oak:    { flare:2.2, roots:3, bark:'furrow' },
+    cherry: { flare:1.5, roots:2, bark:'lenticel' },
+    apple:  { flare:2.0, roots:3, bark:'furrow' },
+    maple:  { flare:1.6, roots:2, bark:'furrow' },
+    birch:  { flare:1.4, roots:2, bark:'band' },
+    willow: { flare:2.0, roots:3, bark:'furrow' },
+    pine:   { flare:1.7, roots:2, bark:'plate' },
+    default:{ flare:1.7, roots:2, bark:'furrow' }
+  };
+  CROWN = {
+    oak:    { w:100, h:74, cy:6,  rB:44, lobes:7, jag:0.20, fill:5 },
+    cherry: { w:74,  h:82, cy:-4, rB:42, lobes:6, jag:0.08, fill:4 },
+    apple:  { w:96,  h:60, cy:12, rB:40, lobes:7, jag:0.30, fill:4 },
+    maple:  { w:82,  h:90, cy:-2, rB:44, lobes:6, jag:0.10, fill:5 },
+    birch:  { w:58,  h:90, cy:-10,rB:28, lobes:8, jag:0.16, fill:3, droop:true },
+    willow: { w:92,  h:58, cy:6,  rB:40, lobes:7, jag:0.12, fill:4 },
+    default:{ w:82,  h:76, cy:2,  rB:40, lobes:6, jag:0.16, fill:4 }
+  };
+
+  FLOWER_STAGES = [
+    { name:'Seed', short:'Seed', at:0.0, desc:'The dry seed lies dormant, swelling with moisture until its coat splits and a first pale radicle probes downward for anchorage.' },
+    { name:'Sprout', short:'Sprout', at:0.16, desc:'The hooked hypocotyl arches through the surface, then straightens and lifts two seed-leaves — the cotyledons — into the light.' },
+    { name:'Seedling', short:'Seedling', at:0.34, desc:'The first true leaves unfurl above the withering cotyledons as the young stem finds its feet and the roots spread.' },
+    { name:'Leafing', short:'Leafing', at:0.50, desc:'Pair after pair of leaves opens up the lengthening stem, building the green factory that will feed the flower.' },
+    { name:'Budding', short:'Bud', at:0.66, desc:'Upward growth slows and a tight green calyx forms at the tip, cradling the tightly folded petals within.' },
+    { name:'Colouring bud', short:'Blush', at:0.82, desc:'The bud swells and its sepals begin to part, the first blush of petal-colour showing along the seams.' },
+    { name:'Full bloom', short:'Bloom', at:1.0, desc:'The sepals fall away and the petals reflex fully open — the flower at its peak, offering nectar and pollen to the day.' }
+  ];
+  TREE_STAGES = [
+    { name:'Seed', short:'Seed', at:0.0, desc:'A seed-leaf shoot with a hooked stem breaks from the buried acorn, stone or samara.' },
+    { name:'Seedling', short:'Seedling', at:0.16, desc:'A slender whip of a stem carries the first true leaves upward on a thread-thin trunk.' },
+    { name:'Sapling', short:'Sapling', at:0.36, desc:'The leader thickens into a young trunk and the bark begins to set as the crown starts to form.' },
+    { name:'Branching', short:'Branching', at:0.56, desc:'Side branches break from the trunk and a first true crown of foliage takes shape above.' },
+    { name:'Young tree', short:'Young', at:0.76, desc:'The crown broadens and fills, season by season, into a rounded, well-furnished canopy.' },
+    { name:'Mature', short:'Mature', at:1.0, desc:'Full height and a wide crown in its prime — flowering, fruiting, or holding evergreen through winter.' }
+  ];
+  GRASS_STAGES = [
+    { name:'Seed', short:'Seed', at:0.0, desc:'The grain lies in the soil, drawing in moisture until a pale shoot pushes toward the surface.' },
+    { name:'Germination', short:'Germ.', at:0.14, desc:'The seed-leaf clears the ground and the first thin blade unrolls from its sheath.' },
+    { name:'Tillering', short:'Tiller', at:0.34, desc:'Side shoots break from the base, multiplying the plant into a dense tuft of blades.' },
+    { name:'Leafy growth', short:'Leafy', at:0.54, desc:'The clump fills out, its arching blades lengthening as the plant gathers strength before flowering.' },
+    { name:'Heading', short:'Head', at:0.74, desc:'Flowering culms rise above the foliage and the seed head emerges from the topmost sheath.' },
+    { name:'Flowering', short:'Flower', at:1.0, desc:'The head opens fully \u2014 feathery plume, bottlebrush or bearded ear \u2014 casting its pollen to the wind.' }
+  ];
+  GRASS = {
+    meadow:   { blades:14, spread:54, len:110, w:2.4, arch:0.55, head:'panicle', headCol:'#A9B36E', headLen:42, culm:1.12, headN:4, seedGrad:['#8FBE5A','#5A8A38'] },
+    fescue:   { blades:24, spread:72, len:60,  w:1.7, arch:0.16, head:'none',    headCol:'#AECBBE', headLen:0,  culm:1.0,  headN:0, seedGrad:['#A2C4B2','#5E8A78'] },
+    fountain: { blades:16, spread:64, len:132, w:2.7, arch:0.85, head:'brush',   headCol:'#B58AA0', headLen:38, culm:1.12, headN:6, seedGrad:['#8AB258','#5A8636'] },
+    pampas:   { blades:14, spread:56, len:150, w:3.3, arch:0.5,  head:'plume',   headCol:'#C4B99C', headLen:70, culm:1.24, headN:5, seedGrad:['#A6BE6A','#6E9648'] },
+    wheat:    { blades:6,  spread:26, len:140, w:2.7, arch:0.2,  head:'grain',   headCol:'#CFA640', headLen:40, culm:1.18, headN:5, seedGrad:['#BBC468','#8E9642'] },
+    reed:     { blades:10, spread:30, len:156, w:2.1, arch:0.24, head:'feather', headCol:'#CDBE9E', headLen:58, culm:1.2,  headN:4, seedGrad:['#9CBE68','#67924A'] }
+  };
+  STONE_STAGES = [
+    { name:'Pebble', short:'Pebble', at:0.0, desc:'A stone small enough to sit in the palm, rolled smooth in a streambed or scattered loose across a field.' },
+    { name:'Cobble', short:'Cobble', at:0.34, desc:'A fist-sized stone, too big to skip \u2014 the size that paves an old lane or edges a garden border.' },
+    { name:'Stone', short:'Stone', at:0.67, desc:'A good two-handed stone, the kind cleared from ploughland and stacked into the dry walls of the uplands.' },
+    { name:'Boulder', short:'Boulder', at:1.0, desc:'A stone too heavy to lift, left where ice or flood once dropped it \u2014 a small landmark in its own right.' }
+  ];
+  STONE = {
+    flint:    { kind:'nodule',  w:104, h:84, body:['#7A756A','#4A463E'], cortex:'#D2C8B2' },
+    granite:  { kind:'boulder', w:126, h:96, body:['#A69E94','#6E685E'], speck:['#38342C','#E2DCCE','#B48A6A'] },
+    quartz:   { kind:'crystal', w:96,  h:132, body:['#E4E9EE','#AEB8C2'], tip:'#F6F9FC', points:6 },
+    amethyst: { kind:'geode',   w:110, h:98, body:['#6E6484','#3E3652'], crystal:['#B9A6D8','#8E77B8','#ECDCF4'] },
+    slate:    { kind:'layered', w:120, h:80, body:['#5C6068','#363A40'], edge:'#828892' },
+    sandstone:{ kind:'banded',  w:122, h:92, body:['#CBA06A','#9A6C3C'], band:['#DCBB8A','#8E6234'] }
+  };
+
+  SPECIES = [
     { id:'cornflower', common:'Cornflower', latin:'Centaurea cyanus', family:'Asteraceae', type:'flower', bloomKind:'cornflower',
       maxH:210, leaf:'narrow', leafPairs:4, leafAngle:58, leafScale:0.9, stemW:4.6,
       bloomCol:{ deep:'#3B60A6', mid:'#4E79C0', light:'#8FB0E6', center:'#22407A' },
@@ -2225,8 +2303,8 @@ const GA={
       bloomCol:{},
       season:'Jan – Mar', sizeText:'7 – 15 cm', note:'A midwinter pearl that hangs its single white drop above the snow, green-tipped and imperturbable.' },
     { id:'cherry', common:'Cherry Blossom', latin:'Prunus serrulata', family:'Rosaceae', type:'tree', kind:'cherry',
-      canopy:['#E7D8C0','#EEE1CE','#F2E7D8','#EEE1CE','#F6ECE0','#FCF7F0','#F2E7D8','#F9F1E8','#FFFDF8'],
-      season:'April', sizeText:'8 – 12 m', note:'A wild cherry that clouds itself in soft white blossom for one fleeting week each spring.' },
+      canopy:['#4F8C47','#589753','#64A459','#589753','#70B264','#74B568','#64A459','#83C171','#88C378'],
+      season:'April', sizeText:'8 – 12 m', note:'An ornamental cherry that clouds itself in soft pink blossom for one fleeting week each spring.' },
     { id:'oak', common:'English Oak', latin:'Quercus robur', family:'Fagaceae', type:'tree', kind:'oak',
       canopy:['#4E8A45','#579551','#63A257','#579551','#6FB062','#73B366','#63A257','#82BF6F','#87C176'],
       season:'—', sizeText:'20 – 40 m', note:'The English oak grows slowly into a broad, long-lived giant — an entire ecosystem held in a single tree.' },
@@ -2237,45 +2315,229 @@ const GA={
       canopy:['#2E5A38','#34663E','#3C7748','#478A52','#54985E'],
       season:'Evergreen', sizeText:'15 – 30 m', note:'An evergreen conifer of tiered branches and blue-green needles that holds its dark crown through the hardest winter.' },
     { id:'maple', common:'Maple', latin:'Acer platanoides', family:'Sapindaceae', type:'tree', kind:'maple',
-      canopy:['#D06A2A','#DD7C34','#E59642','#D9702E','#EBA84C','#E4863A','#DD7C34','#EFB962','#F3C976'],
+      canopy:['#559349','#5E9E54','#6AAB5B','#559349','#77B96A','#7BBB6E','#6AAB5B','#8AC77A','#8FC981'],
       season:'Autumn colour', sizeText:'10 – 25 m', note:'A broad deciduous shade tree that sets the autumn alight in scarlet and amber before casting down its winged seeds.' },
     { id:'birch', common:'Silver Birch', latin:'Betula pendula', family:'Betulaceae', type:'tree', kind:'birch',
       canopy:['#7FA84E','#8BB258','#98BD62','#8BB258','#A5C86E','#ADCE78','#98BD62','#B8D684','#C2DD90'],
       season:'—', sizeText:'15 – 25 m', note:'A pioneer of chalk-white, papery bark whose small leaves shiver and glitter in the least of breezes.' },
     { id:'apple', common:'Apple', latin:'Malus domestica', family:'Rosaceae', type:'tree', kind:'apple',
       canopy:['#4F8C47','#589753','#64A459','#589753','#70B264','#74B568','#64A459','#83C171','#88C378'],
-      season:'May blossom', sizeText:'3 – 10 m', note:'The orchard apple wraps itself in pink-white blossom each May and bends under bright fruit by September.' }
-  ],
-  sm(a,b,x){ let t=(x-a)/(b-a); t=t<0?0:t>1?1:t; return t*t*(3-2*t); },
-  lp(a,b,t){ return a+(b-a)*t; },
-  cl(x,a,b){ return x<a?a:x>b?b:x; },
+      season:'May blossom', sizeText:'3 – 10 m', note:'The orchard apple wraps itself in pink-white blossom each May and bends under bright fruit by September.' },
+    { id:'meadow', common:'Meadow Grass', latin:'Poa pratensis', family:'Poaceae', type:'grass', kind:'meadow',
+      season:'May – Jul', sizeText:'20 – 60 cm', note:'The soft sward of lawn and meadow, spreading into a fine green turf topped with airy seed-heads that shiver in the least wind.' },
+    { id:'fescue', common:'Blue Fescue', latin:'Festuca glauca', family:'Poaceae', type:'grass', kind:'fescue',
+      season:'Jun – Jul', sizeText:'20 – 30 cm', note:'A neat evergreen cushion of needle-fine, ice-blue leaves, valued for its tidy hummock and drought-hardy constitution.' },
+    { id:'fountain', common:'Fountain Grass', latin:'Pennisetum alopecuroides', family:'Poaceae', type:'grass', kind:'fountain',
+      season:'Aug – Oct', sizeText:'60 – 90 cm', note:'An arching mound that throws up soft, bottlebrush flower-spikes which nod like fountains through the late-summer garden.' },
+    { id:'pampas', common:'Pampas Grass', latin:'Cortaderia selloana', family:'Poaceae', type:'grass', kind:'pampas',
+      season:'Sep – Nov', sizeText:'2 – 3 m', note:'A giant tussock crowned in autumn by towering silvery plumes that catch the low light like spun silk.' },
+    { id:'wheat', common:'Wheat', latin:'Triticum aestivum', family:'Poaceae', type:'grass', kind:'wheat',
+      season:'Jul – Aug', sizeText:'60 – 100 cm', note:'The staff of life — a cultivated cereal whose bearded golden ears have fed civilisations for ten thousand years.' },
+    { id:'reed', common:'Feather Reed Grass', latin:'Calamagrostis \u00d7 acutiflora', family:'Poaceae', type:'grass', kind:'reed',
+      season:'Jun – Sep', sizeText:'1 – 1.5 m', note:'A strictly upright grass sending up narrow, feathery flower-spikes that stand like lit tapers well into winter.' },
+    { id:'flint', common:'Flint', latin:'Cryptocrystalline silica', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'flint',
+      season:'—', sizeText:'5 – 15 cm', note:'A hard nodule of silica born in chalk and clay, its glassy grey heart wrapped in a pale chalky cortex — struck for tools and fire since the Stone Age.' },
+    { id:'granite', common:'Granite', latin:'Quartz · feldspar · mica', family:'Igneous', rockClass:'Igneous', type:'stone', kind:'granite',
+      season:'—', sizeText:'to boulders', note:'A coarse igneous rock crystallised slowly deep underground, its speckled interlock of quartz, feldspar and mica making it enduringly hard.' },
+    { id:'quartz', common:'Rock Crystal', latin:'Silicon dioxide', family:'Silicate mineral', rockClass:'Mineral', type:'stone', kind:'quartz',
+      season:'—', sizeText:'3 – 20 cm', note:'The commonest mineral of the crust, growing clear six-sided prisms from silica-rich waters in the veins and cavities of every rock.' },
+    { id:'amethyst', common:'Amethyst Geode', latin:'Violet quartz', family:'Silicate mineral', rockClass:'Mineral', type:'stone', kind:'amethyst',
+      season:'—', sizeText:'to 40 cm', note:'A hollow nodule lined with a druse of violet quartz, its colour drawn from traces of iron set aglow by faint natural radiation.' },
+    { id:'slate', common:'Slate', latin:'Metamorphosed shale', family:'Metamorphic', rockClass:'Metamorphic', type:'stone', kind:'slate',
+      season:'—', sizeText:'flags', note:'Mudstone squeezed and heated until its clays realign, splitting cleanly into flat grey sheets long prized for roofs and writing slates.' },
+    { id:'sandstone', common:'Sandstone', latin:'Cemented sand grains', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'sandstone',
+      season:'—', sizeText:'to blocks', note:'Layered sand grains cemented over ages into a warm banded rock, its bedding lines a quiet record of ancient dunes and river beds.' }
+  ];
+
+  // ---------- math ----------
+  sm(a,b,x){ let t=(x-a)/(b-a); t=t<0?0:t>1?1:t; return t*t*(3-2*t); }
+  lp(a,b,t){ return a+(b-a)*t; }
+  cl(x,a,b){ return x<a?a:x>b?b:x; }
   mix(a,b,t){ const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)); const A=p(a),B=p(b);
-    return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join(''); },
+    return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join(''); }
   ringDots(color,count,r,dot){ let s=''; for(let i=0;i<count;i++){ const a=i*2*Math.PI/count;
-    s+=`<circle cx="${(Math.cos(a)*r).toFixed(1)}" cy="${(Math.sin(a)*r).toFixed(1)}" r="${dot}" fill="${color}"/>`; } return s; },
+    s+=`<circle cx="${(Math.cos(a)*r).toFixed(1)}" cy="${(Math.sin(a)*r).toFixed(1)}" r="${dot}" fill="${color}"/>`; } return s; }
   stipple(color,R){ const pts=[[2,0],[1.5,1.3],[0.3,2],[-1,1.7],[-1.9,0.7],[-1.9,-0.7],[-1,-1.7],[0.3,-2],[1.5,-1.3],[4.4,1.6],[2.4,4.1],[-0.8,4.6],[-3.6,3],[-4.7,0],[-3.6,-3],[-0.8,-4.6],[2.4,-4.1],[4.4,-1.6],[5.7,4.8],[1.3,7.3],[-3.7,6.4],[-7,2.5],[-7,-2.5],[-3.7,-6.4],[1.3,-7.3],[5.7,-4.8]];
-    let s=''; pts.forEach(p=>{ if(Math.hypot(p[0],p[1])<=R) s+=`<circle cx="${p[0]}" cy="${p[1]}" r="0.9" fill="${color}" opacity="0.62"/>`; }); return s; },
+    let s=''; pts.forEach(p=>{ if(Math.hypot(p[0],p[1])<=R) s+=`<circle cx="${p[0]}" cy="${p[1]}" r="0.9" fill="${color}" opacity="0.62"/>`; }); return s; }
+
+  // ---------- season ----------
+  defs(S){ S=S||this.SEASONS.Summer; return `<defs>
+<linearGradient id="gaStem" x1="0" y1="1" x2="0.25" y2="0"><stop offset="0" stop-color="${S.stem[0]}"/><stop offset="1" stop-color="${S.stem[1]}"/></linearGradient>
+<linearGradient id="gaLeaf" x1="0" y1="0" x2="0.9" y2="0.7"><stop offset="0" stop-color="${S.leaf[0]}"/><stop offset="1" stop-color="${S.leaf[1]}"/></linearGradient>
+<linearGradient id="gaTrunk" x1="0" y1="1" x2="0.35" y2="0"><stop offset="0" stop-color="#6A552F"/><stop offset="1" stop-color="#8C7A46"/></linearGradient>
+<linearGradient id="gaSoil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7E5C3B"/><stop offset="0.5" stop-color="#5A4026"/><stop offset="1" stop-color="#40301C"/></linearGradient>
+<linearGradient id="gaWater" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${S.snow?'#DCEBEF':'#C6DCDF'}" stop-opacity="0.82"/><stop offset="1" stop-color="${S.snow?'#A9C8CE':'#8DB9C0'}" stop-opacity="0.92"/></linearGradient>
+<radialGradient id="gaCanopyHi" cx="38%" cy="24%" r="66%"><stop offset="0" stop-color="${S.canopyHi||'#FFF8DC'}" stop-opacity="0.72"/><stop offset="0.55" stop-color="#EBD9A8" stop-opacity="0.15"/><stop offset="1" stop-color="#86C067" stop-opacity="0"/></radialGradient>
+<filter id="gaSoft" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="2.4" stdDeviation="3" flood-color="rgba(58,42,20,0.22)"/></filter>
+</defs>`; }
+  seasonCol(hex,S){ return (S && S.canopyMix) ? this.mix(hex, S.canopyMix[0], S.canopyMix[1]) : hex; }
+  snowCapAt(x,y,r){ return `<path d="M${(x-r).toFixed(1)} ${y.toFixed(1)} Q ${x.toFixed(1)} ${(y-r*0.95).toFixed(1)} ${(x+r).toFixed(1)} ${y.toFixed(1)} Q ${x.toFixed(1)} ${(y-r*0.32).toFixed(1)} ${(x-r).toFixed(1)} ${y.toFixed(1)} Z" fill="#F5F9FC" opacity="0.92"/>`; }
+  snowGround(){ let s=`<path d="M-170 3 Q -120 -7 -70 1 Q -20 7 30 -1 Q 90 -8 170 3 L 170 30 L -170 30 Z" fill="#F3F7FA"/>`;
+    s+=`<path d="M-170 3 Q -120 -7 -70 1 Q -20 7 30 -1 Q 90 -8 170 3" stroke="#DCE7ED" stroke-width="1.1" fill="none" opacity="0.85"/>`;
+    [[-112,6,28],[-42,3,32],[46,5,32],[122,4,26]].forEach(m=>{ s+=`<ellipse cx="${m[0]}" cy="${m[1]}" rx="${m[2]}" ry="7" fill="#FBFDFF" opacity="0.8"/>`; });
+    return s; }
+  fallenLeaves(){ let seed=41; const rr=()=>{ seed=(seed*9301+49297)%233280; return seed/233280; };
+    const cols=['#C6863E','#B85A28','#D89A3C','#A8471E','#CE7A2A']; let s='';
+    for(let i=0;i<14;i++){ const x=this.lp(-152,152,rr()), y=this.lp(5,40,rr()), a=this.lp(0,360,rr()), sc=this.lp(0.55,1.15,rr());
+      s+=`<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) rotate(${a.toFixed(0)}) scale(${sc.toFixed(2)})"><path d="M0 0 Q 6 -3.2 9.5 2 Q 5 3.2 0 0 Z" fill="${cols[Math.floor(rr()*cols.length)]}" opacity="0.9"/><path d="M0 0 L 8.5 1.4" stroke="#7A4A1E" stroke-width="0.5" opacity="0.5"/></g>`; }
+    return s; }
+
+  // ---------- branch skeleton (per-species, tapered, organic) ----------
+  TREE_FORM = {
+    oak:    { limbs:6, a0:0.40, a1:0.88, spread:84, lenF:0.36, bend:16, taper:0.36, depth:2, jag:1.0 },
+    cherry: { limbs:5, a0:0.52, a1:0.90, spread:44, lenF:0.42, bend:6,  taper:0.38, depth:2, jag:0.3 },
+    apple:  { limbs:6, a0:0.44, a1:0.86, spread:78, lenF:0.36, bend:13, taper:0.36, depth:2, jag:0.8 },
+    maple:  { limbs:5, a0:0.50, a1:0.92, spread:50, lenF:0.42, bend:6,  taper:0.36, depth:2, jag:0.2 },
+    birch:  { limbs:6, a0:0.40, a1:0.94, spread:30, lenF:0.40, bend:10, taper:0.34, depth:1, jag:0.3 },
+    willow: { limbs:5, a0:0.54, a1:0.92, spread:40, lenF:0.36, bend:8,  taper:0.38, depth:1, jag:0.2 },
+    default:{ limbs:5, a0:0.46, a1:0.88, spread:60, lenF:0.38, bend:9,  taper:0.36, depth:2, jag:0.5 }
+  };
+  hashId(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+  rng(seed){ let s=(seed>>>0)||1; return ()=>{ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; }; }
+
+  limb(x,y,ang,len,w,B,depth,form,rnd,bare,pdx,pdy){
+    if(len<4||w<0.6) return '';
+    const rad=ang*Math.PI/180, dx=Math.sin(rad), dy=-Math.cos(rad), px=Math.cos(rad), py=Math.sin(rad);
+    const wt=Math.max(0.5,w*form.taper), F=(n)=>n.toFixed(1);
+    const bendv=form.bend*(rnd()*1.5-0.75);
+    const ex=x+dx*len, ey=y+dy*len, cx=x+dx*len*0.55+px*bendv, cy=y+dy*len*0.55+py*bendv;
+    const mbx=x+dx*len*0.08, mby=y+dy*len*0.08, mw=(w+wt)/4;
+    // flared collar: base spans the PARENT axis (pdx,pdy) so the limb grows out of its parent
+    const hb=w*1.15, ax=x+dx*len*0.26, ay=y+dy*len*0.26;
+    let s=`<path d="M ${F(x+pdx*hb)} ${F(y+pdy*hb)} Q ${F(x-px*w*0.28)} ${F(y-py*w*0.28)} ${F(ax-px*w*0.5)} ${F(ay-py*w*0.5)} L ${F(ax+px*w*0.5)} ${F(ay+py*w*0.5)} Q ${F(x+px*w*0.28)} ${F(y+py*w*0.28)} ${F(x-pdx*hb)} ${F(y-pdy*hb)} Z" fill="${B.lo}"/>`;
+    // main tapered limb (flat base tucked inside the collar)
+    s+=`<path d="M ${F(mbx+px*w/2)} ${F(mby+py*w/2)} Q ${F(cx+px*mw)} ${F(cy+py*mw)} ${F(ex+px*wt/2)} ${F(ey+py*wt/2)} L ${F(ex-px*wt/2)} ${F(ey-py*wt/2)} Q ${F(cx-px*mw)} ${F(cy-py*mw)} ${F(mbx-px*w/2)} ${F(mby-py*w/2)} Z" fill="${B.lo}"/>`;
+    if(w>2.2) s+=`<path d="M ${F(mbx)} ${F(mby)} Q ${F(cx)} ${F(cy)} ${F(ex)} ${F(ey)}" stroke="${B.hi}" stroke-width="${F(w*0.22)}" fill="none" opacity="0.42" stroke-linecap="round"/>`;
+    if(bare && w>1.3) s+=`<path d="M ${F(mbx)} ${F(mby-w*0.3)} Q ${F(cx)} ${F(cy-w*0.3)} ${F(ex)} ${F(ey-wt*0.4)}" stroke="#EDF3F7" stroke-width="${F(w*0.5)}" fill="none" opacity="0.66" stroke-linecap="round"/>`;
+    if(depth>0 && len>12){
+      for(let i=0;i<2;i++){ const t=0.5+0.4*rnd(), sd=i===0?1:-1;
+        const ca=ang + sd*(15+rnd()*24) + form.bend*form.jag*(rnd()-0.5);
+        s+=this.limb(x+dx*len*t, y+dy*len*t, ca, len*(0.5+0.26*rnd()), wt*(0.9+0.2*rnd()), B, depth-1, form, rnd, bare, dx, dy); }
+    } else if(bare){
+      for(let i=-1;i<=1;i++){ const ta=ang+i*(15+rnd()*15)+(rnd()*8-4), tr=ta*Math.PI/180, tl=5+rnd()*8;
+        s+=`<path d="M ${F(ex)} ${F(ey)} l ${F(Math.sin(tr)*tl)} ${F(-Math.cos(tr)*tl)}" stroke="${B.lo}" stroke-width="${F(Math.max(0.6,wt*0.7))}" stroke-linecap="round"/>`; }
+    }
+    return s;
+  }
+  crown(sp,th,tw,g,bare){
+    const form=this.TREE_FORM[sp.kind]||this.TREE_FORM.default;
+    const B=this.BARK[sp.kind]||this.BARK.default;
+    const grow=bare?this.sm(0.09,0.24,g):this.sm(0.40,0.92,g); if(grow<=0.02) return '';
+    const H=-th, N=form.limbs, rnd=this.rng(this.hashId(sp.id));
+    const depth=bare?form.depth:0;                     // leafed: main limbs only (hidden under canopy)
+    const a0=bare?form.a0:Math.max(form.a0,0.62);      // leafed: attach high, within the crown
+    const cs=this.sm(0.18,1,g), CF=this.CROWN[sp.kind]||this.CROWN.default, cyc=th-CF.h*0.12*cs, rx=CF.w*cs, ry=CF.h*cs, kk=0.82;  // canopy silhouette (leafed clamp)
+    let s=`<g stroke-linecap="round">`;
+    for(let i=0;i<N;i++){
+      const frac=this.lp(a0,form.a1, N>1?i/(N-1):0.5), side=(i%2===0)?1:-1;
+      const twAt=this.lp(tw,Math.max(2,tw*0.42),frac), y=th*frac, x=side*twAt*0.34;
+      const vert=form.spread*(1.05-0.55*frac);
+      const ang=side*vert*(0.72+0.5*rnd());
+      const rad=ang*Math.PI/180, dx=Math.sin(rad), dy=-Math.cos(rad);
+      let len=H*form.lenF*(0.6+0.7*(1-frac))*grow*(bare?1.15:0.95)*(0.85+0.3*rnd());
+      if(!bare){ // clamp tip inside the canopy ellipse so no limb pokes past the foliage
+        const A=(dx/rx)*(dx/rx)+(dy/ry)*(dy/ry);
+        const Bq=2*((x*dx)/(rx*rx)+((y-cyc)*dy)/(ry*ry));
+        const C=(x/rx)*(x/rx)+((y-cyc)/ry)*((y-cyc)/ry)-kk*kk;
+        const disc=Bq*Bq-4*A*C;
+        len = disc>0 ? ((-Bq+Math.sqrt(disc))/(2*A) > 2 ? Math.min(len,(-Bq+Math.sqrt(disc))/(2*A)) : 0) : 0;
+      }
+      if(len<4) continue;
+      const w=Math.max(1.6, twAt*(0.5+0.2*rnd()));
+      s+=this.limb(x,y,ang,len,w,B,depth,form,rnd,bare,0,-1);
+    }
+    s+=`</g>`; return s;
+  }
+
+  // ---------- phenology (which season each plant actually flowers in) ----------
+  BLOOMS = {
+    cornflower:['Summer'], poppy:['Summer'], cosmos:['Summer','Autumn'], daisy:['Summer'],
+    lavender:['Summer'], lotus:['Summer'], sunflower:['Summer'], rose:['Summer','Autumn'],
+    buttercup:['Spring','Summer'], iris:['Spring','Summer'], foxglove:['Summer'],
+    tulip:['Spring'], daffodil:['Spring'], bluebell:['Spring'],
+    crocus:['Winter','Spring'], snowdrop:['Winter','Spring']
+  };
+  BULBS = ['tulip','daffodil','bluebell','crocus','snowdrop'];
+  isBulb(sp){ return this.BULBS.indexOf(sp.id)>=0; }
+  phenophase(sp,S){ const order={Spring:0,Summer:1,Autumn:2,Winter:3};
+    const b=this.BLOOMS[sp.id]||['Summer']; const s=S.key;
+    if(b.indexOf(s)>=0) return 'bloom';
+    if(this.isBulb(sp)) return 'dormant';
+    if(s==='Winter') return 'dormant';
+    const nb=b.map(x=>order[x]).filter(i=>i<3); const first=Math.min.apply(null, nb.length?nb:[1]);
+    return order[s]<first ? 'developing' : 'spent'; }
+
+  seedHead(sp,open){ const k=sp.bloomKind; const sc=this.lp(0.4,1,open);
+    if(k==='poppy'){ let cr=''; for(let i=0;i<9;i++){ const a=i/9*6.283; cr+=`<line x1="0" y1="-15" x2="${(Math.cos(a)*6).toFixed(1)}" y2="${(-15-Math.abs(Math.sin(a))*2).toFixed(1)}" stroke="#5A4C28" stroke-width="0.8"/>`; }
+      return `<g transform="scale(${sc.toFixed(2)})"><path d="M-6 0 Q -7 -12 0 -15 Q 7 -12 6 0 Q 0 3 -6 0 Z" fill="#96854E"/><ellipse cy="-15" rx="6.4" ry="2.3" fill="#7A6A3A"/>${cr}<path d="M-6 -1 Q 0 2 6 -1" stroke="#5E5030" stroke-width="0.7" fill="none" opacity="0.5"/></g>`; }
+    if(k==='sunflower'){ let rays=''; for(let i=0;i<15;i++){ const a=i/15*6.283; rays+=`<line x1="${(Math.cos(a)*15).toFixed(1)}" y1="${(Math.sin(a)*15).toFixed(1)}" x2="${(Math.cos(a)*20).toFixed(1)}" y2="${(Math.sin(a)*20).toFixed(1)}" stroke="#9A8248" stroke-width="1.5" opacity="0.65"/>`; }
+      return `<g transform="scale(${sc.toFixed(2)})"><g>${rays}</g><circle r="15" fill="#5A431F"/><circle r="15" fill="none" stroke="#3A2A12" stroke-width="1.4"/>${this.ringDots('#2E2010',13,7,1.1)}</g>`; }
+    let pts=''; for(let i=0;i<9;i++){ const a=i/9*6.283; pts+=`<line x1="0" y1="-2" x2="${(Math.cos(a)*8).toFixed(1)}" y2="${(-4+Math.sin(a)*3).toFixed(1)}" stroke="#B7A574" stroke-width="0.7" opacity="0.7"/>`; }
+    return `<g transform="scale(${sc.toFixed(2)})"><g>${pts}</g><ellipse cy="-2" rx="5.4" ry="6" fill="#8F7C4C"/><path d="M-5 -2 Q 0 -10 5 -2" stroke="#6E5C34" stroke-width="0.8" fill="none" opacity="0.6"/><ellipse cx="-1.4" cy="-4" rx="1.5" ry="1.9" fill="#A8965E" opacity="0.7"/></g>`; }
+
+  deadStalks(sp,h){ let s=`<g fill="none" stroke-linecap="round">`;
+    s+=`<path d="M0 0 C 2 ${(-h*0.4).toFixed(0)} 3 ${(-h*0.7).toFixed(0)} 5 ${(-h).toFixed(0)}" stroke="#AC9A6C" stroke-width="2.2"/>`;
+    s+=`<path d="M0 0 C -3 ${(-h*0.34).toFixed(0)} -5 ${(-h*0.52).toFixed(0)} -8 ${(-h*0.6).toFixed(0)}" stroke="#8E7B4C" stroke-width="1.5"/>`;
+    s+=`</g><g transform="translate(5 ${(-h).toFixed(0)})">${this.seedHead(sp,0.6)}</g>`;
+    s+=`<g transform="translate(-8 ${(-h*0.6).toFixed(0)}) scale(0.62)">${this.seedHead(sp,0.5)}</g>`;
+    s+=`<path d="M0 ${(-h*0.26).toFixed(0)} q -11 -1 -15 5 q 9 -0.5 15 -2 Z" fill="#B29C64" opacity="0.5"/>`;
+    return s; }
+
+  dormantBulb(op){ return `<g transform="translate(0 20)" opacity="${op.toFixed(2)}"><path d="M0 -11 C -9 -11 -11 3 0 13 C 11 3 9 -11 0 -11 Z" fill="#EADCB8"/><path d="M0 -11 C -4 -5 -4 6 0 13 M0 -11 C 4 -5 4 6 0 13" stroke="#CDBB8C" stroke-width="0.7" fill="none" opacity="0.6"/><path d="M-2 -11 l -1.5 -7 M2 -11 l 1.5 -7 M0 -11.5 l 0 -8" stroke="#B49A66" stroke-width="0.9" opacity="0.7"/><path d="M0 13 l -1.4 9 M0 13 l 1.2 8 M0 13 l 0 10" stroke="#D8C79A" stroke-width="0.7" opacity="0.5"/></g>`; }
+
+  lotusPod(open){ const sc=this.lp(0.4,1,open); let holes='';
+    [[-6,-3.5],[0,-4.2],[6,-3.5],[-3,-2],[3,-2]].forEach(p=>holes+=`<circle cx="${p[0]}" cy="${p[1]}" r="1.7" fill="#43401E"/>`);
+    return `<g transform="scale(${sc.toFixed(2)})"><path d="M-11 -3 L -8 11 Q 0 15 8 11 L 11 -3 Z" fill="#7E7A3C"/><ellipse cy="-3" rx="11" ry="4.4" fill="#9AA24C"/><ellipse cy="-3" rx="11" ry="4.4" fill="none" stroke="#5E5E28" stroke-width="0.8"/>${holes}<path d="M-8 11 Q 0 14 8 11" stroke="#5E5A2C" stroke-width="0.7" fill="none" opacity="0.6"/></g>`; }
+
+  // ---------- caches ----------
+
+  // ---------- shared parts ----------
   seed(swell){ swell=swell||0; const s=this.lp(1,1.14,swell);
-    return `<g transform="scale(${s.toFixed(3)})"><ellipse rx="4.6" ry="6.2" fill="#C6A06A"/><path d="M0 -5.2 C 2.5 -2 2.5 2.8 0 5.2" stroke="#7A5A38" stroke-width="0.8" fill="none" opacity="0.75"/><ellipse cx="-1.3" cy="-1.8" rx="1.3" ry="2.1" fill="#E4CB9E" opacity="0.7"/><path d="M0 -6 L 0.7 -2 L -0.6 1.4 L 0.5 5.6" stroke="#5A3F24" stroke-width="0.6" fill="none" opacity="${(swell*0.85).toFixed(2)}"/></g>`; },
-  sprout(hook,spread){ if(spread===undefined) spread=hook; const P=this.PAL;
-    const h=this.lp(4,26,hook); const bend=this.lp(7,1,spread); const cs=this.lp(0.4,1,spread); const ang=this.lp(66,13,spread);
-    return `<path d="M0 0 C ${(-bend*0.4).toFixed(1)} ${(-h*0.5).toFixed(1)} ${(bend*0.9).toFixed(1)} ${(-h*0.82).toFixed(1)} ${bend.toFixed(1)} ${(-h).toFixed(1)}" stroke="${P.stemLight}" stroke-width="2" fill="none" stroke-linecap="round"/><g transform="translate(${bend.toFixed(1)} ${(-h).toFixed(1)}) scale(${cs.toFixed(2)})"><path d="M0 0 C -4 -3 -12 -3.4 -15.5 1.6 C -11 5 -3 4 0 0 Z" fill="${P.cotyledon}" transform="rotate(${(-ang).toFixed(0)})"/><path d="M0 0 C 4 -3 12 -3.4 15.5 1.6 C 11 5 3 4 0 0 Z" fill="${P.cotyledon}" transform="rotate(${ang.toFixed(0)})"/></g>`; },
+    return `<g transform="scale(${s.toFixed(3)})"><ellipse rx="4.6" ry="6.2" fill="#C6A06A"/><path d="M0 -5.2 C 2.5 -2 2.5 2.8 0 5.2" stroke="#7A5A38" stroke-width="0.8" fill="none" opacity="0.75"/><ellipse cx="-1.3" cy="-1.8" rx="1.3" ry="2.1" fill="#E4CB9E" opacity="0.7"/><path d="M0 -6 L 0.7 -2 L -0.6 1.4 L 0.5 5.6" stroke="#5A3F24" stroke-width="0.6" fill="none" opacity="${(swell*0.85).toFixed(2)}"/></g>`; }
+  sprout(hook,spread,bendMax){ if(spread===undefined) spread=hook; const P=this.PAL;
+    const h=this.lp(4,26,hook); const bend=this.lp(bendMax===undefined?7:bendMax,1,spread); const cs=this.lp(0.4,1,spread); const ang=this.lp(66,13,spread);
+    return `<path d="M0 0 C ${(-bend*0.4).toFixed(1)} ${(-h*0.5).toFixed(1)} ${(bend*0.9).toFixed(1)} ${(-h*0.82).toFixed(1)} ${bend.toFixed(1)} ${(-h).toFixed(1)}" stroke="${P.stemLight}" stroke-width="2" fill="none" stroke-linecap="round"/><g transform="translate(${bend.toFixed(1)} ${(-h).toFixed(1)}) scale(${cs.toFixed(2)})"><path d="M0 0 C -4 -3 -12 -3.4 -15.5 1.6 C -11 5 -3 4 0 0 Z" fill="${P.cotyledon}" transform="rotate(${(-ang).toFixed(0)})"/><path d="M0 0 C 4 -3 12 -3.4 15.5 1.6 C 11 5 3 4 0 0 Z" fill="${P.cotyledon}" transform="rotate(${ang.toFixed(0)})"/></g>`; }
+
+  roots(g, scale){ const P=this.PAL; scale=scale||1;
+    const rd=this.lp(15,116,this.sm(0.02,0.7,g))*scale, w=this.lp(1.1,4.4,this.sm(0.05,0.7,g))*scale;
+    let s=`<g stroke="${P.rootLt}" fill="none" stroke-linecap="round"><path d="M0 0 C 3 ${(rd*0.32).toFixed(1)} -3 ${(rd*0.64).toFixed(1)} 1.5 ${rd.toFixed(1)}" stroke-width="${w.toFixed(1)}"/>`;
+    const lat=[[0.16,30,-1,0.10],[0.30,40,1,0.18],[0.46,34,-1,0.28],[0.60,26,1,0.40],[0.5,22,1,0.34]];
+    lat.forEach(L=>{ const app=this.sm(L[3],L[3]+0.22,g); if(app<=0.01) return;
+      const y0=rd*L[0], len=L[1]*app*scale, d=L[2];
+      s+=`<path d="M0 ${y0.toFixed(1)} C ${(d*10).toFixed(0)} ${(y0+len*0.4).toFixed(1)} ${(d*22).toFixed(0)} ${(y0+len*0.7).toFixed(1)} ${(d*30).toFixed(0)} ${(y0+len).toFixed(1)}" stroke-width="${(w*0.55).toFixed(1)}" opacity="0.9"/>`; });
+    s+=`</g>`; return s; }
+
+  ground(g){ const P=this.PAL;
+    let s=`<path d="M-170 0 Q -120 -2.4 -70 0 T 30 0 T 130 0 T 170 0" stroke="${P.groundLine}" stroke-width="2.2" fill="none" opacity="0.65"/>`;
+    const gt=this.sm(0.3,0.56,g);
+    if(gt>0.02){ [-46,-26,28,48].forEach((x,i)=>{ const h=this.lp(0,11,gt)*(0.7+0.3*(i%2));
+      s+=`<path d="M${x} 0 q -2 ${(-h).toFixed(1)} -3 ${(-h-3).toFixed(1)}" stroke="#5E8E4E" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.8"/><path d="M${x} 0 q 2 ${(-h).toFixed(1)} 3 ${(-h-2).toFixed(1)}" stroke="${P.stemLight}" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.8"/>`; }); }
+    return s; }
+
+  castShadow(g, tree){ const w = tree ? this.lp(10,96,this.sm(0.05,1,g)) : this.lp(6,34,this.sm(0.1,1,g));
+    return `<ellipse cx="0" cy="3" rx="${w.toFixed(1)}" ry="${(w*0.15).toFixed(1)}" fill="rgba(52,36,16,0.16)"/>`; }
+
   stem(topY,w,sp){ const P=this.PAL; const wb=w, wt=Math.max(1.4,w*0.5); const bx=sp.bend||0;
     const d=`M ${(-wb/2).toFixed(1)} 0 C ${(-wb/2).toFixed(1)} ${(topY*0.45).toFixed(1)} ${(bx-wt/2).toFixed(1)} ${(topY*0.72).toFixed(1)} ${(bx-wt/2).toFixed(1)} ${topY.toFixed(1)} L ${(bx+wt/2).toFixed(1)} ${topY.toFixed(1)} C ${(bx+wt/2).toFixed(1)} ${(topY*0.72).toFixed(1)} ${(wb/2).toFixed(1)} ${(topY*0.45).toFixed(1)} ${(wb/2).toFixed(1)} 0 Z`;
-    return `<path d="${d}" fill="url(#gaStem)"/><path d="M ${(-wb/2+0.8).toFixed(1)} -1 C ${(-wb/2+0.8).toFixed(1)} ${(topY*0.5).toFixed(1)} ${(bx-wt/2+0.5).toFixed(1)} ${(topY*0.8).toFixed(1)} ${(bx-0.4).toFixed(1)} ${topY.toFixed(1)}" stroke="${P.stemLight}" stroke-width="${Math.max(0.8,w*0.26).toFixed(1)}" fill="none" opacity="0.5" stroke-linecap="round"/>`; },
-  leaf(x,y,ang,sc,kind,dir){ const P=this.PAL; const flip=dir<0?'scale(-1,1) ':'';
+    return `<path d="${d}" fill="url(#gaStem)"/><path d="M ${(-wb/2+0.8).toFixed(1)} -1 C ${(-wb/2+0.8).toFixed(1)} ${(topY*0.5).toFixed(1)} ${(bx-wt/2+0.5).toFixed(1)} ${(topY*0.8).toFixed(1)} ${(bx-0.4).toFixed(1)} ${topY.toFixed(1)}" stroke="${P.stemLight}" stroke-width="${Math.max(0.8,w*0.26).toFixed(1)}" fill="none" opacity="0.5" stroke-linecap="round"/>`; }
+
+  leaf(x,y,ang,sc,kind,dir,S){ const P=this.PAL; const vc=(S&&S.vein)||P.vein; const flip=dir<0?'scale(-1,1) ':'';
     const body = (kind==='narrow'||kind==='needle') ? `M0 0 C 6 -3.5 17 -4.5 31 -1 C 17 3.5 6 3 0 0 Z` : `M0 0 C 10 -8 26 -7.5 37 1 C 26 8.5 10 7.5 0 0 Z`;
     const mid = (kind==='narrow'||kind==='needle') ? `M2 0 Q 16 -1 29 -0.6` : `M2 0 Q 18 -1 34 -0.4`;
-    const v = (kind==='broad') ? `<path d="M12 -0.5 Q 17 -4 22 -6" stroke="${P.vein}" stroke-width="0.5" fill="none" opacity="0.4"/><path d="M12 0.5 Q 17 4 22 6" stroke="${P.vein}" stroke-width="0.5" fill="none" opacity="0.4"/>` : '';
-    return `<g transform="translate(${x} ${y.toFixed(1)}) ${flip}rotate(${(-ang).toFixed(0)}) scale(${sc.toFixed(2)})"><path d="${body}" fill="url(#gaLeaf)"/><path d="${mid}" stroke="${P.vein}" stroke-width="0.7" fill="none" opacity="0.5"/>${v}</g>`; },
-  leaves(sp,g,topY){ const n=sp.leafPairs||3; let s='';
+    const v = (kind==='broad') ? `<path d="M12 -0.5 Q 17 -4 22 -6" stroke="${vc}" stroke-width="0.5" fill="none" opacity="0.4"/><path d="M12 0.5 Q 17 4 22 6" stroke="${vc}" stroke-width="0.5" fill="none" opacity="0.4"/>` : '';
+    return `<g transform="translate(${x} ${y.toFixed(1)}) ${flip}rotate(${(-ang).toFixed(0)}) scale(${sc.toFixed(2)})"><path d="${body}" fill="url(#gaLeaf)"/><path d="${mid}" stroke="${vc}" stroke-width="0.7" fill="none" opacity="0.5"/>${v}</g>`; }
+
+  leaves(sp,g,topY,S){ const n=sp.leafPairs||3; let s='';
     for(let i=0;i<n;i++){ const frac=(i+0.6)/(n+0.3); const y=topY*frac;
       const a0=0.34+i*0.10, app=this.sm(a0,a0+0.13,g); if(app<=0.01) continue;
       const sc=this.lp(0.12,1,app)*(sp.leafScale||1)*(1-0.09*i); const ang=sp.leafAngle||52;
-      s+=this.leaf(0,y,ang,sc,sp.leaf,1)+this.leaf(0,y+2,ang,sc,sp.leaf,-1); }
-    return s; },
+      s+=this.leaf(0,y,ang,sc,sp.leaf,1,S)+this.leaf(0,y+2,ang,sc,sp.leaf,-1,S); }
+    return s; }
+
   bud(sp,swell,color){ const B=sp.bloomCol; const P=this.PAL; color=color||0; const s=this.lp(0.4,1,swell); const col=this.mix(P.calyx,B.mid||'#8567AE',color*0.5);
-    return `<g transform="scale(${s.toFixed(3)})"><path d="M0 3 C -7 1 -8.5 -11 -3.5 -20 C -1.5 -23.5 1.5 -23.5 3.5 -20 C 8.5 -11 7 1 0 3 Z" fill="${col}"/><path d="M0 -21 C -2 -14 -2 -5 0 2" stroke="${P.calyxDk}" stroke-width="0.8" fill="none" opacity="0.5"/><path d="M0 -23 C 3 -20 4 -11 2.4 -5" fill="${B.light||'#B79BD8'}" opacity="${color.toFixed(2)}"/><path d="M-2.6 2 C -4 5 -5 8 -4.4 11 M2.6 2 C 4 5 5 8 4.4 11 M0 3 C 0 6 0 9.5 0 12" stroke="${P.calyxDk}" stroke-width="0.7" fill="none" opacity="0.5"/></g>`; },
+    return `<g transform="scale(${s.toFixed(3)})"><path d="M0 3 C -7 1 -8.5 -11 -3.5 -20 C -1.5 -23.5 1.5 -23.5 3.5 -20 C 8.5 -11 7 1 0 3 Z" fill="${col}"/><path d="M0 -21 C -2 -14 -2 -5 0 2" stroke="${P.calyxDk}" stroke-width="0.8" fill="none" opacity="0.5"/><path d="M0 -23 C 3 -20 4 -11 2.4 -5" fill="${B.light||'#B79BD8'}" opacity="${color.toFixed(2)}"/><path d="M-2.6 2 C -4 5 -5 8 -4.4 11 M2.6 2 C 4 5 5 8 4.4 11 M0 3 C 0 6 0 9.5 0 12" stroke="${P.calyxDk}" stroke-width="0.7" fill="none" opacity="0.5"/></g>`; }
+
+  // ---------- blooms ----------
   bloom(sp,open){ const k=sp.bloomKind;
     if(k==='daisy') return this.bDaisy(sp,open);
     if(k==='cornflower') return this.bCorn(sp,open);
@@ -2292,28 +2554,33 @@ const GA={
     if(k==='iris') return this.bIris(sp,open);
     if(k==='foxglove') return this.bFoxglove(sp,open);
     if(k==='snowdrop') return this.bSnowdrop(sp,open);
-    return ''; },
+    return ''; }
+
   bDaisy(sp,open){ const B=sp.bloomCol; const sc=this.lp(0.28,1,open); let p='';
     for(let i=0;i<16;i++){ p+=`<g transform="rotate(${i*22.5})"><path d="M0 -8 C -3.6 -12 -3.6 -22 0 -27 C 3.6 -22 3.6 -12 0 -8 Z" fill="${i%2?'#FFFFFF':'#F6ECD6'}"/></g>`; }
     const c=`<circle r="9" fill="${B.center}"/>${this.stipple(B.centerDk,8)}<circle cx="-2.6" cy="-2.6" r="3.4" fill="#fff" opacity="0.2"/><circle r="9" fill="none" stroke="${B.centerDk}" stroke-width="0.8" opacity="0.5"/>`;
-    return `<g transform="scale(${sc.toFixed(3)})"><g>${p}</g>${c}</g>`; },
+    return `<g transform="scale(${sc.toFixed(3)})"><g>${p}</g>${c}</g>`; }
+
   bCorn(sp,open){ const B=sp.bloomCol; const sc=this.lp(0.26,1,open);
     const ray=`M0 -3 C -6 -10 -7 -19 -5.5 -25 L -2.5 -19.5 L 0 -26 L 2.5 -19.5 L 5.5 -25 C 7 -19 6 -10 0 -3 Z`;
     let out=''; for(let i=0;i<8;i++){ out+=`<g transform="rotate(${i*45})"><path d="${ray}" fill="${B.mid}"/><path d="M0 -4 C -3.5 -11 -3.5 -18 -2.5 -23" stroke="${B.light}" stroke-width="1" fill="none" opacity="0.55" stroke-linecap="round"/></g>`; }
     let inn=''; for(let i=0;i<7;i++){ inn+=`<g transform="rotate(${(i*360/7+25).toFixed(1)})"><path d="M0 -2 L -2.6 -13 L 0 -16 L 2.6 -13 Z" fill="${B.center}" opacity="0.92"/></g>`; }
     const c=`<circle r="5.4" fill="${B.center}"/><circle cx="-1.5" cy="-1.5" r="2.2" fill="#fff" opacity="0.32"/><circle r="5.4" fill="none" stroke="#23507A" stroke-width="0.8" opacity="0.4"/><circle r="2" fill="#1F4670"/>`;
-    return `<g transform="scale(${sc.toFixed(3)})"><g>${out}</g><g>${inn}</g>${c}</g>`; },
+    return `<g transform="scale(${sc.toFixed(3)})"><g>${out}</g><g>${inn}</g>${c}</g>`; }
+
   bCosmos(sp,open){ const B=sp.bloomCol; const sc=this.lp(0.28,1,open); let p='';
     for(let i=0;i<8;i++){ p+=`<g transform="rotate(${i*45})"><path d="M0 -5 C -8.5 -9 -10.5 -19 -7 -25 L -3.5 -20.5 L 0 -26 L 3.5 -20.5 L 7 -25 C 10.5 -19 8.5 -9 0 -5 Z" fill="${B.mid}"/><path d="M-2.6 -9 Q -4 -16 -3 -22" stroke="${B.light}" stroke-width="0.7" opacity="0.55" fill="none"/></g>`; }
     const c=`<circle r="6.6" fill="${B.center}"/><circle cx="-1.8" cy="-1.8" r="2.4" fill="#fff" opacity="0.4"/>${this.ringDots(B.centerDk,7,4,0.9)}`;
-    return `<g transform="scale(${sc.toFixed(3)})"><g>${p}</g>${c}</g>`; },
+    return `<g transform="scale(${sc.toFixed(3)})"><g>${p}</g>${c}</g>`; }
+
   bPoppy(sp,open){ const B=sp.bloomCol; const sc=this.lp(0.26,1,open);
     const petal=`M0 1 C -17 -5 -21 -20 -12.5 -28 C -5.5 -32.5 5.5 -32.5 12.5 -28 C 21 -20 17 -5 0 1 Z`;
     let back=''; [[-132,0.96],[132,0.96]].forEach(a=>back+=`<path d="${petal}" transform="rotate(${a[0]}) scale(${a[1]})" fill="${B.deep}"/>`);
     let front=''; [[-45,1],[45,1],[166,0.9],[194,0.9]].forEach(a=>front+=`<path d="${petal}" transform="rotate(${a[0]}) scale(${a[1]})" fill="${B.mid}"/>`);
     let bl=''; [-45,45,166,194,-132,132].forEach(a=>bl+=`<path d="M0 -2 C -5 -6 -6 -12 -3 -16 C 0 -18 0 -18 3 -16 C 6 -12 5 -6 0 -2 Z" transform="rotate(${a}) translate(0 4) scale(0.7)" fill="${B.blotch}" opacity="0.5"/>`);
     const c=`<circle r="6.6" fill="${B.center}"/>${this.ringDots('#241A1E',12,5,1.2)}<circle r="3" fill="${B.stamen}"/>`;
-    return `<g transform="scale(${sc.toFixed(3)})"><g>${back}</g><g>${front}</g><g opacity="0.85">${bl}</g>${c}</g>`; },
+    return `<g transform="scale(${sc.toFixed(3)})"><g>${back}</g><g>${front}</g><g opacity="0.85">${bl}</g>${c}</g>`; }
+
   bSpike(sp,open){ const B=sp.bloomCol; const P=this.PAL; const len=this.lp(20,74,open); const green='#7C9A5E';
     let s=`<path d="M0 0 C -1.4 ${(-len*0.5).toFixed(1)} 1.4 ${(-len*0.8).toFixed(1)} 0 ${(-len).toFixed(1)}" stroke="${this.mix(green,B.deep,open*0.4)}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
     const whorls=6;
@@ -2322,7 +2589,8 @@ const GA={
       [-1,0,1].forEach(k=>{ const bx=k*this.lp(1.6,4.6,oh);
         s+=`<ellipse cx="${bx.toFixed(1)}" cy="${y.toFixed(1)}" rx="${this.lp(1.2,3.2,oh).toFixed(1)}" ry="${this.lp(2,4.2,oh).toFixed(1)}" fill="${col}"/>`; }); }
     s+=`<ellipse cx="0" cy="${(-len-2).toFixed(1)}" rx="2.4" ry="4" fill="${this.mix(green,B.light,open)}"/>`;
-    return s; },
+    return s; }
+
   bTulip(sp,open){ const B=sp.bloomCol; const sc=this.lp(0.55,1,open); const sp2=this.lp(0.55,1,open);
     const T=(h,w)=>`M0 2 C ${(-w).toFixed(1)} -6 ${(-w).toFixed(1)} ${(-h*0.8).toFixed(1)} 0 ${(-h).toFixed(1)} C ${w.toFixed(1)} ${(-h*0.8).toFixed(1)} ${w.toFixed(1)} -6 0 2 Z`;
     let s=`<path d="${T(33,8)}" transform="rotate(${(-22*sp2).toFixed(1)})" fill="${B.deep}"/>`;
@@ -2330,41 +2598,48 @@ const GA={
     s+=`<path d="${T(35,8.5)}" fill="${B.mid}"/>`;
     s+=`<path d="${T(27,6)}" transform="rotate(${(-9*sp2).toFixed(1)})" fill="${B.light}" opacity="0.92"/>`;
     s+=`<path d="${T(27,6)}" transform="rotate(${(9*sp2).toFixed(1)})" fill="${B.light}" opacity="0.92"/>`;
-    return `<g transform="translate(0 -2) scale(${sc.toFixed(3)})">${s}</g>`; },
-  sunDisc(color){ let s=''; for(let r=3.5;r<=12;r+=3){ const n=Math.round(r*2.4); for(let i=0;i<n;i++){ const a=i*2*Math.PI/n+r; s+=`<circle cx="${(Math.cos(a)*r).toFixed(1)}" cy="${(Math.sin(a)*r).toFixed(1)}" r="0.85" fill="${color}" opacity="0.5"/>`; } } return s; },
+    return `<g transform="translate(0 -2) scale(${sc.toFixed(3)})">${s}</g>`; }
+
+  sunDisc(color){ let s=''; for(let r=3.5;r<=12;r+=3){ const n=Math.round(r*2.4); for(let i=0;i<n;i++){ const a=i*2*Math.PI/n+r; s+=`<circle cx="${(Math.cos(a)*r).toFixed(1)}" cy="${(Math.sin(a)*r).toFixed(1)}" r="0.85" fill="${color}" opacity="0.5"/>`; } } return s; }
   bSunflower(sp,open){ const B=sp.bloomCol; const sc=this.lp(0.35,1,open); const N=22;
     let ray=''; for(let i=0;i<N;i++){ ray+=`<g transform="rotate(${(i*360/N).toFixed(1)})"><path d="M0 -14 C -4 -20 -4 -33 0 -38 C 4 -33 4 -20 0 -14 Z" fill="${i%2?B.mid:B.deep}"/></g>`; }
     let ray2=''; for(let i=0;i<N;i++){ ray2+=`<g transform="rotate(${(i*360/N+8).toFixed(1)})"><path d="M0 -12 C -3 -17 -3 -28 0 -32 C 3 -28 3 -17 0 -12 Z" fill="${B.light}" opacity="0.85"/></g>`; }
     const disc=`<circle r="14" fill="${B.disc}"/>${this.sunDisc(B.discDk)}<circle r="14" fill="none" stroke="${B.discDk}" stroke-width="1" opacity="0.5"/><circle cx="-4" cy="-4" r="6" fill="#fff" opacity="0.08"/>`;
-    return `<g transform="scale(${sc.toFixed(3)})"><g>${ray}</g><g>${ray2}</g>${disc}</g>`; },
+    return `<g transform="scale(${sc.toFixed(3)})"><g>${ray}</g><g>${ray2}</g>${disc}</g>`; }
+
   bDaffodil(sp,open){ const B=sp.bloomCol; const sc=this.lp(0.4,1,open);
     let pet=''; for(let i=0;i<6;i++){ pet+=`<g transform="rotate(${i*60})"><path d="M0 -8 C -6 -14 -6 -25 0 -29 C 6 -25 6 -14 0 -8 Z" fill="${i%2?B.mid:B.light}"/></g>`; }
     const cor=`<ellipse rx="7.6" ry="7" fill="${B.corona}"/><ellipse rx="7.6" ry="7" fill="none" stroke="${B.coronaDk}" stroke-width="1"/><ellipse rx="5" ry="4.6" fill="${B.coronaDk}" opacity="0.45"/><ellipse cx="-1.6" cy="-1.8" rx="2.4" ry="2" fill="#fff" opacity="0.3"/>`;
-    return `<g transform="scale(${sc.toFixed(3)})"><g>${pet}</g>${cor}</g>`; },
+    return `<g transform="scale(${sc.toFixed(3)})"><g>${pet}</g>${cor}</g>`; }
+
   bRose(sp,open){ const B=sp.bloomCol; const sc=this.lp(0.4,1,open);
     const petal=`M0 6 C -13 2 -15 -13 -8 -20 C -3 -24 3 -24 8 -20 C 15 -13 13 2 0 6 Z`;
     let outer=''; for(let i=0;i<6;i++){ outer+=`<path d="${petal}" transform="rotate(${i*60}) scale(1.12)" fill="${B.deep}"/>`; }
     let mid=''; for(let i=0;i<6;i++){ mid+=`<path d="${petal}" transform="rotate(${i*60+30}) scale(0.8)" fill="${B.mid}"/>`; }
     let inner=''; for(let i=0;i<5;i++){ inner+=`<path d="${petal}" transform="rotate(${i*72+12}) scale(0.5)" fill="${B.light}"/>`; }
     const c=`<circle r="4" fill="${B.center}"/><path d="M0 3 C -3 1 -3 -3 0 -4 C 3 -3 3 1 0 3 Z" fill="${B.deep}"/>`;
-    return `<g transform="scale(${sc.toFixed(3)})"><g>${outer}</g><g>${mid}</g><g>${inner}</g>${c}</g>`; },
+    return `<g transform="scale(${sc.toFixed(3)})"><g>${outer}</g><g>${mid}</g><g>${inner}</g>${c}</g>`; }
+
   bBluebell(sp,open){ const B=sp.bloomCol; const nB=6; const L=this.lp(12,44,open);
     let s=`<path d="M0 2 C 2 ${(-L*0.5).toFixed(1)} -6 ${(-L*0.8).toFixed(1)} -12 ${(-L).toFixed(1)}" stroke="url(#gaStem)" stroke-width="2" fill="none" stroke-linecap="round"/>`;
     for(let i=0;i<nB;i++){ const t=i/(nB-1); const bx=this.lp(1,-11,t), by=this.lp(-2,-L,t);
       const oh=this.cl(open*1.3-t*0.25,0,1); const bl=this.lp(3,7,oh); const col=this.mix('#93A8CC',B.mid,oh);
       s+=`<g transform="translate(${bx.toFixed(1)} ${by.toFixed(1)})"><path d="M0 0 C -4 1 -4.5 ${(bl*0.7).toFixed(1)} -3 ${bl.toFixed(1)} C -1.5 ${(bl+2).toFixed(1)} 1.5 ${(bl+2).toFixed(1)} 3 ${bl.toFixed(1)} C 4.5 ${(bl*0.7).toFixed(1)} 4 1 0 0 Z" fill="${col}"/><path d="M-4.5 ${bl.toFixed(1)} q 3 2.4 6 0" stroke="${B.deep}" stroke-width="0.7" fill="none" opacity="0.5"/></g>`; }
-    return s; },
+    return s; }
+
   bButtercup(sp,open){ const B=sp.bloomCol; const sc=this.lp(0.3,1,open);
     let pet=''; for(let i=0;i<5;i++){ pet+=`<g transform="rotate(${i*72})"><path d="M0 -6 C -8 -8 -11 -18 -6 -24 C -2 -27 2 -27 6 -24 C 11 -18 8 -8 0 -6 Z" fill="${B.mid}"/><path d="M0 -6 C -5 -9 -6 -16 -4 -21" stroke="${B.light}" stroke-width="1" fill="none" opacity="0.6"/></g>`; }
     const c=`<circle r="4.5" fill="${B.center}"/>${this.ringDots(B.centerDk,8,3,0.7)}<circle cx="-1.4" cy="-1.4" r="1.8" fill="#fff" opacity="0.35"/>`;
-    return `<g transform="scale(${sc.toFixed(3)})"><g>${pet}</g>${c}<ellipse cx="-4" cy="-11" rx="5" ry="8" fill="#fff" opacity="0.12" transform="rotate(-20)"/></g>`; },
+    return `<g transform="scale(${sc.toFixed(3)})"><g>${pet}</g>${c}<ellipse cx="-4" cy="-11" rx="5" ry="8" fill="#fff" opacity="0.12" transform="rotate(-20)"/></g>`; }
+
   bIris(sp,open){ const B=sp.bloomCol; const sc=this.lp(0.35,1,open);
     const st=`M0 2 C -8 -3 -10 -17 -4.5 -25 C -1.5 -28 1.5 -28 4.5 -25 C 10 -17 8 -3 0 2 Z`;
     const fl=`M0 -1 C -6.5 1 -9.5 9 -7.5 17.5 C -4 22 4 22 7.5 17.5 C 9.5 9 6.5 1 0 -1 Z`;
     let s=`<path d="${st}" transform="rotate(-32)" fill="${B.mid}"/><path d="${st}" transform="rotate(32)" fill="${B.mid}"/><path d="${st}" transform="scale(0.94)" fill="${B.light}"/>`;
     [-52,52,0].forEach(a=>{ s+=`<g transform="rotate(${a})"><path d="${fl}" fill="${B.deep}"/><path d="M-2.6 4 C -3.4 9 -3.2 13 -2 16 M2.6 4 C 3.4 9 3.2 13 2 16" stroke="${B.light}" stroke-width="0.7" fill="none" opacity="0.5"/></g>`; });
     s+=`<path d="M0 2.5 L 0 11" stroke="${B.beard}" stroke-width="2.6" stroke-linecap="round"/><circle r="3.2" fill="${B.mid}"/><circle cx="-0.9" cy="-0.9" r="1.2" fill="#fff" opacity="0.35"/>`;
-    return `<g transform="scale(${sc.toFixed(3)})">${s}</g>`; },
+    return `<g transform="scale(${sc.toFixed(3)})">${s}</g>`; }
+
   bFoxglove(sp,open){ const B=sp.bloomCol; const green='#7C9A5E'; const len=this.lp(22,88,open);
     let s=`<path d="M0 2 L 0 ${(-len).toFixed(1)}" stroke="${this.mix(green,B.deep,open*0.3)}" stroke-width="2.6" stroke-linecap="round"/>`;
     for(let i=0;i<8;i++){ const t=i/7; const y=-len*(0.12+0.8*t);
@@ -2374,7 +2649,8 @@ const GA={
       const col=this.mix('#A2B57E',B.mid,this.cl(open*1.25-t*0.3,0,1));
       s+=`<g transform="translate(0 ${y.toFixed(1)}) scale(${dir},1) rotate(16)"><path d="M0 ${(-w).toFixed(1)} C ${(bl*0.45).toFixed(1)} ${(-w*1.25).toFixed(1)} ${(bl*0.85).toFixed(1)} ${(-w*1.05).toFixed(1)} ${bl.toFixed(1)} ${(-w*0.72).toFixed(1)} L ${bl.toFixed(1)} ${(w*0.72).toFixed(1)} C ${(bl*0.85).toFixed(1)} ${(w*1.05).toFixed(1)} ${(bl*0.45).toFixed(1)} ${(w*1.25).toFixed(1)} 0 ${w.toFixed(1)} Z" fill="${col}"/><path d="M${bl.toFixed(1)} ${(-w*0.72).toFixed(1)} C ${(bl*1.14).toFixed(1)} ${(-w*0.2).toFixed(1)} ${(bl*1.14).toFixed(1)} ${(w*0.2).toFixed(1)} ${bl.toFixed(1)} ${(w*0.72).toFixed(1)} Z" fill="${B.light}" opacity="0.9"/>${oh>0.5?`<circle cx="${(bl*0.78).toFixed(1)}" cy="0.4" r="0.7" fill="${B.deep}" opacity="0.8"/><circle cx="${(bl*0.6).toFixed(1)}" cy="-0.8" r="0.55" fill="${B.deep}" opacity="0.7"/>`:''}</g>`; }
     s+=`<ellipse cx="0" cy="${(-len-2).toFixed(1)}" rx="2" ry="3.4" fill="${green}"/>`;
-    return s; },
+    return s; }
+
   bSnowdrop(sp,open){ const L=this.lp(6,15,open); const spr=this.lp(2,15,open);
     const pet=`M0 0 C -3.4 ${(L*0.3).toFixed(1)} -3.8 ${(L*0.75).toFixed(1)} -1.8 ${L.toFixed(1)} C -0.6 ${(L+1.6).toFixed(1)} 0.6 ${(L+1.6).toFixed(1)} 1.8 ${L.toFixed(1)} C 3.8 ${(L*0.75).toFixed(1)} 3.4 ${(L*0.3).toFixed(1)} 0 0 Z`;
     let s=`<path d="M0 4 C -0.5 -6 -2 -11 -10.5 -13" stroke="url(#gaStem)" stroke-width="1.9" fill="none" stroke-linecap="round"/>`;
@@ -2384,71 +2660,140 @@ const GA={
     s+=`<path d="${pet}" fill="#FBF9F1" stroke="#A69C7E" stroke-width="0.7"/>`;
     s+=`<path d="M-1.7 ${(L*0.84).toFixed(1)} q 1.7 2.4 3.4 0" stroke="#5E8E4E" stroke-width="1" fill="none" opacity="${open.toFixed(2)}"/>`;
     s+=`<ellipse cy="0.3" rx="2.5" ry="2.1" fill="#7C9A5E"/>`;
-    s+=`</g>`; return s; },
+    s+=`</g>`; return s; }
+
+  // ---------- lotus (water) ----------
   lotusBud(sp,s){ const B=sp.bloomCol;
-    return `<g transform="scale(${s.toFixed(3)})"><path d="M0 6 C -7 2 -8 -12 0 -22 C 8 -12 7 2 0 6 Z" fill="${B.mid}"/><path d="M0 6 C -4 2 -4 -10 0 -20" stroke="${B.deep}" stroke-width="0.8" fill="none" opacity="0.5"/><path d="M0 6 C 4 2 4 -10 0 -20" stroke="${B.light}" stroke-width="0.8" fill="none" opacity="0.5"/></g>`; },
+    return `<g transform="scale(${s.toFixed(3)})"><path d="M0 6 C -7 2 -8 -12 0 -22 C 8 -12 7 2 0 6 Z" fill="${B.mid}"/><path d="M0 6 C -4 2 -4 -10 0 -20" stroke="${B.deep}" stroke-width="0.8" fill="none" opacity="0.5"/><path d="M0 6 C 4 2 4 -10 0 -20" stroke="${B.light}" stroke-width="0.8" fill="none" opacity="0.5"/></g>`; }
   lotusBloom(sp,open){ const B=sp.bloomCol; const sc=this.lp(0.3,1,open);
     const p=`M0 7 C -10 -7 -4 -21 0 -22.7 C 4 -21 10 -7 0 7 Z`;
     let outer=''; [-74,-37,0,37,74].forEach(a=>outer+=`<path d="${p}" transform="rotate(${a}) scale(1.18)" fill="${B.deep}"/>`);
     let mid=''; [-90,-54,-18,18,54,90].forEach(a=>mid+=`<path d="${p}" transform="rotate(${a})" fill="${B.mid}"/>`);
     let inn=''; [-40,-13,13,40].forEach(a=>inn+=`<path d="${p}" transform="rotate(${a}) scale(0.72)" fill="${B.light}"/>`);
     const c=`<ellipse cy="1" rx="5.5" ry="4" fill="${B.center}"/>${this.ringDots(B.centerDk,7,2.6,0.7)}<ellipse cx="-1.4" cy="-0.6" rx="2" ry="1.4" fill="#fff" opacity="0.4"/>`;
-    return `<g transform="scale(${sc.toFixed(3)})"><g>${outer}</g><g>${mid}</g><g>${inn}</g>${c}</g>`; },
-  trunk(th,tw,kind){ const B=this.BARK[kind]||this.BARK.default; const wt=Math.max(2,tw*0.42);
-    const d=`M ${(-tw/2).toFixed(1)} 0 C ${(-tw/2+1).toFixed(1)} ${(th*0.4).toFixed(0)} ${(-wt/2-1.4).toFixed(1)} ${(th*0.72).toFixed(0)} ${(-wt/2).toFixed(1)} ${th.toFixed(0)} L ${(wt/2).toFixed(1)} ${th.toFixed(0)} C ${(wt/2+1.4).toFixed(1)} ${(th*0.72).toFixed(0)} ${(tw/2-1).toFixed(1)} ${(th*0.4).toFixed(0)} ${(tw/2).toFixed(1)} 0 Z`;
-    let s=`<path d="M ${(-tw*0.95).toFixed(1)} 1.5 Q ${(-tw*0.55).toFixed(1)} -6 ${(-tw*0.3).toFixed(1)} -1 L ${(tw*0.3).toFixed(1)} -1 Q ${(tw*0.55).toFixed(1)} -6 ${(tw*0.95).toFixed(1)} 1.5 Z" fill="${B.lo}"/>`;
+    return `<g transform="scale(${sc.toFixed(3)})"><g>${outer}</g><g>${mid}</g><g>${inn}</g>${c}</g>`; }
+
+
+  // ---------- trees ----------
+  trunk(th,tw,kind){ const B=this.BARK[kind]||this.BARK.default; const T=this.TRUNK_FORM[kind]||this.TRUNK_FORM.default;
+    const F=n=>(+n).toFixed(1); const wt=Math.max(2,tw*0.42);
+    const flareW=Math.max(tw*0.62, tw*T.flare/2); const fy=th*0.2;
+    const rnd=this.rng(this.hashId(kind+'|trunk'));
+    let s='';
+    // root buttresses fanning onto the soil (behind trunk)
+    for(let i=0;i<T.roots;i++){ const side=(i%2===0)?-1:1; const idx=Math.floor(i/2);
+      const reach=flareW*(1.12+0.5*idx)*(0.9+0.2*rnd()); const y0=1.5+idx*0.8;
+      s+=`<path d="M ${F(side*tw*0.14)} ${F(fy*0.34)} Q ${F(side*reach*0.5)} ${F(y0-2)} ${F(side*reach)} ${F(y0+3.4)} Q ${F(side*reach*0.6)} ${F(y0+5.6)} ${F(side*reach*0.38)} ${F(y0+3.8)} Q ${F(side*tw*0.16)} 2 ${F(side*tw*0.05)} ${F(fy*0.34)} Z" fill="${B.lo}"/>`;
+      s+=`<path d="M ${F(side*tw*0.1)} ${F(fy*0.28)} Q ${F(side*reach*0.5)} ${F(y0-1)} ${F(side*reach*0.88)} ${F(y0+2.2)}" stroke="${B.hi}" stroke-width="1" fill="none" opacity="0.38"/>`; }
+    // trunk body with flared base
+    const topL=-wt/2, topR=wt/2, midL=-tw/2, midR=tw/2;
+    const d=`M ${F(-flareW)} 3.4 C ${F(-flareW*0.78)} ${F(fy*0.45)} ${F(midL*1.14)} ${F(fy*0.9)} ${F(midL)} ${F(fy)} C ${F(midL+(topL-midL)*0.4)} ${F(th*0.55)} ${F(topL-(topL-midL)*0.14)} ${F(th*0.82)} ${F(topL)} ${F(th)} L ${F(topR)} ${F(th)} C ${F(topR+(midR-topR)*0.14)} ${F(th*0.82)} ${F(midR+(topR-midR)*0.4)} ${F(th*0.55)} ${F(midR)} ${F(fy)} C ${F(midR*1.14)} ${F(fy*0.9)} ${F(flareW*0.78)} ${F(fy*0.45)} ${F(flareW)} 3.4 Q 0 6.4 ${F(-flareW)} 3.4 Z`;
     s+=`<path d="${d}" fill="${B.hi}"/>`;
-    s+=`<path d="M ${(-tw/2).toFixed(1)} 0 C ${(-tw/2+1).toFixed(1)} ${(th*0.4).toFixed(0)} ${(-wt/2-1.4).toFixed(1)} ${(th*0.72).toFixed(0)} ${(-wt/2).toFixed(1)} ${th.toFixed(0)} L ${(-wt*0.14).toFixed(1)} ${th.toFixed(0)} C ${(-tw*0.2).toFixed(1)} ${(th*0.62).toFixed(0)} ${(-tw*0.26).toFixed(1)} ${(th*0.3).toFixed(0)} ${(-tw*0.3).toFixed(1)} 0 Z" fill="${B.lo}" opacity="0.5"/>`;
-    s+=`<path d="M ${(tw*0.3).toFixed(1)} -1 C ${(tw*0.26).toFixed(1)} ${(th*0.34).toFixed(0)} ${(wt*0.4).toFixed(1)} ${(th*0.6).toFixed(0)} ${(wt*0.34).toFixed(1)} ${(th*0.9).toFixed(0)}" stroke="#FFF6D8" stroke-width="${Math.max(0.6,tw*0.07).toFixed(1)}" fill="none" opacity="0.28" stroke-linecap="round"/>`;
-    s+=`<path d="M ${(-tw*0.1).toFixed(1)} -2 C ${(-tw*0.06).toFixed(1)} ${(th*0.45).toFixed(0)} -0.8 ${(th*0.78).toFixed(0)} -0.5 ${th.toFixed(0)}" stroke="${B.line}" stroke-width="${Math.max(0.5,tw*0.055).toFixed(1)}" fill="none" opacity="0.42"/>`;
-    if(kind==='birch'){ for(let i=1;i<=6;i++){ const y=th*(0.08+i*0.135); const w2=this.lp(tw,wt,0.08+i*0.135)*0.5;
-      s+=`<path d="M ${(-w2*0.8).toFixed(1)} ${y.toFixed(0)} q ${(w2*0.55).toFixed(1)} ${i%2?1.8:-1.6} ${(w2*1.3).toFixed(1)} 0" stroke="#3A3630" stroke-width="${Math.max(0.7,tw*0.055).toFixed(1)}" fill="none" opacity="${(0.55-0.05*i).toFixed(2)}" stroke-linecap="round"/>`; } }
-    return s; },
+    // shaded left flank
+    s+=`<path d="M ${F(-flareW)} 3.4 C ${F(-flareW*0.78)} ${F(fy*0.45)} ${F(midL*1.14)} ${F(fy*0.9)} ${F(midL)} ${F(fy)} C ${F(midL+(topL-midL)*0.4)} ${F(th*0.55)} ${F(topL-(topL-midL)*0.14)} ${F(th*0.82)} ${F(topL)} ${F(th)} L ${F(topL+wt*0.34)} ${F(th)} C ${F(-tw*0.06)} ${F(th*0.6)} ${F(-tw*0.14)} ${F(fy*0.9)} ${F(-tw*0.18)} ${F(fy)} C ${F(-tw*0.22)} ${F(fy*0.5)} ${F(-flareW*0.5)} 1.5 ${F(-flareW)} 3.4 Z" fill="${B.lo}" opacity="0.42"/>`;
+    // highlight on the lit (right) side
+    s+=`<path d="M ${F(midR*0.66)} ${F(fy*0.5)} C ${F(midR*0.62)} ${F(th*0.4)} ${F(wt*0.38)} ${F(th*0.68)} ${F(wt*0.32)} ${F(th*0.92)}" stroke="#FFF6D8" stroke-width="${F(Math.max(0.7,tw*0.08))}" fill="none" opacity="0.24" stroke-linecap="round"/>`;
+    s+=this.barkTexture(th,tw,wt,fy,B,T,rnd);
+    return s; }
+
+  barkTexture(th,tw,wt,fy,B,T,rnd){ const F=n=>(+n).toFixed(1); const wAt=f=>this.lp(tw,wt,f); let s='';
+    if(T.bark==='band'){ for(let i=1;i<=6;i++){ const f=0.08+i*0.135; const y=th*f; const w2=wAt(f)*0.5;
+        s+=`<path d="M ${F(-w2*0.82)} ${F(y)} q ${F(w2*0.55)} ${i%2?1.8:-1.6} ${F(w2*1.3)} 0" stroke="#3A3630" stroke-width="${F(Math.max(0.7,tw*0.055))}" fill="none" opacity="${(0.55-0.05*i).toFixed(2)}" stroke-linecap="round"/>`; }
+      return s; }
+    if(T.bark==='lenticel'){ const rows=Math.max(4,Math.round(-th/22));
+      for(let r=0;r<rows;r++){ const f=(r+0.6)/rows; const y=this.lp(fy*0.7,th*0.9,f); const w=wAt(f); const nD=2+(r%2);
+        for(let d2=0;d2<nD;d2++){ const x=((d2+0.5)/nD-0.5)*w*0.72+(rnd()-0.5)*2.4; const len=w*0.24*(0.7+rnd()*0.7);
+          s+=`<path d="M ${F(x-len/2)} ${F(y)} q ${F(len/2)} ${r%2?0.9:-0.9} ${F(len)} 0" stroke="${B.line}" stroke-width="1.2" fill="none" opacity="0.5" stroke-linecap="round"/>`; } }
+      s+=`<path d="M ${F(tw*0.16)} ${F(th*0.14)} C ${F(tw*0.12)} ${F(th*0.5)} ${F(wt*0.3)} ${F(th*0.7)} ${F(wt*0.24)} ${F(th*0.9)}" stroke="#C98A78" stroke-width="${F(Math.max(0.8,tw*0.1))}" fill="none" opacity="0.28" stroke-linecap="round"/>`;
+      return s; }
+    if(T.bark==='plate'){ const rows=Math.max(5,Math.round(-th/18));
+      for(let r=0;r<rows;r++){ const f=(r+0.5)/rows; const y=this.lp(fy*0.7,th*0.92,f); const w=wAt(f);
+        s+=`<path d="M ${F(-w*0.42)} ${F(y)} q ${F(w*0.42)} ${r%2?2:-2} ${F(w*0.84)} 0" stroke="${B.line}" stroke-width="1" fill="none" opacity="0.42" stroke-linecap="round"/>`;
+        s+=`<line x1="${F((rnd()-0.5)*w*0.5)}" y1="${F(y)}" x2="${F((rnd()-0.5)*w*0.5)}" y2="${F(this.lp(fy*0.7,th*0.92,(r+1.4)/rows))}" stroke="${B.line}" stroke-width="0.8" opacity="0.28"/>`; }
+      s+=`<path d="M ${F(wt*0.28)} ${F(th*0.2)} C ${F(wt*0.24)} ${F(th*0.55)} ${F(wt*0.4)} ${F(th*0.75)} ${F(wt*0.34)} ${F(th*0.92)}" stroke="#D69A5E" stroke-width="${F(Math.max(0.8,tw*0.1))}" fill="none" opacity="0.3" stroke-linecap="round"/>`;
+      return s; }
+    // furrow (default): vertical wavy grooves following the taper
+    const nL=Math.max(2,Math.round(tw/6));
+    for(let k=0;k<nL;k++){ const off=((k+0.5)/nL-0.5)*1.5; const wob=0.7+rnd()*0.7; let d='';
+      const steps=6; for(let j=0;j<=steps;j++){ const f=j/steps; const y=this.lp(fy*0.7,th*0.95,f); const w=wAt(f);
+        const x=off*w*0.6+Math.sin(f*7*wob+k*1.6)*w*0.05; d+=(j===0?'M':'L')+` ${F(x)} ${F(y)}`; }
+      s+=`<path d="${d}" stroke="${B.line}" stroke-width="${F(Math.max(0.5,tw*0.045))}" fill="none" opacity="${(0.34-0.02*k).toFixed(2)}" stroke-linecap="round"/>`; }
+    for(let k=0;k<2;k++){ const f=0.3+0.35*rnd(); const y=this.lp(fy*0.7,th*0.95,f); const w=wAt(f); const dir=k%2?1:-1;
+      s+=`<path d="M ${F(dir*w*0.1)} ${F(y)} q ${F(dir*w*0.18)} ${F(th*0.05)} ${F(dir*w*0.26)} ${F(th*0.12)}" stroke="${B.line}" stroke-width="${F(Math.max(0.5,tw*0.04))}" fill="none" opacity="0.3" stroke-linecap="round"/>`; }
+    return s; }
+
   puff(x,y,r,f,ph,op){ const n=9; const pts=[];
     for(let i=0;i<n;i++){ const a=i/n*2*Math.PI+ph; const rr=r*(0.9+0.11*Math.sin(i*2.3+ph*4)); pts.push([x+Math.cos(a)*rr,y+Math.sin(a)*rr*0.88]); }
     let d=`M ${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
     for(let i=0;i<n;i++){ const p1=pts[i], p2=pts[(i+1)%n]; const mx=(p1[0]+p2[0])/2-x, my=(p1[1]+p2[1])/2-y;
       d+=` Q ${(x+mx*1.35).toFixed(1)} ${(y+my*1.35).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`; }
-    return `<path d="${d} Z" fill="${f}"${op?` opacity="${op}"`:''}/>`; },
-  canopy(sp,g){ const c=sp.canopy; const dk=this.mix(c[0],'#23421F',0.45);
-    const CL=[[-52,22,44,0,0.3],[54,26,42,1,1.4],[0,38,50,2,2.2],[-42,-12,39,3,0.8],[46,-10,36,4,1.9],[2,-36,35,5,2.8],[-16,4,33,6,0.5],[26,-22,28,7,1.1],[-6,-46,25,8,2.5]];
-    let s=this.puff(-26,20,66,dk,0.7)+this.puff(30,16,62,dk,1.8);
-    CL.forEach(p=>{ s+=this.puff(p[0],p[1],p[2],c[p[3]%c.length],p[4]); });
-    const hi=this.mix(c[c.length-1],'#FFF8DC',0.38);
-    [[-40,-28,20,0.9],[12,-48,17,1.7],[40,-20,15,2.4],[-14,-6,13,0.2]].forEach(h=>{ s+=this.puff(h[0],h[1],h[2],hi,h[3],'0.85'); });
-    s+=`<ellipse cx="-14" cy="-30" rx="48" ry="36" fill="url(#gaCanopyHi)"/>`;
-    [[-58,44],[-20,54],[22,52],[56,40],[-38,10],[36,8],[0,-14]].forEach(t=>{ s+=`<path d="M ${t[0]-9} ${t[1]} q 4.5 5 9 0 q 4.5 5 9 0" stroke="${dk}" stroke-width="1.1" fill="none" opacity="0.3"/>`; });
+    return `<path d="${d} Z" fill="${f}"${op?` opacity="${op}"`:''}/>`; }
+
+  canopy(sp,g,S){ S=S||this.SEASONS.Summer; const c=sp.canopy;
+    const col=(h)=>this.seasonCol(h,S);
+    const cherryPink=(S.blossom && sp.kind==='cherry');
+    const cf=(h)=>{ let x=col(h); if(cherryPink) x=this.mix(x,'#F1B4D0',0.82); return x; };
+    const F=this.CROWN[sp.kind]||this.CROWN.default;
+    const rnd=this.rng(this.hashId(sp.id+'|crownV2'));
+    const dk=this.mix(cf(c[0]),'#23421F',0.45);
+    // bumpy silhouette: ring of lobe puffs around a per-species ellipse (w,h,cy)
+    const N=F.lobes*2, outline=[];
+    for(let i=0;i<N;i++){ const a=(i/N)*6.2832-1.5708; const jr=1+(rnd()*2-1)*F.jag;
+      const ex=Math.cos(a)*F.w*jr; const ey=Math.sin(a)*F.h*(1+(rnd()*2-1)*F.jag*0.6)+F.cy;
+      outline.push([ex,ey,F.rB*(0.74+0.5*rnd()),i%c.length,rnd()*3]); }
+    const inner=[]; for(let i=0;i<F.fill;i++){ const ang=rnd()*6.2832, rad=0.15+rnd()*0.5;
+      inner.push([Math.cos(ang)*F.w*rad,Math.sin(ang)*F.h*rad+F.cy,F.rB*(0.62+0.42*rnd()),(i+2)%c.length,rnd()*3]); }
+    let s=''; const all=outline.concat(inner).sort((a,b)=>a[1]-b[1]);
+    all.forEach(p=>{ s+=this.puff(p[0],p[1],p[2],cf(c[p[3]]),p[4]); });
+    // lower shade for volume
+    s+=this.puff(-F.w*0.2,F.cy+F.h*0.52,F.rB*1.5,dk,0.7,'0.5')+this.puff(F.w*0.28,F.cy+F.h*0.46,F.rB*1.35,dk,1.8,'0.42');
+    // sun-catch highlights, upper-left
+    const hi=this.mix(cf(c[c.length-1]),S.canopyHi||'#FFF8DC',0.4);
+    for(let i=0;i<3;i++){ const a=-2.5+i*0.55; s+=this.puff(Math.cos(a)*F.w*0.5,Math.sin(a)*F.h*0.5+F.cy,F.rB*(0.54-0.06*i),hi,i*1.3,'0.85'); }
+    s+=`<ellipse cx="${(-F.w*0.16).toFixed(1)}" cy="${(F.cy-F.h*0.34).toFixed(1)}" rx="${(F.w*0.5).toFixed(1)}" ry="${(F.h*0.4).toFixed(1)}" fill="url(#gaCanopyHi)"/>`;
+    outline.forEach(p=>{ if(p[1]>F.cy-F.h*0.15){ s+=`<path d="M ${(p[0]-9).toFixed(1)} ${p[1].toFixed(1)} q 4.5 5 9 0 q 4.5 5 9 0" stroke="${dk}" stroke-width="1.1" fill="none" opacity="0.26"/>`; } });
+    const scatter=(n,tag,rad)=>{ const r=this.rng(this.hashId(sp.id+tag)); const o=[]; for(let i=0;i<n;i++){ const a=r()*6.2832, rr=Math.sqrt(r())*(rad||0.82); o.push([Math.cos(a)*F.w*rr,Math.sin(a)*F.h*rr+F.cy]); } return o; };
     const extra=this.sm(0.6,1,g);
-    if(sp.kind==='cherry' && extra>0.02){ [[-44,14],[40,6],[-12,-34],[14,-12],[-30,-18],[30,22],[-58,-4],[52,-28],[-2,40],[20,-42]].forEach(p=>s+=`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#FFFDF8" opacity="${extra.toFixed(2)}"/>`); }
-    if(sp.kind==='apple' && extra>0.02){ [[-40,18],[28,30],[-8,-6],[46,-8],[-52,-16],[12,-32]].forEach(p=>s+=`<g transform="translate(${p[0]} ${p[1]})" opacity="${extra.toFixed(2)}"><circle r="4" fill="#C63A2A"/><circle cx="-1.2" cy="-1.2" r="1.3" fill="#E8836E" opacity="0.8"/><path d="M0 -3.8 q 1 -2 2.4 -2.6" stroke="#4A3A20" stroke-width="0.8" fill="none"/></g>`); }
-    if(sp.kind==='oak' && extra>0.02){ [[-42,40],[22,46],[-8,34],[44,26]].forEach(p=>s+=`<g transform="translate(${p[0]} ${p[1]})" opacity="${extra.toFixed(2)}"><ellipse rx="3.6" ry="4.6" cy="2" fill="#B98A4E"/><path d="M-3.6 -1 a 3.6 2.8 0 0 1 7.2 0 Z" fill="#7A5A34"/></g>`); }
-    if(sp.kind==='willow'){ const L=this.lp(10,140,this.sm(0.4,1,g)); if(L>6){ let i=0;
-      for(let x=-78;x<=78;x+=13,i++){ const ax=Math.abs(x)/78; const y0=44-ax*ax*26; const l2=L*(1-0.28*ax)*(0.86+0.14*Math.sin(i*1.7)); const col=i%2?'#4E8A44':'#447A3C';
-        s+=`<path d="M${x} ${y0.toFixed(0)} q ${i%2?-5:-6.5} ${(l2*0.55).toFixed(0)} ${i%2?-2:-3} ${l2.toFixed(0)}" stroke="${col}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity="0.9"/>`; } } }
-    if(sp.kind==='maple' && extra>0.02){ [[-46,10,-28],[44,-4,26],[6,-40,8],[-20,36,40]].forEach(p=>s+=`<g transform="translate(${p[0]} ${p[1]}) rotate(${p[2]})" opacity="${extra.toFixed(2)}"><path d="M0 0 Q 8 -3 12 2 Q 7 3 0 0 Z" fill="#C6863E"/><path d="M0 0 Q -8 -3 -12 2 Q -7 3 0 0 Z" fill="#C6863E"/><circle r="1.4" fill="#7A5A34"/></g>`); }
-    if(sp.kind==='birch' && extra>0.02){ [[-34,26],[18,38],[-52,-8],[40,-16],[-6,-40],[52,16]].forEach((p,i)=>s+=`<path d="M${p[0]} ${p[1]} q 3 ${i%2?4:-4} 6 0" stroke="#DCE8B2" stroke-width="1.6" fill="none" opacity="${(extra*0.7).toFixed(2)}" stroke-linecap="round"/>`); }
-    return s; },
-  treeAbove(sp,g){ if(sp.kind==='pine') return this.coniferAbove(sp,g);
-    const th=this.lp(-12,-198,this.sm(0.05,0.95,g)); const tw=this.lp(2.6,26,this.sm(0.09,0.95,g)); const canScale=this.sm(0.18,1,g);
+    if(F.droop){ const dl=this.lp(6,28,this.sm(0.4,1,g));
+      for(let i=0;i<10;i++){ const a=(i/10)*6.2832; const bx=Math.cos(a)*F.w*0.9; const by=Math.sin(a)*F.h*0.88+F.cy; if(by<F.cy-F.h*0.45) continue;
+        s+=`<path d="M ${bx.toFixed(1)} ${by.toFixed(1)} q ${(2-(i%2)*4).toFixed(1)} ${(dl*0.6).toFixed(1)} ${(1-(i%2)*2).toFixed(1)} ${dl.toFixed(1)}" stroke="${cf(c[1])}" stroke-width="1.5" fill="none" opacity="0.7" stroke-linecap="round"/>`; } }
+    if(S.blossom && sp.kind==='cherry' && extra>0.02){ scatter(11,'|blossom').forEach(p=>s+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="#FDEAF1" opacity="${extra.toFixed(2)}"/>`); }
+    if(S.blossom && sp.kind==='apple' && extra>0.02){ scatter(7,'|appleb').forEach(p=>s+=`<g transform="translate(${p[0].toFixed(1)} ${p[1].toFixed(1)})" opacity="${extra.toFixed(2)}"><circle r="3.4" fill="#F7DCE7"/><circle r="1.3" fill="#E7A8C2"/></g>`); }
+    if(S.fruit && sp.kind==='apple' && extra>0.02){ scatter(7,'|applef',0.84).forEach(p=>s+=`<g transform="translate(${p[0].toFixed(1)} ${p[1].toFixed(1)})" opacity="${extra.toFixed(2)}"><circle r="4" fill="#C63A2A"/><circle cx="-1.2" cy="-1.2" r="1.3" fill="#E8836E" opacity="0.8"/><path d="M0 -3.8 q 1 -2 2.4 -2.6" stroke="#4A3A20" stroke-width="0.8" fill="none"/></g>`); }
+    if(S.fruit && sp.kind==='oak' && extra>0.02){ [[-0.5,0.5],[0.28,0.6],[-0.1,0.44],[0.5,0.36]].forEach(p=>s+=`<g transform="translate(${(p[0]*F.w).toFixed(1)} ${(F.cy+p[1]*F.h).toFixed(1)})" opacity="${extra.toFixed(2)}"><ellipse rx="3.6" ry="4.6" cy="2" fill="#B98A4E"/><path d="M-3.6 -1 a 3.6 2.8 0 0 1 7.2 0 Z" fill="#7A5A34"/></g>`); }
+    if(sp.kind==='willow'){ const prog=this.sm(0.4,1,g); const Lmax=this.lp(8,128,prog);
+      if(Lmax>6){ const wr=this.rng(this.hashId(sp.id+'|willowV3')); const nS=Math.round(this.lp(7,22,prog)); const items=[];
+        for(let k=0;k<nS;k++){ const t=nS>1?k/(nS-1):0.5; const x0=this.lp(-F.w*0.98,F.w*0.98,t)+(wr()*2-1)*5; const ax=Math.min(1,Math.abs(x0)/F.w);
+          const y0=F.cy+F.h*0.5-ax*ax*(F.h*0.52); const len=Lmax*(0.5+0.55*(1-ax*ax))*(0.82+0.3*wr());
+          const dir=x0>=0?1:-1; const bow=(0.12+0.1*wr())*len*dir;
+          items.push({x0,y0,cx1:x0+bow*0.3,cy1:y0+len*0.34,cx2:x0+bow*0.95,cy2:y0+len*0.72,ex:x0+bow,ey:y0+len,back:wr()<0.4,shade:wr()}); }
+        items.filter(o=>o.back).concat(items.filter(o=>!o.back)).forEach(o=>{ const col2=this.mix(cf(c[2]),cf(c[0]),0.2+o.shade*0.5); const w=(1.1+o.shade*1.0).toFixed(1); const op=(o.back?0.5:0.82).toFixed(2);
+          s+=`<path d="M ${o.x0.toFixed(1)} ${o.y0.toFixed(1)} C ${o.cx1.toFixed(1)} ${o.cy1.toFixed(1)} ${o.cx2.toFixed(1)} ${o.cy2.toFixed(1)} ${o.ex.toFixed(1)} ${o.ey.toFixed(1)}" stroke="${col2}" stroke-width="${w}" fill="none" stroke-linecap="round" opacity="${op}"/>`; }); } }
+    if(S.key==='Autumn' && sp.kind==='maple' && extra>0.02){ scatter(4,'|samara',0.8).forEach(p=>s+=`<g transform="translate(${p[0].toFixed(1)} ${p[1].toFixed(1)}) rotate(${p[0].toFixed(0)})" opacity="${extra.toFixed(2)}"><path d="M0 0 Q 8 -3 12 2 Q 7 3 0 0 Z" fill="#C6863E"/><path d="M0 0 Q -8 -3 -12 2 Q -7 3 0 0 Z" fill="#C6863E"/><circle r="1.4" fill="#7A5A34"/></g>`); }
+    if(sp.kind==='birch' && extra>0.02){ scatter(7,'|birchmk').forEach((p,i)=>s+=`<path d="M${p[0].toFixed(1)} ${p[1].toFixed(1)} q 3 ${i%2?4:-4} 6 0" stroke="${cf('#DCE8B2')}" stroke-width="1.6" fill="none" opacity="${(extra*0.7).toFixed(2)}" stroke-linecap="round"/>`); }
+    return s; }
+
+  treeAbove(sp,g,S){ S=S||this.SEASONS.Summer; if(sp.kind==='pine') return this.coniferAbove(sp,g,S);
+    const th=this.lp(-6,-198,this.sm(0.05,0.95,g)); const tw=this.lp(2.6,26,this.sm(0.09,0.95,g)); const canScale=this.sm(0.18,1,g);
     const B=this.BARK[sp.kind]||this.BARK.default;
     let s='';
     const seedOp=1-this.sm(0.16,0.26,g);
-    if(seedOp>0.02) s+=`<g opacity="${seedOp.toFixed(2)}">${this.sprout(this.sm(0.01,0.15,g),this.sm(0.08,0.22,g))}</g>`;
+    if(seedOp>0.02) s+=`<g opacity="${seedOp.toFixed(2)}">${this.sprout(this.sm(0.01,0.15,g),this.sm(0.08,0.22,g),2)}</g>`;
     s+=this.trunk(th,tw,sp.kind);
-    const br=this.sm(0.42,0.62,g);
-    if(br>0.02){ s+=`<g opacity="${br.toFixed(2)}" stroke="${B.lo}" fill="none" stroke-linecap="round">`;
-      [[0.74,-1,3.2,0.20,0.34],[0.62,1,3.0,0.22,0.30],[0.5,-1,2.4,0.16,0.22],[0.4,1,2.0,0.13,0.17],[0.84,1,1.8,0.12,0.2]].forEach(b=>{
-        const y0=th*b[0], y1=th*(b[0]+b[3]), dx=b[1]*tw*b[2];
-        s+=`<path d="M0 ${y0.toFixed(0)} C ${(dx*0.3).toFixed(0)} ${(y0+(y1-y0)*0.15).toFixed(0)} ${(dx*0.7).toFixed(0)} ${(y0+(y1-y0)*0.55).toFixed(0)} ${dx.toFixed(0)} ${y1.toFixed(0)}" stroke-width="${(tw*b[4]).toFixed(1)}"/>`;
-        s+=`<path d="M${(dx*0.55).toFixed(0)} ${(y0+(y1-y0)*0.42).toFixed(0)} C ${(dx*0.75).toFixed(0)} ${(y0+(y1-y0)*0.5).toFixed(0)} ${(dx*0.95).toFixed(0)} ${(y0+(y1-y0)*0.62).toFixed(0)} ${(dx*1.15).toFixed(0)} ${(y1+(y1-y0)*0.05).toFixed(0)}" stroke-width="${(tw*b[4]*0.55).toFixed(1)}"/>`; });
-      s+=`</g>`; }
-    if(canScale>0.02) s+=`<g transform="translate(0 ${(th-8).toFixed(0)}) scale(${canScale.toFixed(3)})">${this.canopy(sp,g)}</g>`;
-    const fall=this.sm(0.86,1,g);
-    if(fall>0.02){ if(sp.kind==='cherry'){ [[-52,-3],[38,-2],[-20,-1],[58,-4],[6,-2]].forEach((p,i)=>s+=`<ellipse cx="${p[0]}" cy="${p[1]}" rx="2.6" ry="1.2" fill="#F3E9DA" opacity="${(fall*0.9).toFixed(2)}" transform="rotate(${i*14-20} ${p[0]} ${p[1]})"/>`); }
-      if(sp.kind==='maple'){ [[-56,-2,20],[44,-3,-30],[14,-1,60]].forEach(p=>s+=`<g transform="translate(${p[0]} ${p[1]}) rotate(${p[2]})" opacity="${(fall*0.9).toFixed(2)}"><path d="M0 0 Q 7 -2.6 10.5 1.6 Q 6 2.6 0 0 Z" fill="#C6863E"/></g>`); }
-      if(sp.kind==='apple'){ [[-40,-3],[30,-2]].forEach(p=>s+=`<circle cx="${p[0]}" cy="${p[1]}" r="3.4" fill="#C63A2A" opacity="${fall.toFixed(2)}"/>`); } }
-    return s; },
-  conifer(sp,H,baseW,g){ const c=sp.canopy; const tiers=5; let s='';
+    if(S.bare){ s+=this.crown(sp,th,tw,g,true); }
+    else {
+      s+=this.crown(sp,th,tw,g,false);
+      const CF=this.CROWN[sp.kind]||this.CROWN.default;
+      if(canScale>0.02) s+=`<g transform="translate(0 ${(th-(CF.cy+CF.h*0.12)*canScale).toFixed(1)}) scale(${canScale.toFixed(3)})">${this.canopy(sp,g,S)}</g>`;
+      const fall=this.sm(0.86,1,g);
+      if(fall>0.02){ if(S.blossom && sp.kind==='cherry'){ [[-52,-3],[38,-2],[-20,-1],[58,-4],[6,-2]].forEach((p,i)=>s+=`<ellipse cx="${p[0]}" cy="${p[1]}" rx="2.6" ry="1.2" fill="#F6C6DC" opacity="${(fall*0.9).toFixed(2)}" transform="rotate(${i*14-20} ${p[0]} ${p[1]})"/>`); }
+        if(S.key==='Autumn' && sp.kind==='maple'){ [[-56,-2,20],[44,-3,-30],[14,-1,60]].forEach(p=>s+=`<g transform="translate(${p[0]} ${p[1]}) rotate(${p[2]})" opacity="${(fall*0.9).toFixed(2)}"><path d="M0 0 Q 7 -2.6 10.5 1.6 Q 6 2.6 0 0 Z" fill="#C6863E"/></g>`); }
+        if(S.fruit && sp.kind==='apple'){ [[-40,-3],[30,-2]].forEach(p=>s+=`<circle cx="${p[0]}" cy="${p[1]}" r="3.4" fill="#C63A2A" opacity="${fall.toFixed(2)}"/>`); } }
+      if(S.key==='Autumn' && canScale>0.3){ [[-64,-46,'#C6863E'],[54,-74,'#B85A28'],[-30,-116,'#D89A3C'],[68,-24,'#A8471E']].forEach((p,i)=>s+=`<g transform="translate(${p[0]} ${p[1]}) rotate(${i*47})" opacity="0.8"><path d="M0 0 Q 6 -3 9 2 Q 5 3 0 0 Z" fill="${p[2]}"/></g>`); }
+    }
+    return s; }
+
+  conifer(sp,H,baseW,g,S){ const c=sp.canopy; const tiers=5; let s='';
     for(let k=0;k<tiers;k++){ const frac=k/(tiers-1);
       const baseY=-H*(0.14+0.7*frac); const tierH=H*0.30*(1-0.08*k); const halfW=(baseW/2)*(1-0.16*k); const apexY=baseY-tierH;
       const dk=this.mix(c[k],'#1C3524',0.4);
@@ -2456,35 +2801,188 @@ const GA={
       s+=`<path d="M ${(-halfW*0.5).toFixed(1)} ${(baseY-tierH*0.1).toFixed(1)} Q 0 ${(baseY+4).toFixed(1)} ${(halfW*0.5).toFixed(1)} ${(baseY-tierH*0.1).toFixed(1)}" stroke="${dk}" stroke-width="1.6" fill="none" opacity="0.35"/>`;
       s+=`<path d="M ${(-halfW*0.16).toFixed(1)} ${(apexY+tierH*0.16).toFixed(1)} Q ${(-halfW*0.5).toFixed(1)} ${(baseY-tierH*0.3).toFixed(1)} ${(-halfW*0.78).toFixed(1)} ${(baseY-2).toFixed(1)}" stroke="#EAF3D8" stroke-width="1.6" fill="none" opacity="0.22" stroke-linecap="round"/>`; }
     const cones=this.sm(0.72,1,g); if(cones>0.02){ s+=`<ellipse cx="${(baseW*0.16).toFixed(1)}" cy="${(-H*0.5).toFixed(1)}" rx="2.4" ry="4" fill="#6E4A2A" opacity="${cones.toFixed(2)}"/><ellipse cx="${(-baseW*0.2).toFixed(1)}" cy="${(-H*0.66).toFixed(1)}" rx="2.1" ry="3.4" fill="#6E4A2A" opacity="${cones.toFixed(2)}"/><ellipse cx="${(baseW*0.05).toFixed(1)}" cy="${(-H*0.8).toFixed(1)}" rx="1.8" ry="3" fill="#6E4A2A" opacity="${cones.toFixed(2)}"/>`; }
-    return s; },
-  coniferAbove(sp,g){ const th=this.lp(-16,-214,this.sm(0.03,0.95,g)); const H=-th; const tw=this.lp(2.4,15,this.sm(0.06,0.95,g)); const baseW=this.lp(10,98,this.sm(0.1,1,g));
+    if(S && S.snow){ for(let k=0;k<tiers;k++){ const frac=k/(tiers-1); const baseY=-H*(0.14+0.7*frac); const tierH=H*0.30*(1-0.08*k); const halfW=(baseW/2)*(1-0.16*k); const apexY=baseY-tierH;
+      s+=`<path d="M0 ${(apexY+2.5).toFixed(1)} Q ${(-halfW*0.5).toFixed(1)} ${(baseY-tierH*0.32).toFixed(1)} ${(-halfW*0.82).toFixed(1)} ${(baseY-0.5).toFixed(1)}" stroke="#F1F6FA" stroke-width="2.4" fill="none" opacity="0.88" stroke-linecap="round"/><path d="M0 ${(apexY+2.5).toFixed(1)} Q ${(halfW*0.5).toFixed(1)} ${(baseY-tierH*0.32).toFixed(1)} ${(halfW*0.82).toFixed(1)} ${(baseY-0.5).toFixed(1)}" stroke="#E4EEF3" stroke-width="2.1" fill="none" opacity="0.72" stroke-linecap="round"/>`; } }
+    return s; }
+  coniferAbove(sp,g,S){ const th=this.lp(-8,-214,this.sm(0.03,0.95,g)); const H=-th; const tw=this.lp(2.4,15,this.sm(0.06,0.95,g)); const baseW=this.lp(10,98,this.sm(0.1,1,g));
     let s=''; const seedOp=1-this.sm(0.05,0.17,g);
-    if(seedOp>0.02) s+=`<g opacity="${seedOp.toFixed(2)}">${this.sprout(this.sm(0.01,0.15,g))}</g>`;
-    s+=this.trunk(th,tw,'pine')+this.conifer(sp,H,baseW,g);
-    return s; },
-  flowerAbove(sp,g){ const spike=['spike','bluebell','foxglove','snowdrop'].includes(sp.bloomKind);
+    if(seedOp>0.02) s+=`<g opacity="${seedOp.toFixed(2)}">${this.sprout(this.sm(0.01,0.15,g),undefined,2)}</g>`;
+    s+=this.trunk(th,tw,'pine')+this.conifer(sp,H,baseW,g,S);
+    return s; }
+
+  flowerAbove(sp,g,S){ S=S||this.SEASONS.Summer; const spike=['spike','bluebell','foxglove','snowdrop'].includes(sp.bloomKind);
+    const phase=(S&&S.forceBloom)?'bloom':this.phenophase(sp,S); const dormant=phase==='dormant'; const bulb=this.isBulb(sp);
     const seedSwell=this.sm(0.03,0.12,g);
     const seedOp=1-this.sm(0.17,0.25,g);
     const hook=this.sm(0.12,0.24,g);
     const spread=this.sm(0.22,0.34,g);
     const germ=this.sm(0.12,0.30,g);
     const cotFade=1-this.sm(0.40,0.56,g);
-    const hgt=this.lp(0,sp.maxH,this.sm(0.20,0.86,g)); const topY=-hgt;
+    let grow=this.sm(0.20,0.86,g); if(phase==='developing') grow*=0.86;
+    const hgt=this.lp(0,sp.maxH,grow); const topY=-hgt;
     const stemW=this.lp(1.4,sp.stemW||4.5,this.sm(0.20,0.84,g));
     let s='';
     if(seedOp>0.01) s+=`<g opacity="${seedOp.toFixed(2)}" transform="translate(0 10)"><ellipse rx="9" ry="11.5" fill="#8A6A48" opacity="0.4"/><ellipse rx="9" ry="11.5" fill="none" stroke="#33241A" stroke-width="0.6" opacity="0.3"/><g transform="scale(1.5)">${this.seed(seedSwell)}</g></g>`;
-    if(germ>0.02 && cotFade>0.02) s+=`<g opacity="${cotFade.toFixed(2)}">${this.sprout(hook,spread)}</g>`;
-    if(hgt>4){ s+=this.stem(topY,stemW,sp)+this.leaves(sp,g,topY); }
-    if(spike){ const open=this.sm(0.5,1,g), op=this.sm(0.46,0.6,g);
-      if(op>0.01) s+=`<g transform="translate(0 ${topY.toFixed(1)})" opacity="${op.toFixed(2)}">${this.bloom(sp,open)}</g>`; }
-    else { const budSwell=this.sm(0.60,0.80,g), budColor=this.sm(0.74,0.87,g), budFade=1-this.sm(0.85,0.93,g), open=this.sm(0.86,1,g), bloomOp=this.sm(0.86,0.94,g);
-      if(hgt>10 && budSwell>0.02 && budFade>0.02) s+=`<g transform="translate(0 ${topY.toFixed(1)})" opacity="${budFade.toFixed(2)}">${this.bud(sp,budSwell,budColor)}</g>`;
-      if(bloomOp>0.02) s+=`<g transform="translate(0 ${topY.toFixed(1)})" opacity="${bloomOp.toFixed(2)}">${this.bloom(sp,open)}</g>`; }
-    return s; },
-};
+    if(!dormant && germ>0.02 && cotFade>0.02) s+=`<g opacity="${cotFade.toFixed(2)}">${this.sprout(hook,spread)}</g>`;
+
+    if(dormant){
+      if(bulb){ const bo=this.sm(0.2,0.5,g); if(bo>0.02) s+=this.dormantBulb(bo); }
+      else { const dh=this.lp(0,sp.maxH*0.34,this.sm(0.4,1,g));
+        if(dh>6){ s+=this.deadStalks(sp,dh);
+          if(S.snow){ s+=this.snowCapAt(5,-dh-2,this.lp(3,8,this.sm(0.4,1,g)))+`<ellipse cx="-7" cy="${(-dh*0.5).toFixed(1)}" rx="4" ry="1.6" fill="#F4F8FC" opacity="0.72"/>`; } } }
+    } else {
+      if(hgt>4){ s+=this.stem(topY,stemW,sp)+this.leaves(sp,g,topY,S); }
+      if(phase==='bloom'){
+        if(spike){ const open=this.sm(0.5,1,g), op=this.sm(0.46,0.6,g);
+          if(op>0.01) s+=`<g transform="translate(0 ${topY.toFixed(1)})" opacity="${op.toFixed(2)}">${this.bloom(sp,open)}</g>`; }
+        else { const budSwell=this.sm(0.60,0.80,g), budColor=this.sm(0.74,0.87,g), budFade=1-this.sm(0.85,0.93,g), open=this.sm(0.86,1,g), bloomOp=this.sm(0.86,0.94,g);
+          if(hgt>10 && budSwell>0.02 && budFade>0.02) s+=`<g transform="translate(0 ${topY.toFixed(1)})" opacity="${budFade.toFixed(2)}">${this.bud(sp,budSwell,budColor)}</g>`;
+          if(bloomOp>0.02) s+=`<g transform="translate(0 ${topY.toFixed(1)})" opacity="${bloomOp.toFixed(2)}">${this.bloom(sp,open)}</g>`; }
+        if(S.snow && hgt>6) s+=`<ellipse cx="0" cy="-3" rx="7" ry="2.4" fill="#F2F8FB" opacity="0.72"/>`;
+      } else if(phase==='developing'){
+        if(!spike){ const budSwell=this.sm(0.55,0.92,g); if(hgt>10 && budSwell>0.04) s+=`<g transform="translate(0 ${topY.toFixed(1)})">${this.bud(sp,budSwell,0)}</g>`; }
+      } else if(phase==='spent'){
+        const sh=this.sm(0.7,1,g); if(hgt>10 && sh>0.04) s+=`<g transform="translate(0 ${topY.toFixed(1)})">${this.seedHead(sp,sh)}</g>`;
+      }
+    }
+    return s; }
+
+  // ---------- grasses ----------
+  grassPalette(G,S){ let bot=G.seedGrad[1], top=G.seedGrad[0];
+    if(S.key==='Spring'){ bot=this.mix(bot,'#8FC24C',0.28); top=this.mix(top,'#BEE07A',0.28); }
+    else if(S.key==='Autumn'){ bot=this.mix(bot,'#A9762E',0.6); top=this.mix(top,'#D9B052',0.6); }
+    else if(S.key==='Winter'){ bot=this.mix(bot,'#9C8858',0.72); top=this.mix(top,'#C8B588',0.72); }
+    return { top, bot }; }
+  grassBlade(x0,leanDeg,len,w,arch,cTop,cBot){ const F=n=>(+n).toFixed(1);
+    const rad=leanDeg*Math.PI/180, dx=Math.sin(rad), dy=-Math.cos(rad);
+    const tipx=x0+dx*len*(1-0.12*Math.abs(arch)), tipy=dy*len*(1-0.32*Math.abs(arch));
+    const cx=x0+dx*len*0.5+arch*len*0.34, cy=dy*len*0.5;
+    const N=6, L=[], R=[];
+    for(let i=0;i<=N;i++){ const t=i/N, mt=1-t;
+      const px=mt*mt*x0+2*mt*t*cx+t*t*tipx, py=2*mt*t*cy+t*t*tipy;
+      let tx=2*mt*(cx-x0)+2*t*(tipx-cx), ty=2*mt*cy+2*t*(tipy-cy); const tl=Math.hypot(tx,ty)||1; const nx=-ty/tl, ny=tx/tl;
+      const hw=(w/2)*(1-t)*(1-t*0.15);
+      L.push([px+nx*hw,py+ny*hw]); R.push([px-nx*hw,py-ny*hw]); }
+    let d=`M ${F(L[0][0])} ${F(L[0][1])}`; for(let i=1;i<=N;i++) d+=` L ${F(L[i][0])} ${F(L[i][1])}`;
+    for(let i=N;i>=0;i--) d+=` L ${F(R[i][0])} ${F(R[i][1])}`; d+=' Z';
+    return `<path d="${d}" fill="${cBot}"/><path d="M ${F(x0)} 0 Q ${F(cx)} ${F(cy)} ${F(tipx)} ${F(tipy)}" stroke="${cTop}" stroke-width="${F(Math.max(0.5,w*0.32))}" fill="none" opacity="0.6" stroke-linecap="round"/>`; }
+  grassHead(kind,size,open,cTop,cBot,headCol){ const F=n=>(+n).toFixed(1); const Lh=size*(0.45+0.55*open); let s='';
+    if(kind==='grain'){ s+=`<line x1="0" y1="2" x2="0" y2="${F(-Lh)}" stroke="${cBot}" stroke-width="1.6"/>`;
+      const rows=Math.max(4,Math.round(Lh/6.5));
+      for(let r=0;r<rows;r++){ const t=rows>1?r/(rows-1):0; const y=-6-t*(Lh-6); const gw=3.1*(1-0.26*t);
+        s+=`<g transform="translate(0 ${F(y)})"><ellipse cx="${F(-gw)}" cy="0" rx="2.3" ry="3.4" fill="${cBot}" transform="rotate(-20 ${F(-gw)} 0)"/><ellipse cx="${F(gw)}" cy="0" rx="2.3" ry="3.4" fill="${cTop}" transform="rotate(20 ${F(gw)} 0)"/>`;
+        if(open>0.35){ const aw=13*open; s+=`<line x1="${F(-gw)}" y1="-1" x2="${F(-gw-aw*0.26)}" y2="${F(-aw)}" stroke="${headCol}" stroke-width="0.7" opacity="0.85"/><line x1="${F(gw)}" y1="-1" x2="${F(gw+aw*0.26)}" y2="${F(-aw)}" stroke="${headCol}" stroke-width="0.7" opacity="0.85"/>`; }
+        s+=`</g>`; }
+      if(open>0.4){ const aw=16*open; s+=`<line x1="0" y1="${F(-Lh)}" x2="-2" y2="${F(-Lh-aw*0.85)}" stroke="${headCol}" stroke-width="0.7" opacity="0.85"/><line x1="0" y1="${F(-Lh)}" x2="0" y2="${F(-Lh-aw)}" stroke="${headCol}" stroke-width="0.7" opacity="0.85"/><line x1="0" y1="${F(-Lh)}" x2="2" y2="${F(-Lh-aw*0.85)}" stroke="${headCol}" stroke-width="0.7" opacity="0.85"/>`; }
+      return s; }
+    if(kind==='brush'){ const rows=Math.max(8,Math.round(Lh/2.4)); s+=`<line x1="0" y1="2" x2="0" y2="${F(-Lh)}" stroke="${cBot}" stroke-width="1.3"/>`;
+      for(let r=0;r<rows;r++){ const t=rows>1?r/(rows-1):0; const y=-3-t*(Lh-3); const env=Math.sin(t*Math.PI)*0.7+0.4; const sp2=Lh*0.15*env*open;
+        s+=`<line x1="0" y1="${F(y)}" x2="${F(-sp2)}" y2="${F(y-sp2*0.5)}" stroke="${cTop}" stroke-width="0.85" opacity="0.82"/><line x1="0" y1="${F(y)}" x2="${F(sp2)}" y2="${F(y-sp2*0.5)}" stroke="${cTop}" stroke-width="0.85" opacity="0.82"/>`; }
+      return s; }
+    if(kind==='plume'||kind==='feather'){ const Wd=Lh*(kind==='feather'?0.17:0.4); s+=`<line x1="0" y1="2" x2="0" y2="${F(-Lh*0.5)}" stroke="${cBot}" stroke-width="1.3"/>`;
+      s+=`<path d="M 0 ${F(-Lh*0.12)} Q ${F(Wd*0.5)} ${F(-Lh*0.6)} 0 ${F(-Lh)} Q ${F(-Wd*0.5)} ${F(-Lh*0.6)} 0 ${F(-Lh*0.12)} Z" fill="${headCol}" opacity="0.16"/>`;
+      const nb=Math.max(10,Math.round((kind==='feather'?18:32)*open));
+      for(let i=0;i<nb;i++){ const t=nb>1?i/(nb-1):0; const sy=-Lh*0.1-t*Lh*0.9; const env=Math.pow(Math.sin(Math.min(1,t*1.05)*Math.PI),0.7); const spread=Wd*env*(0.7+0.5*((i*7)%5)/5); const dir=i%2?1:-1;
+        s+=`<path d="M 0 ${F(sy)} Q ${F(dir*spread*0.5)} ${F(sy-3)} ${F(dir*spread)} ${F(sy-9)}" stroke="${headCol}" stroke-width="0.75" fill="none" opacity="0.72" stroke-linecap="round"/>`; }
+      return s; }
+    const nb=Math.max(3,Math.round(6*open)); s+=`<line x1="0" y1="2" x2="0" y2="${F(-Lh)}" stroke="${cBot}" stroke-width="1.2"/>`;
+    for(let i=0;i<nb;i++){ const t=nb>1?i/(nb-1):0.5; const y=-Lh*0.22-t*Lh*0.74; const dir=i%2?1:-1; const bl=Lh*0.24*(0.6+0.5*(1-t))*open;
+      s+=`<path d="M 0 ${F(y)} q ${F(dir*bl*0.7)} ${F(-bl*0.3)} ${F(dir*bl)} ${F(-bl*0.8)}" stroke="${cTop}" stroke-width="0.8" fill="none" opacity="0.72"/><ellipse cx="${F(dir*bl)}" cy="${F(y-bl*0.8)}" rx="1.3" ry="2.2" fill="${headCol}" opacity="0.8" transform="rotate(${F(dir*20)} ${F(dir*bl)} ${F(y-bl*0.8)})"/>`; }
+    return s; }
+  grassAbove(sp,g,S){ S=S||this.SEASONS.Summer; const G=this.GRASS[sp.kind]||this.GRASS.meadow;
+    const rnd=this.rng(this.hashId(sp.id+'|grassV1')); const P=this.grassPalette(G,S); let s='';
+    const seedOp=1-this.sm(0.12,0.22,g);
+    if(seedOp>0.02) s+=`<g opacity="${seedOp.toFixed(2)}" transform="translate(0 7)">${this.seed(this.sm(0.02,0.12,g))}</g>`;
+    const grow=this.sm(0.11,0.92,g); if(grow<=0.01) return s;
+    const n=Math.max(2,Math.round(this.lp(2,G.blades,this.sm(0.16,0.72,g))));
+    const items=[];
+    for(let i=0;i<n;i++){ const t=n>1?i/(n-1):0.5;
+      const lean=this.lp(-G.spread,G.spread,t)*(0.82+0.34*rnd());
+      const x0=(t-0.5)*G.w*3.2+(rnd()*2-1)*2.2;
+      const bl=G.len*grow*(0.62+0.5*rnd())*(1-0.24*Math.abs(t-0.5));
+      const w=G.w*(0.8+0.45*rnd());
+      const arch=G.arch*(0.7+0.55*rnd())*(lean>=0?1:-1);
+      items.push({x0,lean,bl,w,arch,back:rnd()<0.42}); }
+    items.sort((a,b)=>(a.back===b.back)?0:(a.back?-1:1));
+    items.forEach(b=>{ const top=b.back?this.mix(P.top,P.bot,0.55):P.top; const bot=b.back?this.mix(P.bot,'#39512A',0.28):P.bot;
+      s+=this.grassBlade(b.x0,b.lean,b.bl,b.w,b.arch,top,bot); });
+    if(G.head!=='none'){ const em=this.sm(0.58,0.98,g);
+      if(em>0.02){ const nc=G.headN; let hc=G.headCol; if(S.key==='Winter') hc=this.mix(hc,'#CBB98A',0.5); else if(S.key==='Autumn') hc=this.mix(hc,'#D6AE58',0.4);
+        for(let k=0;k<nc;k++){ const t=nc>1?k/(nc-1):0.5; const lean=this.lp(-G.spread*0.45,G.spread*0.45,t)*(0.7+0.5*rnd());
+          const clen=G.len*G.culm*grow*(0.88+0.16*rnd()); const rad=lean*Math.PI/180, dx=Math.sin(rad), dy=-Math.cos(rad);
+          const carch=(G.head==='brush')?0.55:0.12; const sgn=lean>=0?1:-1;
+          const tipx=dx*clen*(1-0.1*carch), tipy=dy*clen*(1-0.28*carch); const cx=dx*clen*0.5+sgn*carch*clen*0.32, cy=dy*clen*0.5;
+          const tx=2*(tipx-cx), ty=2*(tipy-cy); const rot=Math.atan2(tx,-ty)*180/Math.PI;
+          s+=`<path d="M 0 0 Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${tipx.toFixed(1)} ${tipy.toFixed(1)}" stroke="${P.bot}" stroke-width="${Math.max(1,G.w*0.5).toFixed(1)}" fill="none" stroke-linecap="round"/>`;
+          s+=`<g transform="translate(${tipx.toFixed(1)} ${tipy.toFixed(1)}) rotate(${rot.toFixed(1)})">${this.grassHead(G.head,G.headLen,em,hc,this.mix(hc,P.bot,0.2),hc)}</g>`; } } }
+    return s; }
+
+  // ---------- stones ----------
+  blobPath(w,h,cy,rndFn,jag){ const F=n=>(+n).toFixed(1); const N=12, pts=[];
+    for(let i=0;i<N;i++){ const a=i/N*6.2832; const rr=1+(rndFn()*2-1)*jag; pts.push([Math.cos(a)*w/2*rr, Math.sin(a)*h/2*rr+cy]); }
+    let d=`M ${F((pts[0][0]+pts[N-1][0])/2)} ${F((pts[0][1]+pts[N-1][1])/2)}`;
+    for(let i=0;i<N;i++){ const p=pts[i], q=pts[(i+1)%N]; d+=` Q ${F(p[0])} ${F(p[1])} ${F((p[0]+q[0])/2)} ${F((p[1]+q[1])/2)}`; }
+    return d+' Z'; }
+  oneStone(sp,scMul,seed,S){ const T=this.STONE[sp.kind]||this.STONE.flint; const F=n=>(+n).toFixed(1);
+    const sd=seed; const w=T.w*scMul, h=T.h*scMul, cy=-h*0.44; const dark=T.body[1], light=T.body[0]; let s='';
+    if(T.kind==='crystal'){
+      const rnd=this.rng(sd); const base=cy+h*0.42; const pts=T.points;
+      s+=`<path d="${this.blobPath(w*1.05,h*0.32,base-h*0.02,this.rng(sd),0.24)}" fill="${dark}"/>`;
+      for(let i=0;i<pts;i++){ const t=pts>1?i/(pts-1):0.5; const bx=this.lp(-w*0.36,w*0.36,t)+(rnd()*2-1)*3;
+        const ph=h*(0.6+0.5*rnd())*(1-0.28*Math.abs(t-0.5)*2); const pw=w*(0.1+0.045*rnd()); const shy=base-ph+pw*1.6;
+        s+=`<path d="M ${F(bx-pw)} ${F(base)} L ${F(bx-pw)} ${F(shy)} L ${F(bx)} ${F(base-ph)} L ${F(bx+pw)} ${F(shy)} L ${F(bx+pw)} ${F(base)} Z" fill="${light}" stroke="${dark}" stroke-width="0.7" stroke-linejoin="round"/>`;
+        s+=`<path d="M ${F(bx)} ${F(base-ph)} L ${F(bx+pw)} ${F(shy)} L ${F(bx+pw)} ${F(base)} L ${F(bx)} ${F(base)} Z" fill="${dark}" opacity="0.26"/>`;
+        s+=`<path d="M ${F(bx-pw)} ${F(shy)} L ${F(bx)} ${F(base-ph)} L ${F(bx-pw*0.15)} ${F(shy-1)} Z" fill="${T.tip}" opacity="0.5"/>`; }
+    } else if(T.kind==='geode'){
+      s+=`<path d="${this.blobPath(w,h,cy,this.rng(sd),0.16)}" fill="${dark}"/>`;
+      s+=`<path d="${this.blobPath(w*0.9,h*0.86,cy,this.rng(sd),0.16)}" fill="${light}" opacity="0.5"/>`;
+      const cav=this.blobPath(w*0.58,h*0.6,cy,this.rng(sd+7),0.14); s+=`<path d="${cav}" fill="#241E2E"/>`;
+      const rnd=this.rng(sd+3); const nc=22;
+      for(let i=0;i<nc;i++){ const a=rnd()*6.2832, rr=Math.sqrt(rnd()); const cx=Math.cos(a)*w*0.24*rr, cyy=cy+Math.sin(a)*h*0.24*rr; const cl=T.crystal[Math.floor(rnd()*T.crystal.length)]; const sz=(1.8+rnd()*2.4)*Math.max(0.55,scMul);
+        s+=`<path d="M ${F(cx-sz*0.5)} ${F(cyy)} L ${F(cx)} ${F(cyy-sz)} L ${F(cx+sz*0.5)} ${F(cyy)} Z" fill="${cl}" opacity="0.9"/>`; }
+      s+=`<path d="${cav}" fill="none" stroke="${T.crystal[2]}" stroke-width="1" opacity="0.35"/>`;
+    } else if(T.kind==='layered'){
+      const rnd=this.rng(sd); const layers=5; const lh=h*0.9/layers; const baseB=cy+h*0.45;
+      for(let i=0;i<layers;i++){ const ly=baseB-i*lh; const lw=w*0.5*(1-0.05*i); const off=(rnd()*2-1)*3;
+        s+=`<path d="M ${F(-lw+off)} ${F(ly)} Q ${F(off)} ${F(ly-2)} ${F(lw+off)} ${F(ly)} L ${F(lw+off-1.5)} ${F(ly-lh*0.9)} Q ${F(off)} ${F(ly-lh*0.9-2)} ${F(-lw+off+1.5)} ${F(ly-lh*0.9)} Z" fill="${i%2?dark:light}" stroke="${T.edge}" stroke-width="0.6" stroke-linejoin="round"/>`; }
+    } else {
+      s+=`<path d="${this.blobPath(w,h,cy,this.rng(sd),T.kind==='boulder'?0.12:0.2)}" fill="${dark}"/>`;
+      s+=`<path d="${this.blobPath(w*0.8,h*0.68,cy-h*0.13,this.rng(sd),T.kind==='boulder'?0.12:0.2)}" fill="${light}" opacity="0.6"/>`;
+      if(T.kind==='banded'){ for(let i=0;i<5;i++){ const by=cy-h*0.3+i*(h*0.15); s+=`<path d="M ${F(-w*0.44)} ${F(by)} Q 0 ${F(by-2.5)} ${F(w*0.44)} ${F(by)}" stroke="${i%2?T.band[0]:T.band[1]}" stroke-width="${F(h*0.055)}" fill="none" opacity="0.5"/>`; } }
+      if(T.speck){ const rnd=this.rng(sd+5); const ns=Math.round(44*Math.max(0.45,scMul)); for(let i=0;i<ns;i++){ const a=rnd()*6.2832, rr=Math.sqrt(rnd()); const px=Math.cos(a)*w*0.4*rr, py=cy+Math.sin(a)*h*0.38*rr; s+=`<circle cx="${F(px)}" cy="${F(py)}" r="${(0.7+rnd()*1.1).toFixed(1)}" fill="${T.speck[Math.floor(rnd()*T.speck.length)]}" opacity="0.72"/>`; } }
+      if(T.cortex){ const rnd=this.rng(sd+9); for(let i=0;i<5;i++){ const a=rnd()*6.2832; const px=Math.cos(a)*w*0.36, py=cy+Math.sin(a)*h*0.32; s+=`<ellipse cx="${F(px)}" cy="${F(py)}" rx="${(w*0.12).toFixed(1)}" ry="${(h*0.1).toFixed(1)}" fill="${T.cortex}" opacity="0.5"/>`; } }
+    }
+    if(S.snow && scMul>0.34){ const topY=cy-h*0.42; s+=`<path d="M ${F(-w*0.42)} ${F(topY+7)} Q 0 ${F(topY-3)} ${F(w*0.42)} ${F(topY+7)} Q 0 ${F(topY+11)} ${F(-w*0.42)} ${F(topY+7)} Z" fill="#F5F9FC" opacity="0.9"/>`; }
+    return s; }
+  stoneAbove(sp,g,S){ S=S||this.SEASONS.Summer; const F=n=>(+n).toFixed(1); const T=this.STONE[sp.kind]||this.STONE.flint;
+    const base=this.hashId(sp.id+'|scatter'); const rnd=this.rng(base);
+    const layout=[{x:0,sc:1.0},{x:-80,sc:0.5},{x:76,sc:0.62},{x:-44,sc:0.32},{x:50,sc:0.28},{x:118,sc:0.22},{x:-118,sc:0.26}];
+    const arr=layout.map((it,i)=>({ x:it.x+(rnd()*2-1)*7, sc:it.sc*(0.86+0.28*rnd()), by:(rnd()*2-1)*3, seed:base+i*97+1 }));
+    arr.sort((a,b)=>b.sc-a.sc);
+    let s='';
+    arr.forEach(it=>{ const sw=T.w*it.sc*0.5; s+=`<ellipse cx="${F(it.x)}" cy="${F(3+it.by)}" rx="${F(sw)}" ry="${F(sw*0.16)}" fill="rgba(52,36,16,0.16)"/>`; });
+    arr.forEach(it=>{ s+=`<g transform="translate(${F(it.x)} ${F(it.by)})">`+this.oneStone(sp,it.sc,it.seed,S)+`</g>`; });
+    return s; }
+
+
+  // ---------- animation ----------
+
+
+}
+return new GA_CLS(); })();
 const GA_SP=Object.fromEntries(GA.SPECIES.map(s=>[s.id,s]));
 const GA_TREE_KIND={body:'birch',home:'oak',connection:'cherry',meaning:'maple',craft:'apple',future:'willow',calm:'pine'};
-const GA_DEFS_NIGHT=GA.DEFS.replace(/id="ga([A-Za-z]+)"/g,'id="gaN$1"').replace(/#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\b/g,m=>nightTint(m.length===4?'#'+[...m.slice(1)].map(c=>c+c).join(''):m,'night'));
+/* ── seasons wired to Meadowlark's own season() switcher ──
+   The Atlas has a full 4-season parameter set. We honour it for CLIMATE (leaf/stem/canopy colour,
+   snow, blossom, fruit, fallen leaves) but override the soul-contract-sensitive bits:
+   forceBloom → flowers never wilt/die back, bare:false → trees keep their crown (frosted, not stripped).
+   Winter is a rest season wearing snow, never a regression. Care only ever grows. */
+const _GA_SEASON_KEY={spring:'Spring',summer:'Summer',autumn:'Autumn',winter:'Winter'};
+function mdwSeason(name){ const S=GA.SEASONS[_GA_SEASON_KEY[name]||'Summer'];
+  return Object.assign({}, S, { forceBloom:true, bare:false }); }
+let _gaSeason=GA.SEASONS.Summer;   // set each render from season(); flowers/grass/stones read it (like _phase)
+// night-tint a defs string: rename ga* ids → gaN* and darken every colour (matches gaTint's url(#ga→#gaN swap)
+function gaDefsNight(defsStr){ return defsStr.replace(/id="ga([A-Za-z]+)"/g,'id="gaN$1"').replace(/#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\b/g,m=>nightTint(m.length===4?'#'+[...m.slice(1)].map(c=>c+c).join(''):m,'night')); }
 function gaTint(svg){ return (_phase==='dusk'||_phase==='night') ? tintSvgNight(svg).replace(/url\(#ga/g,'url(#gaN') : svg; }
 
 const SPECIES2={
@@ -2620,13 +3118,53 @@ function wildflower(species,palKey,k,H,gr){
   // THE GROWTH ATLAS model, exactly as designed: seed → sprout → stem+leaves → bud → bloom, driven by g.
   const sp=GA_SP[species]||GA_SP.poppy; H=H||64; gr=(gr==null?1:clamp(gr,0,1));
   const s=1.45*(H*k)/((sp.maxH||150)+30);   // the atlas plants are slender — keep the meadow's visual weight
-  return `<g transform="scale(${s.toFixed(3)})">${gaTint(GA.flowerAbove(sp,gr))}</g>`;
+  return `<g transform="scale(${s.toFixed(3)})">${gaTint(GA.flowerAbove(sp,gr,_gaSeason))}</g>`;
 }
 
 // scatter wildflowers at absolute ground points: specs = [dx, absY, species, palKey, scale, H?]; gr = area growth 0…1
 function scatterFlowers(cx,specs,gr){ let g='';
   // far→near, so closer blooms overlap farther ones correctly
   [...specs].sort((a,b)=>a[1]-b[1]).forEach((f,i)=>{ g+=`<g class="sway" style="animation-duration:${(7.2+(i%4)*0.5)}s;animation-delay:${(-i*0.7).toFixed(1)}s"><g transform="translate(${cx+f[0]} ${f[1]})">${wildflower(f[2],f[3],f[4],f[5],gr)}</g></g>`; });
+  return g; }
+
+/* ════ STONES — the Atlas's six rock kinds, scattered as quiet landscape rhythm ════
+   Placed on the static canvas, so they are purely decorative and never intercept a tap.
+   Season-aware (snow caps in winter via _gaSeason.snow) and night-tinted like every other flora.
+   Rule: stones add depth at the edges and along paths, never covering a plant or a growth-tree. */
+const STONE_KINDS=['flint','granite','quartz','amethyst','slate','sandstone'];
+// a single Atlas stone, grounded with a soft contact shadow. base sits at (x,y).
+function gaStone(x,y,sc,kind,seed){ const sp=GA_SP[kind]||GA_SP.flint; const T=GA.STONE[sp.kind];
+  const sw=(T.w*sc*0.5), shy=y+2;
+  // under snow: a soft pale scuff keeps the stone grounded on the white blanket (a brown shadow would look wrong on snow)
+  const shadow=_gaSeason.snow
+    ? `<ellipse cx="${x.toFixed(0)}" cy="${shy.toFixed(0)}" rx="${(sw*1.05).toFixed(1)}" ry="${(sw*0.18).toFixed(1)}" fill="#DCE7EE" opacity="0.5"/>`
+    : `<ellipse cx="${x.toFixed(0)}" cy="${shy.toFixed(0)}" rx="${sw.toFixed(1)}" ry="${(sw*0.16).toFixed(1)}" fill="rgba(52,36,16,0.15)"/>`;
+  // oneStone only snow-caps stones with scMul>0.34 — add the identical cap for the little ones so none sit bare on snow
+  let cap='';
+  if(_gaSeason.snow && sc<=0.34){ const w=T.w*sc, h=T.h*sc, cy=-h*0.44, topY=cy-h*0.42;
+    cap=gaTint(`<path d="M ${(-w*0.42).toFixed(1)} ${(topY+7).toFixed(1)} Q 0 ${(topY-3).toFixed(1)} ${(w*0.42).toFixed(1)} ${(topY+7).toFixed(1)} Q 0 ${(topY+11).toFixed(1)} ${(-w*0.42).toFixed(1)} ${(topY+7).toFixed(1)} Z" fill="#F5F9FC" opacity="0.9"/>`); }
+  return shadow+`<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)})">${gaTint(GA.oneStone(sp,sc,seed,_gaSeason))}${cap}</g>`; }
+/* my OWN small single pebbles — the Atlas ships only the six big rock TYPES, so these fill in the
+   fine, palm-sized scatter between them: a warm two-tone blob, top-lit, lightly snow-dusted in winter. */
+const PEBBLE_TONE=[['#A49C8C','#7E7768'],['#B6AA92','#8C8272'],['#9C9384','#736A5A'],['#B0A188','#8A7B62'],['#8E8E92','#6C6C72']];
+function myPebble(x,y,sc,ti,seed){ sc=sc||1; const tone=PEBBLE_TONE[(ti|0)%PEBBLE_TONE.length]||PEBBLE_TONE[0];
+  const r=GA.rng((seed>>>0)||7); const w=15*sc, h=11*sc, cy=-h*0.5;
+  // gentle irregular blob (deterministic)
+  const N=9, pts=[]; for(let i=0;i<N;i++){ const a=i/N*6.2832; const rr=1+(r()*2-1)*0.16; pts.push([Math.cos(a)*w/2*rr,(Math.sin(a)*h/2*rr)+cy]); }
+  let d=`M ${((pts[0][0]+pts[N-1][0])/2).toFixed(1)} ${((pts[0][1]+pts[N-1][1])/2).toFixed(1)}`;
+  for(let i=0;i<N;i++){ const p=pts[i],q=pts[(i+1)%N]; d+=` Q ${p[0].toFixed(1)} ${p[1].toFixed(1)} ${((p[0]+q[0])/2).toFixed(1)} ${((p[1]+q[1])/2).toFixed(1)}`; }
+  let s=`<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)})">`;
+  if(!_gaSeason.snow) s+=`<ellipse cx="0" cy="2" rx="${(w*0.5).toFixed(1)}" ry="${(w*0.1).toFixed(1)}" fill="rgba(52,36,16,0.14)"/>`;
+  s+=`<path d="${d} Z" fill="${tone[1]}"/>`;
+  s+=`<path d="M ${(-w*0.32).toFixed(1)} ${(cy-h*0.06).toFixed(1)} Q ${(-w*0.02).toFixed(1)} ${(cy-h*0.5).toFixed(1)} ${(w*0.34).toFixed(1)} ${(cy-h*0.1).toFixed(1)} Q ${(w*0.05).toFixed(1)} ${(cy+h*0.1).toFixed(1)} ${(-w*0.32).toFixed(1)} ${(cy-h*0.06).toFixed(1)} Z" fill="${tone[0]}" opacity="0.85"/>`;
+  s+=`<circle cx="${(-w*0.1).toFixed(1)}" cy="${(cy-h*0.14).toFixed(1)}" r="${(w*0.09).toFixed(1)}" fill="#FFFFFF" opacity="0.22"/>`;
+  if(_gaSeason.snow) s+=`<path d="M ${(-w*0.42).toFixed(1)} ${(cy-h*0.18).toFixed(1)} Q 0 ${(cy-h*0.6).toFixed(1)} ${(w*0.42).toFixed(1)} ${(cy-h*0.18).toFixed(1)} Q 0 ${(cy+h*0.02).toFixed(1)} ${(-w*0.42).toFixed(1)} ${(cy-h*0.18).toFixed(1)} Z" fill="#F5F9FC" opacity="0.9"/>`;
+  return gaTint(s+`</g>`); }
+// a natural little arrangement of mixed stones around (cx,by); `spec`=[[dx,dy,sc,kindOrNull(→pebble toneIdx)]]
+function stoneCluster(cx,by,seed,spec){ const arr=spec.map((it,i)=>({dx:it[0],dy:it[1],sc:it[2],kind:it[3],seed:(seed*131+i*977+1)>>>0}));
+  arr.sort((a,b)=>(a.sc-b.sc)); let g='';   // small/far first, large/near last
+  arr.forEach(it=>{ g+= (typeof it.kind==='string') ? gaStone(cx+it.dx,by+it.dy,it.sc,it.kind,it.seed)
+                                                     : myPebble(cx+it.dx,by+it.dy,it.sc,(it.kind||0),it.seed); });
   return g; }
 
 /* ── distinct habitat environments (drawn around each growth-tree) ── */
@@ -2637,6 +3175,9 @@ function envMeadow(cx,by,gr){ // Body — a full, healing wildflower meadow (tal
     [-172,by+18,'poppy',null,.62,72],[-140,by+24,'cornflower',null,.5,60],[-108,by+18,'daisy','cream',.56,76],[-76,by+26,'cosmos',null,.54,58],[-46,by+20,'poppy',null,.6,70],
     [52,by+22,'daisy','gold',.58,72],[86,by+18,'cosmos',null,.56,78],[120,by+26,'poppy',null,.56,60],[152,by+20,'cornflower',null,.5,68],[184,by+26,'buttercup',null,.56,58],
     [-150,by+40,'daisy','cream',.42,40],[-92,by+42,'buttercup',null,.42,40],[-40,by+44,'poppy',null,.42,40],[40,by+44,'daisy','gold',.4,38],[100,by+42,'cosmos',null,.42,40],[150,by+44,'poppy',null,.4,38]],gr);
+  // a couple of lichen-grey stones resting at the meadow's edges (clear of the flower band and the tree)
+  g+=stoneCluster(cx-210,by+28,30001,[[0,0,0.42,'granite'],[15,5,0.3,2],[-12,3,0.28,0]]);
+  g+=gaStone(cx+208,by+34,0.44,'flint',30002)+myPebble(cx+188,by+42,0.7,0,30003);
   return g;
 }
 function envHome(cx,by,phase,gr){ // Home — a tended homestead garden
@@ -2681,7 +3222,13 @@ function envKnoll(cx,by,phase,gr){ // Meaning — a sunlit knoll with a stone ca
   // after dark the knoll must sink into the night ground, not sit on it like a lit stage (nightStep = extra step at night)
   g+=`<ellipse cx="${cx}" cy="${by+48}" rx="190" ry="64" fill="${dusky?nightStep(nightStep(nightTint('#86BD66',phase))):'url(#glMound)'}"/>`;
   g+=`<ellipse cx="${cx-30}" cy="${by+26}" rx="150" ry="40" fill="${nightStep(nightStep(nightTint('#9ECB79',phase)))}" opacity="${phase==='night'?.35:.5}"/>`;
-  g+=`<g transform="translate(${cx+128} ${by+24})"><ellipse cx="0" cy="17" rx="21" ry="6" fill="rgba(60,40,20,.16)"/><ellipse cx="0" cy="8" rx="15" ry="9" fill="${nightTint('#B7AFA0',phase)}"/><ellipse cx="0" cy="-2" rx="11" ry="7" fill="${nightTint('#C9C0AF',phase)}"/><ellipse cx="0" cy="-11" rx="7" ry="5" fill="${nightTint('#D9D2C3',phase)}"/></g>`;
+  // a real cairn of Atlas stones, stacked — granite base, slate mid, a capping pebble (snow-topped in winter)
+  { const kx=cx+128, ky=by+26;
+    g+=gaStone(kx,ky,0.5,'granite',20001);
+    g+=gaStone(kx-2,ky-18,0.42,'slate',20002);
+    g+=myPebble(kx+1,ky-30,1.1,3,20003); }
+  // one companion boulder resting a little apart, so the cairn reads as tended, not dropped
+  g+=gaStone(cx+168,by+30,0.4,'flint',20004);
   g+=`<g stroke="${nightTint('#C9A24E',phase)}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".82">`;
   [-156,-96,96,160].forEach((dx,i)=>{ const x=cx+dx,y=by+30; g+=`<g class="sway" style="animation-duration:${8+i*0.3}s;animation-delay:${-i}s"><path d="M${x} ${y} C ${x-3} ${y-26} ${x-5} ${y-36} ${x-7} ${y-48} M${x} ${y} C ${x} ${y-28} ${x+1} ${y-38} ${x+2} ${y-50} M${x} ${y} C ${x+3} ${y-26} ${x+6} ${y-36} ${x+9} ${y-48}"/></g>`; });
   g+=`</g>`;
@@ -2730,6 +3277,9 @@ function envStream(cx,by,dusky,gr){ // Future — a river springing from the woo
   const fc=nightStep(dusky?'#374B49':'#83AC6B'), fl=nightStep(dusky?'#46585B':'#A6C68E');
   g+=`<g fill="${fc}"><ellipse cx="${cx+36}" cy="${by-120}" rx="26" ry="20"/><ellipse cx="${cx+74}" cy="${by-122}" rx="24" ry="18"/><ellipse cx="${cx+56}" cy="${by-134}" rx="22" ry="18"/></g>`;
   g+=`<g fill="${fl}" opacity=".7"><ellipse cx="${cx+46}" cy="${by-128}" rx="13" ry="10"/><ellipse cx="${cx+68}" cy="${by-118}" rx="11" ry="8"/></g>`;
+  // river-worn stones along the banks — never in the channel, so the water still runs clear
+  g+=stoneCluster(cx-104,by+44,40001,[[0,0,0.42,'slate'],[16,5,0.3,4],[-13,3,0.26,0]]);
+  g+=myPebble(cx-58,by+16,0.7,4,40002)+gaStone(cx+128,by+50,0.4,'flint',40003);
   return g;
 }
 function envPool(cx,by,dusky,gr){ // Calm — a broad still reflecting pool, mist, lavender
@@ -2751,6 +3301,9 @@ function envPool(cx,by,dusky,gr){ // Calm — a broad still reflecting pool, mis
   [[-158,50],[168,44],[-128,60],[132,56]].forEach((p,i)=>{ const x=cx+p[0],y=by+p[1]; g+=`<g class="sway" style="animation-duration:${8.4+i*0.2}s;animation-delay:${-i}s"><g transform="translate(${x} ${y}) scale(${lavS.toFixed(3)})">${wildflower('lavender',null,(0.58+(i%2)*0.08),54,gr)}</g></g>`; });
   // violet wildflowers + bluebells on the banks (clear of the water)
   g+=scatterFlowers(cx,[[-178,by+26,'cosmos','violet',.56],[-120,by+40,'bluebell',null,.5,48],[122,by+40,'cosmos','violet',.5],[176,by+28,'bluebell',null,.52,50]],gr);
+  // smooth wet-edge stones resting on the near shore (clear of the open water)
+  g+=stoneCluster(cx-150,by+54,50001,[[0,0,0.44,'slate'],[16,4,0.32,2]]);
+  g+=gaStone(cx+150,by+56,0.46,'granite',50002)+myPebble(cx+128,by+62,0.7,0,50003)+myPebble(cx-96,by+60,0.6,4,50004);
   // the whole pool sits in the foreground, BELOW the tree — so the trunk stands on the grassy bank, not in the water
   return `<g transform="translate(0 32)">${g}</g>`;
 }
@@ -3142,6 +3695,7 @@ function renderMeadow(force,opt){
   const staticOnly=!!opt.staticOnly;
   const phase=dayPhase(), seasonName=season();
   _phase=phase;   // flora helpers (flowers/leaves/grass) read this to darken at dusk/night
+  _gaSeason=mdwSeason(seasonName);   // Atlas season params (climate colour + snow) for flowers/grass/stones/trees
   const sig = sceneSig();
   if(!force && sig===lastSceneSig) return;
   lastSceneSig=sig;
@@ -3168,7 +3722,7 @@ function renderMeadow(force,opt){
     ${glowDef}
     <radialGradient id="water" cx="40%" cy="28%" r="78%"><stop offset="0" stop-color="#C4E8DD"/><stop offset=".5" stop-color="#7FC3AC"/><stop offset="1" stop-color="#4F9C85"/></radialGradient>
     <linearGradient id="streamGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FC9B4" stop-opacity="0"/><stop offset=".16" stop-color="#8FC9B4" stop-opacity=".7"/><stop offset=".5" stop-color="#7FC3AC"/><stop offset="1" stop-color="#4F9C85"/></linearGradient>
-    ${GA.DEFS}${GA_DEFS_NIGHT}
+    ${(gaDay=>gaDay+gaDefsNight(gaDay))(GA.defs(_gaSeason))}
     <linearGradient id="pathGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8D7B8" stop-opacity="0"/><stop offset=".42" stop-color="#E8D7B8"/><stop offset="1" stop-color="#D6C098"/></linearGradient>`;
 
   // ══════════ STATIC decoration → rasterised to <canvas> ══════════
@@ -3200,6 +3754,35 @@ function renderMeadow(force,opt){
   st+=`<path d="${wavy(362,22)}" fill="${hills[2]}"/>`;
   st+=`<path d="${wavy(432,18)}" fill="${hills[3]}"/>`;
   st+=drawMidground(W,dusky);
+  // ── SEASON on the ground: a calm winter snow-blanket, or a drift of autumn leaves. A rest season, never loss.
+  if(seasonName==='winter'){
+    st+=`<path d="${wavy(362,22)}" fill="#EAF1F6" opacity="${dusky?.18:.34}"/>`;   // snow settling on the far ridge
+    st+=`<path d="${wavy(424,16)}" fill="#EAF2F7" opacity="${dusky?.5:.9}"/>`;      // meadow floor under snow
+    st+=`<path d="${wavy(430,13)}" fill="#F7FBFD" opacity="${dusky?.42:.82}"/>`;     // brighter fresh layer on top
+  }
+  // ── STONES (back layer): a quiet rhythm of Atlas rocks + hand-made pebbles across genuinely empty ground.
+  //    Drawn BEFORE the habitat plants so a plant is never hidden; kept clear of trees, water and paths.
+  { const cores=HAB.map(id=>HABX[id]+(HAB_TX[id]||0));
+    const stoneClear=x=> cores.some(c=>Math.abs(x-c)<118)               // never on a growth-tree
+      || Math.abs(x-(HABX.future+34))<128 || Math.abs(x-HABX.calm)<150  // never in the stream / pool
+      || Math.abs(x-(HABX.home+124))<74 || Math.abs(x-BEARX)<BEARAMP+24; // never on the trail / bear clearing
+    let sx=150, si=0;
+    while(sx<W-90){
+      const step=176+((si*53)%150); sx+=step; si++;
+      if(stoneClear(sx)) continue;
+      const yb=452+((si*37)%40);                       // mid-band, tucked behind the env plants
+      const r=(v)=>{ const t=Math.sin((sx*0.0731+si*12.9+v*7.1))*43758.5; return t-Math.floor(t); };
+      const kindPick=r(1); const sc=0.24+r(2)*0.26;
+      if(kindPick<0.34){ // a small cluster: one Atlas stone + a pebble or two
+        const kind=STONE_KINDS[Math.floor(r(3)*STONE_KINDS.length)];
+        st+=stoneCluster(sx,yb,(si*769+7)>>>0,[[0,0,sc,kind],[ -10-r(4)*10, 4+r(5)*4, sc*0.5, Math.floor(r(6)*5)],[ 12+r(7)*10, 3+r(8)*3, sc*0.42, Math.floor(r(9)*5)]]);
+      } else if(kindPick<0.62){ // a lone Atlas boulder
+        st+=gaStone(sx,yb,sc*1.05,STONE_KINDS[Math.floor(r(3)*STONE_KINDS.length)],(si*991+13)>>>0);
+      } else { // a couple of scattered pebbles
+        st+=myPebble(sx,yb,0.6+r(2)*0.7,Math.floor(r(3)*5),(si*613+3)>>>0)+myPebble(sx+9+r(4)*9,yb+4,0.4+r(5)*0.4,Math.floor(r(6)*5),(si*337+5)>>>0);
+      }
+    }
+  }
   // per-habitat environments (kept in id'd groups so they read the same as before)
   const gG={}; HAB.forEach(id=>gG[id]=growthOf(id));
   st+=`<g id="env-body">${envMeadow(HABX.body,HABY.body,gG.body)}</g>`;
@@ -3225,6 +3808,9 @@ function renderMeadow(force,opt){
       st+=`<g transform="translate(${gx.toFixed(0)} ${gy}) scale(${gsc.toFixed(2)})">${grassClump(0,0,GC[gi%4],true,gi*7+3)}</g>`;
     }
   }
+  // (autumn fallen leaves + spring petals + winter drift are owned by drawSeasonOverlay() on the live layer;
+  //  the only ground-season treatment we add on the static canvas is the winter snow blanket up above, which
+  //  must sit UNDER the plants/stones — something an on-top overlay cannot do.)
   // the six growth-trees: static host (accent tint + contact shadow + tree art). Their transient
   // rising glow sparkles ride on the LIVE overlay (lvGlow) so they animate + fade without re-rastering.
   let lvGlow='';
