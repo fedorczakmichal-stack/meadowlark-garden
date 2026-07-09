@@ -855,9 +855,11 @@
       <div id="habDots" aria-label="Wander to a habitat"></div>
       <div class="scene-hint">← swipe to wander · tap a place to tend →</div>
       <details class="test-bar" id="testBar" open>
-        <summary>Preview · season &amp; growth</summary>
+        <summary>Preview · season, time &amp; growth</summary>
         <div class="tb-row"><span class="tb-label">Season</span>
           <div class="seg" data-seg="season"><button data-v="auto">Auto</button><button data-v="spring">Spring</button><button data-v="summer">Summer</button><button data-v="autumn">Autumn</button><button data-v="winter">Winter</button></div></div>
+        <div class="tb-row"><span class="tb-label">Time</span>
+          <div class="seg" data-seg="theme"><button data-v="auto">Auto</button><button data-v="morning">Morning</button><button data-v="day">Day</button><button data-v="evening">Evening</button><button data-v="night">Night</button></div></div>
         <div class="tb-row"><span class="tb-label">Meadow</span>
           <div class="seg" data-seg-demo><button data-v="">Mine</button><button data-v="12">Young</button><button data-v="35">Middle</button><button data-v="70">Full</button></div></div>
       </details>
@@ -936,9 +938,9 @@
               <div><div class="s-label">Half of the world</div><div class="s-desc">So the seasons match your sky.</div></div>
               <div class="seg" data-seg="hemisphere"><button data-v="north">North</button><button data-v="south">South</button></div>
             </div>
-            <div class="set-row">
-              <div><div class="s-label">Scene</div><div class="s-desc">Follow your clock, or settle on one.</div></div>
-              <div class="seg" data-seg="theme"><button data-v="auto">Clock</button><button data-v="day">Day</button><button data-v="evening">Evening</button></div>
+            <div class="set-row stack">
+              <div><div class="s-label">Time of day</div><div class="s-desc">Follow your clock, or settle on a time you like.</div></div>
+              <div class="seg" data-seg="theme"><button data-v="auto">Clock</button><button data-v="morning">Morning</button><button data-v="day">Day</button><button data-v="evening">Evening</button><button data-v="night">Night</button></div>
             </div>
             <div class="set-row stack">
               <div><div class="s-label">Season</div><div class="s-desc">Let the year turn on its own, or keep the one you love.</div></div>
@@ -1889,8 +1891,10 @@ function localYMD(d){ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(
 /* ---- time of day & season ---- */
 function dayPhase(){
   const t = store.settings.theme;
+  if(t==='morning') return 'dawn';
   if(t==='day') return 'day';
   if(t==='evening') return 'dusk';
+  if(t==='night') return 'night';
   const h = new Date().getHours();
   if(h>=5 && h<=8) return 'dawn';
   if(h>=9 && h<=16) return 'day';
@@ -1941,7 +1945,7 @@ function coerce(s){
   out.settings.motion     = st.motion==='calm'?'calm':'full';
   out.settings.textScale  = st.textScale==='large'?'large':'normal';
   out.settings.hemisphere = st.hemisphere==='south'?'south':'north';
-  out.settings.theme      = ['day','evening'].includes(st.theme)?st.theme:'auto';
+  out.settings.theme      = ['morning','day','evening','night'].includes(st.theme)?st.theme:'auto';
   out.settings.season     = ['spring','summer','autumn','winter'].includes(st.season)?st.season:'auto';
   out.settings.craftOcc   = (typeof st.craftOcc==='string'&&(CAREER_PACKS[st.craftOcc]||/^soc:\d{2}-\d{4}$/.test(st.craftOcc)))?st.craftOcc:'general';
   out.settings.craftStage = CRAFT_STAGE_IDS.includes(st.craftStage)?st.craftStage:'curious';
@@ -2013,8 +2017,10 @@ const HILLS={
    a handful of times across that window (sceneSig carries a blend bucket; tick() watches it). */
 function phaseBlend(){
   const th=store.settings.theme;
+  if(th==='morning') return {a:'dawn',b:'dawn',t:0};
   if(th==='day') return {a:'day',b:'day',t:0};
   if(th==='evening') return {a:'dusk',b:'dusk',t:0};
+  if(th==='night') return {a:'night',b:'night',t:0};
   const now=new Date(), m=now.getHours()*60+now.getMinutes();
   const cur = m<300?'night':m<540?'dawn':m<1020?'day':m<1200?'golden':m<1320?'dusk':'night';
   const B=[[300,'dawn'],[540,'day'],[1020,'golden'],[1200,'dusk'],[1320,'night']];
