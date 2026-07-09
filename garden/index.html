@@ -2047,9 +2047,10 @@ function ribbon(pts){
   return d+' Z';
 }
 // a hazed treeline across the back — depth, and a destination the rivers/paths flow into
-function drawForest(W,dusky){
+function drawForest(W,dusky,winter){
   const baseY=312;
-  const hazeC=nightStep(dusky?'#3A4A52':'#C2D6AC'), farC=nightStep(dusky?'#465A5C':'#A6C68E'), nearC=nightStep(dusky?'#374B49':'#83AC6B');
+  const fr=c=>winter?mix(c,'#DCE8EE',dusky?0.32:0.5):c;   // frost the distant woods in winter
+  const hazeC=nightStep(fr(dusky?'#3A4A52':'#C2D6AC')), farC=nightStep(fr(dusky?'#465A5C':'#A6C68E')), nearC=nightStep(fr(dusky?'#374B49':'#83AC6B'));
   let far='', near='';
   for(let x=-20;x<W+40;x+=46){ const h=22+((x*13)%16); far+=`<ellipse cx="${x}" cy="${(baseY-2-h*0.3).toFixed(0)}" rx="29" ry="${h}"/>`; }
   for(let x=12;x<W+40;x+=38){ const h=27+((x*17)%20); near+=`<path d="M${x-25} ${baseY+14} C ${x-25} ${(baseY-h*0.4).toFixed(0)} ${x-11} ${baseY-h} ${x} ${baseY-h} C ${x+11} ${baseY-h} ${x+25} ${(baseY-h*0.4).toFixed(0)} ${x+25} ${baseY+14} Z"/>`; }
@@ -2057,6 +2058,10 @@ function drawForest(W,dusky){
   g+=`<g fill="${farC}" opacity="${dusky?.5:.62}">${far}</g>`;
   g+=`<g fill="${nearC}" opacity="${dusky?.62:.8}">${near}</g>`;
   g+=`<path d="M0 ${baseY+12} C ${(W*0.3).toFixed(0)} ${baseY+4} ${(W*0.7).toFixed(0)} ${baseY+18} ${W} ${baseY+10} L${W} ${baseY+36} L0 ${baseY+36} Z" fill="${nearC}" opacity=".5"/>`;
+  if(winter){ // a soft cap of snow settled along the top of the near treeline
+    let cap=''; for(let x=12;x<W+40;x+=38){ const h=27+((x*17)%20); cap+=`<path d="M${x-16} ${(baseY-h+2).toFixed(0)} q ${16} ${(-8).toFixed(0)} ${32} 0" stroke="#F4F9FC" stroke-width="4" fill="none" stroke-linecap="round" opacity="${dusky?.4:.7}"/>`; }
+    g+=`<g>${cap}</g>`;
+  }
   return g;
 }
 // a DENSE MID-GROUND band of mixed plants between the woods and the meadow — two layered rows for depth,
@@ -2786,7 +2791,9 @@ const GA=(()=>{ class GA_CLS {
     const cf=(h)=>{ let x=col(h); if(cherryPink) x=this.mix(x,'#F1B4D0',0.82); return x; };
     const F=this.CROWN[sp.kind]||this.CROWN.default;
     const rnd=this.rng(this.hashId(sp.id+'|crownV2'));
-    const dk=this.mix(cf(c[0]),'#23421F',0.45);
+    // volume-shade toward the SEASON's own dark (vein), not a fixed green — otherwise the autumn/gold canopy
+    // gets a dark-olive patch that reads as a hole showing the background through the crown
+    const dk=this.mix(cf(c[0]),(S&&S.vein)||'#23421F',0.5);
     // bumpy silhouette: ring of lobe puffs around a per-species ellipse (w,h,cy)
     const N=F.lobes*2, outline=[];
     for(let i=0;i<N;i++){ const a=(i/N)*6.2832-1.5708; const jr=1+(rnd()*2-1)*F.jag;
@@ -3231,13 +3238,13 @@ function stoneAndPebble(cx,by,seed,sc,kind,side){ side=side||1; const T=GA.STONE
    plant roots, in front of them), avoiding every tree, water body and path. No overlapping clusters. ══ */
 function drawFarStones(W,dusky){ let g='';
   const cores=HAB.map(id=>HABX[id]+(HAB_TX[id]||0));
-  for(let i=0;i<8;i++){ const dsx=(i*389+200)%(W-170)+90;
-    if(cores.some(c=>Math.abs(dsx-c)<74)) continue;      // sit in the open inter-habitat gaps, never under a tree
+  for(let i=0;i<16;i++){ const dsx=(i*577+150)%(W-180)+90;
+    if(cores.some(c=>Math.abs(dsx-c)<66)) continue;      // sit in the open inter-habitat gaps, never under a tree
     const r=v=>{ const t=Math.sin(dsx*0.043+i*6.7+v*3.1)*43758.5; return t-Math.floor(t); };
     // grounded on the meadow floor in the MIDDLE distance — env plants (drawn AFTER) sit in front, so these read
     // as small distant rocks resting ON the ground, not floating on a hillside. Lighter rounded kinds only.
-    const dy=432+((i*11)%14), sc=0.1+r(1)*0.07;
-    g+=`<g opacity="${dusky?0.62:0.85}">${gaStone(dsx,dy,sc,['granite','flint','sandstone'][Math.floor(r(2)*3)],(i*617+11)>>>0)}</g>`;
+    const dy=430+((i*13)%18), sc=0.09+r(1)*0.08;
+    g+=`<g opacity="${dusky?0.6:0.84}">${gaStone(dsx,dy,sc,['granite','flint','sandstone','granite','slate'][Math.floor(r(2)*5)],(i*617+11)>>>0)}</g>`;
   }
   return g; }
 function drawNearStones(W,dusky){ let g='';
@@ -3250,13 +3257,13 @@ function drawNearStones(W,dusky){ let g='';
     || Math.abs(x-(HABX.future+34))<150 || Math.abs(x-HABX.calm)<176        // clear of stream + pool
     || Math.abs(x-(HABX.home+124))<70  || Math.abs(x-BEARX)<BEARAMP+18      // clear of the trail + bear clearing
     || Math.abs(x-(HABX.meaning+120))<70;                                   // clear of the cairn above
-  let sx=190, si=0;
-  while(sx<W-130){ const step=248+((si*67)%118); sx+=step; si++;
+  let sx=150, si=0;
+  while(sx<W-110){ const step=150+((si*47)%92); sx+=step; si++;   // tighter spacing → more rocks, still well apart
     if(clear(sx)) continue;
     const r=v=>{ const t=Math.sin(sx*0.037+si*8.1+v*3.3)*43758.5; return t-Math.floor(t); };
-    const yb=522+((si*23)%24), sc=0.22+r(1)*0.15;                           // low foreground band, in front of plants
-    g+= (r(2)<0.5) ? stoneAndPebble(sx,yb,(si*991+7)>>>0,sc,STONE_KINDS[Math.floor(r(3)*STONE_KINDS.length)], r(4)<0.5?-1:1)
-                   : myPebble(sx,yb,0.75+r(1)*0.7,Math.floor(r(3)*5),(si*613+5)>>>0);
+    const yb=520+((si*29)%34), sc=0.2+r(1)*0.16;                            // low foreground band, in front of plants (slightly varied depth)
+    g+= (r(2)<0.55) ? stoneAndPebble(sx,yb,(si*991+7)>>>0,sc,STONE_KINDS[Math.floor(r(3)*STONE_KINDS.length)], r(4)<0.5?-1:1)
+                    : myPebble(sx,yb,0.7+r(1)*0.8,Math.floor(r(3)*5),(si*613+5)>>>0);
   }
   return g; }
 
@@ -3796,7 +3803,10 @@ function renderMeadow(force,opt){
 
   const W=PANO_W,H=PANO_H, total=totalCare();
   const pb=phaseBlend();                       // cross-fade sky+hills across sunrise/sunset
-  const hills=blendHills(pb.a,pb.b,pb.t), dusky=DUSKY(phase);
+  const dusky=DUSKY(phase); let hills=blendHills(pb.a,pb.b,pb.t);
+  // WINTER: snow the DISTANT planes too, not just the foreground — frost the rolling hills toward pale ice,
+  // more on the nearer bands so they blend up into the foreground snow blanket (no green-behind / white-in-front)
+  if(seasonName==='winter') hills=hills.map((c,i)=>mix(c,'#E9F1F6',(dusky?0.26:0.46)+i*0.08));
 
   // the golden-hour wash gradient — shared by the raster defs (harmless there) and the overlay's wash rect
   const glowDef=`<radialGradient id="glow" cx="64%" cy="8%" r="70%"><stop offset="0" stop-color="#FFEFC6" stop-opacity="${dusky?.16:.36}"/><stop offset=".5" stop-color="#FFE3A8" stop-opacity="${dusky?.04:.1}"/><stop offset="1" stop-color="#FBC089" stop-opacity="0"/></radialGradient>`;
@@ -3831,11 +3841,11 @@ function renderMeadow(force,opt){
     st+=`<g stroke="#B89C86" stroke-width="1.6" fill="none" opacity=".38" stroke-linecap="round"><path d="M520 96 C 526 92 532 92 538 96"/><path d="M546 90 C 552 86 558 86 564 90"/><path d="M566 100 C 572 96 578 96 584 100"/><path d="M1180 86 C 1186 82 1192 82 1198 86"/><path d="M1206 92 C 1212 88 1218 88 1224 92"/></g>`;
   }
   // continuous rolling ground (full width) + a faint far ridge for depth
-  st+=`<path d="${wavy(176,12)}" fill="${dusky?'#586A78':'#C2D6CE'}" opacity="${dusky?.5:.5}"/>`;
+  st+=`<path d="${wavy(176,12)}" fill="${seasonName==='winter'?(dusky?'#7C90A0':'#DCE9EF'):(dusky?'#586A78':'#C2D6CE')}" opacity="${dusky?.5:.5}"/>`;
   st+=`<path d="${wavy(206,16)}" fill="${hills[0]}" opacity=".5"/>`;
   st+=`<path d="${wavy(240,18)}" fill="${hills[0]}" opacity=".72"/>`;
   st+=`<path d="${wavy(300,26)}" fill="${hills[1]}"/>`;
-  st+=drawForest(W,dusky);
+  st+=drawForest(W,dusky,seasonName==='winter');
   { let mist=''; for(let x=60;x<W;x+=300){ mist+=`<ellipse cx="${x}" cy="${336+((x*7)%18)}" rx="190" ry="14" fill="#FFFFFF" opacity="${dusky?.10:.2}" filter="url(#glDof)"/>`; } st+=`<g>${mist}</g>`; }
   st+=`<path d="${wavy(362,22)}" fill="${hills[2]}"/>`;
   st+=`<path d="${wavy(432,18)}" fill="${hills[3]}"/>`;
