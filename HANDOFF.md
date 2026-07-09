@@ -510,4 +510,13 @@ w kłębek (240,516 — W KADRZE Body, między kwiatami; pierwsza próba 112 wyp
 na dalekim stoku (deer `sleep` 1128/.66 + 1188/.48, op .6 — kadr Connection, przy gąszczu); **snag sowy dostał PEŁNY
 pień** do y381 + odziomek (stoi na podłodze łąki za kwiatami — koniec „gałęzi w powietrzu"). Nocna zmiana czuwająca:
 jeż·mysz·ślimak·żaba(croak)·sowa. CACHE `v75`.
+**v76** (2026-07-10): **STARY DĄB (dom sowy) + satysfakcja podlewania.** (1) Snag przeprojektowany 3. raz — TERAZ
+dobrze: PRZEDNI plan, wschodnia stopa wzgórka Meaning obok cairnu (translate 1740,498, wys. ~95 j., odziomek+dziupla+
+złamany czub), rysowany PO drzewach tw-* (żadna korona go nie połknie — poprzednie pozycje na treeline ginęły pod
+klonem przy pełnym rozwoju!); frost/nightTint sezonowo. SOWA MIESZKA na nim: dzień=`sleep` (day-roost, float 1768,408),
+zmierzch/noc=`perch` walker. (2) PODLEWANIE+: 8 kropel, `.wsplash` glinty na koronie (timing kropel), `.wetpatch`
+ciemna mokra ziemia pod drzewem (7.4 s fade in/out), `.wleaves/.wleaf` 4 listki wzlatują z korony (translate/rotate
+PROPS — komponują się z transform-atrybutem), **motyl-GOŚĆ** przylatuje do podlanego drzewa po 2.3 s i zostaje 16 s
+(g.fable float + `mkFloat` bo regFloat jest renderMeadow-LOKALNY — keyframes dopisywane do `#wander-kf`; fableCollect
+po spawn/remove — snapshoty chronią resztę; gość tylko gdy nie-noc + motion full). Wszystko motion-gated. CACHE `v76`.
 

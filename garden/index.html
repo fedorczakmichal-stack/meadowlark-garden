@@ -313,7 +313,16 @@
   @keyframes canPour{0%{transform:rotate(0);opacity:0}10%{opacity:1}22%{transform:rotate(18deg)}75%{transform:rotate(18deg);opacity:1}92%{transform:rotate(2deg)}100%{transform:rotate(0);opacity:0}}
   .water-pour .wdrop{opacity:0;animation:wdropFall .72s linear infinite}
   @keyframes wdropFall{0%{transform:translateY(0);opacity:0}18%{opacity:.9}88%{opacity:.8}100%{transform:translateY(76px);opacity:0}}
-  body.motion-calm .water-pour,body.motion-calm .tap-ring{display:none!important}
+  /* the satisfaction of a good watering: splash glints on the crown, the ground drinking it in,
+     and a few young leaves fluttering up — all transient overlay sugar, all motion-gated */
+  .water-pour .wsplash{opacity:0;transform-box:fill-box;transform-origin:center;animation:wSplash .55s ease-out infinite}
+  @keyframes wSplash{0%{opacity:0;transform:translate(0,0) scale(.6)}25%{opacity:.9}100%{opacity:0;transform:translate(var(--sx,6px),-13px) scale(.4)}}
+  .wetpatch{opacity:0;animation:wetPatch 7.4s var(--ease) both;pointer-events:none}
+  @keyframes wetPatch{0%{opacity:0}12%{opacity:.2}55%{opacity:.15}100%{opacity:0}}
+  .wleaves{pointer-events:none}
+  .wleaves .wleaf{opacity:0;animation:wLeaf 2.6s ease-out both}
+  @keyframes wLeaf{0%{opacity:0;translate:0 0;rotate:0deg}15%{opacity:.95}100%{opacity:0;translate:var(--lx,12px) -34px;rotate:60deg}}
+  body.motion-calm .water-pour,body.motion-calm .tap-ring,body.motion-calm .wetpatch,body.motion-calm .wleaves{display:none!important}
   .godray{opacity:.07;animation:rayBreath 8s ease-in-out infinite alternate}
   @keyframes rayBreath{from{opacity:.035}to{opacity:.1}}
   body.motion-calm .godray{animation:none!important;opacity:.05}
@@ -4362,6 +4371,24 @@ function renderMeadow(force,opt){
     if(!staticOnly) lvGlow+=`<g transform="translate(${cx} ${by})"><g id="glw-${id}">${glowSparkles(stg,scale,a.accent,f)}</g></g>`;
   });
 
+  // ── THE OLD SNAG: a weathered dead oak at the knoll's east foot, beside the cairn — a permanent
+  // landmark in every season, drawn AFTER the growth-trees so no crown ever swallows it. It is the
+  // owl's home tree: the owl day-roosts asleep on the main bough and wakes to keep watch at dusk.
+  { const tk=nightTint(frost('#7E6D59'),phase), td=nightTint(frost('#5E5143'),phase);
+    st+=`<g transform="translate(1740 498)">`
+      +`<ellipse cx="1" cy="2" rx="17" ry="3.6" fill="rgba(58,44,26,${dusky?.1:.16})"/>`
+      +`<path d="M-9 2 C -12 1 -14 2 -16 3 L -9 3.5 Z M9 2 C 12 1 15 2 17 3 L 9 3.5 Z" fill="${td}"/>`
+      +`<path d="M-7 2 C -7 -10 -5.5 -26 -4 -44 C -3 -58 -2.5 -72 -1.5 -84 L 3 -84 C 3.8 -74 4.4 -62 5 -50 C 6 -32 7.5 -14 9 2 Z" fill="${tk}"/>`
+      +`<path d="M-1.5 -84 L 3 -84 C 3.6 -88 3 -91.5 0.8 -93 C -1.2 -91.5 -1.8 -88 -1.5 -84 Z" fill="${td}"/>`
+      +`<path d="M-4 -46 C -13 -50 -22 -55 -29 -61 C -26 -55 -20 -50 -13 -46.5 C -9.5 -44.8 -6.5 -43.5 -4 -42 Z" fill="${tk}"/>`
+      +`<path d="M-29 -61 C -31.5 -63.5 -33 -66.5 -33.6 -69.5 C -31 -67 -28.5 -64 -26.8 -61.5 Z" fill="${td}"/>`
+      +`<path d="M3.5 -68 C 13 -72 23 -75.5 34 -76 C 30.5 -72.5 23.5 -70 16 -68.6 C 11 -67.7 6.8 -66.8 3.5 -64.5 Z" fill="${tk}"/>`
+      +`<path d="M34 -76 C 37 -77.5 39.5 -80 41 -83 C 38 -81 35.2 -78.5 33 -76.4 Z" fill="${td}"/>`
+      +`<path d="M6 -28 C 11 -30 15 -33 17.5 -37 C 13.5 -35.5 9.5 -32.5 6 -29.5 Z" fill="${tk}"/>`
+      +`<ellipse cx="-0.5" cy="-38" rx="2.2" ry="3.4" fill="${td}"/>`
+      +`<path d="M-4.5 -18 C -3.8 -34 -3 -50 -2.2 -66 M3.5 -12 C 3.2 -28 3 -46 2.6 -62" stroke="${td}" stroke-width="1" fill="none" opacity=".5"/>`
+      +`</g>`;
+  }
   _lastStaticInner=`<defs>${defsInner}${hiddenDefs()}</defs>`+st;
 
   // a tend re-rasters ONLY the static bitmap (with a gentle cross-fade); the overlay/animals stay put
@@ -4467,19 +4494,13 @@ function renderMeadow(force,opt){
     {id:'demoiselle',mid:'roost', x:HABX.calm-158,  y:HABY.calm+26,  sc:.48, off:.60, flt:28, fltAmp:2, fltSeed:304}    // asleep on the lavender
     );
   }
-  if(dusky) CAST.push({id:'owl',mid:'perch',x:1600,y:320,sc:.45,off:.5,amp:0,yd:0,extra:' opacity=".85"'});   // in the Meaning frame, on the dead snag over the knoll treeline
+  // the owl LIVES on the old snag: it day-roosts asleep on the main bough, and wakes to perch at dusk
+  if(dusky) CAST.push({id:'owl',mid:'perch',x:1768,y:408,sc:.45,off:.5,amp:0,yd:0,extra:' opacity=".9"'});
+  else CAST.push({id:'owl',mid:'sleep',x:1768,y:408,sc:.45,off:.5,flt:36,fltAmp:1,fltSeed:311,extra:' opacity=".85"'});
   if(!night && total>=12) CAST.push({id:'swallowtail',mid:'flit',x:HABX.meaning-90,y:HABY.meaning-150,sc:.5,off:.33,flt:20});
   if(!night && total>=20) CAST.push({id:'peacock',mid:'flutter',x:HABX.future-60,y:HABY.future-130,sc:.5,off:.5,flt:21,fltAmp:24});
   if(!night && total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-170,y:HABY.calm-170,sc:.52,off:.66,flt:22});   // over the pond's west edge, clear of the pine crown
-  // the dusk owl's perch: a dead snag ROOTED in the treeline band — a visible trunk stub rises out
-  // of the forest silhouette and forks into the branch the owl sits on (no more branch-in-mid-air)
-  if(dusky) lv+=`<g opacity=".9" pointer-events="none">`
-    +`<path d="M1566 381 L1566 378 C 1565 362 1567 346 1572 336" stroke="#241E38" stroke-width="8" fill="none" stroke-linecap="round"/>`
-    +`<path d="M1560 382 C 1563 378 1569 376 1574 377 L1566 382 Z" fill="#241E38"/>`
-    +`<path d="M1570 338 C 1584 334.5 1598 333.5 1614 334.5" stroke="#241E38" stroke-width="4.4" fill="none" stroke-linecap="round"/>`
-    +`<path d="M1574 337 C 1568 332 1563 327 1560 322" stroke="#241E38" stroke-width="2.6" fill="none" stroke-linecap="round"/>`
-    +`<path d="M1602 334 C 1608 331 1613 327 1616 323" stroke="#241E38" stroke-width="2" fill="none" stroke-linecap="round"/>`
-    +`</g>`;
+  // (the owl's dead-oak perch is CANVAS art now — see THE OLD SNAG in the static layers above)
   // painter's order: farther (smaller y) first, nearer last — a nearer animal always crosses IN FRONT
   // (deterministic, so fableCollect's id|x|off snapshot keys survive every rebuild unchanged)
   CAST.slice().sort((a,b)=>a.y-b.y).forEach(o=>{ lv+=FB(o); });
@@ -4665,16 +4686,49 @@ function wateringCan(id){
   const g=document.createElementNS(NS,'g'); g.setAttribute('class','water-pour'); g.setAttribute('aria-hidden','true');
   g.setAttribute('transform',`translate(${(cx-66).toFixed(0)} ${(topY-52).toFixed(0)})`);
   let drops='';
-  for(let i=0;i<6;i++){ drops+=`<circle class="wdrop" style="animation-delay:${(0.28+i*0.22).toFixed(2)}s" cx="${60+(i%3)*5}" cy="24" r="${i%2?2.6:3.4}" fill="#8FC7E8"/>`; }
+  for(let i=0;i<8;i++){ drops+=`<circle class="wdrop" style="animation-delay:${(0.26+i*0.17).toFixed(2)}s" cx="${58+(i%4)*4}" cy="24" r="${i%2?2.4:3.2}" fill="#8FC7E8"/>`; }
+  // tiny splash glints where the water meets the crown, timed to the falling drops
+  let spl='';
+  for(let i=0;i<6;i++){ spl+=`<circle class="wsplash" style="animation-delay:${(0.9+i*0.24).toFixed(2)}s;--sx:${((i%3)-1)*7}px" cx="${(56+(i%4)*6)}" cy="100" r="1.8" fill="#CFEAF8"/>`; }
   g.innerHTML=`<g class="can">`
     +`<path d="M10 22 h28 a5 5 0 0 1 5 5 v14 a5 5 0 0 1 -5 5 H12 a5 5 0 0 1 -5 -5 V27 a5 5 0 0 1 3 -5 Z" fill="#7A9BB5"/>`
     +`<path d="M40 28 L56 14 L60 19 L46 32 Z" fill="#7A9BB5"/>`
     +`<circle cx="58" cy="16.5" r="5" fill="#6889A3"/>`
     +`<path d="M16 22 C 16 10 34 10 34 22" fill="none" stroke="#6889A3" stroke-width="3.6"/>`
     +`<path d="M12 30 h26" stroke="#8FB2CB" stroke-width="2" opacity=".7"/>`
-    +`</g>${drops}`;
+    +`</g>${drops}${spl}`;
   svg.appendChild(g);
   setTimeout(()=>{ if(g.isConnected) g.remove(); },2450);
+  // the ground drinks: a soft wet patch blooms under the tree, holds a moment, and dries away
+  const wp=document.createElementNS(NS,'g'); wp.setAttribute('class','wetpatch'); wp.setAttribute('aria-hidden','true');
+  wp.innerHTML=`<ellipse cx="${cx}" cy="${HABY[id]+7}" rx="${(30+st*7)}" ry="${(6+st*1.2).toFixed(1)}" fill="#3E5C74"/>`;
+  svg.appendChild(wp);
+  setTimeout(()=>{ if(wp.isConnected) wp.remove(); },7600);
+  // a shiver of joy: a few young leaves flutter up out of the freshly watered crown
+  const lf=document.createElementNS(NS,'g'); lf.setAttribute('class','wleaves'); lf.setAttribute('aria-hidden','true');
+  let lv2='';
+  for(let i=0;i<4;i++){ lv2+=`<g class="wleaf" style="animation-delay:${(1.1+i*0.3).toFixed(1)}s;--lx:${((i%2)?1:-1)*(10+i*6)}px" transform="translate(${(cx-18+i*12).toFixed(0)} ${(topY+8).toFixed(0)})"><path d="M0 0 C 4 -3 7 -2 8 1 C 5 3 2 3 0 0 Z" fill="${i%2?'#7FB268':'#93C47E'}"/></g>`; }
+  lf.innerHTML=lv2;
+  svg.appendChild(lf);
+  setTimeout(()=>{ if(lf.isConnected) lf.remove(); },4200);
+  // and a visitor: once the pour settles, a butterfly comes to see the freshly tended corner
+  // (day and dusk only — at night the garden, butterflies included, stays asleep)
+  if(dayPhase()!=='night'){
+    setTimeout(()=>{
+      const svg2=document.querySelector('#sceneWrap svg.scene-svg'); if(!svg2) return;
+      if(store.settings.motion!=='full'||reduceMotion()) return;
+      const fl=mkFloat(cx*3+careOf(id)*17, 18, 19);   // (regFloat is renderMeadow-local; append the keyframes ourselves)
+      const wkf=svg2.querySelector('#wander-kf'); if(wkf && wkf.textContent.indexOf(fl.id)<0) wkf.textContent+=fl.css;
+      const vis=document.createElementNS(NS,'g');
+      vis.setAttribute('class','fable'); vis.setAttribute('data-id','butterfly'); vis.setAttribute('data-mid','flutter');
+      vis.setAttribute('data-x',String(cx+26)); vis.setAttribute('data-off','2.1'); vis.setAttribute('data-flt','1');
+      vis.setAttribute('transform',`translate(${(cx+26).toFixed(0)} ${(topY-16).toFixed(0)})`);
+      vis.innerHTML=`<g class="float" style="animation:${fl.id} ${fl.dur}s ease-in-out infinite alternate"><g class="face"><g class="fin" transform="scale(.5)"></g></g></g>`;
+      svg2.appendChild(vis);
+      fableCollect();                                   // register the guest (walker snapshots keep everyone else in place)
+      setTimeout(()=>{ if(vis.isConnected){ vis.remove(); fableCollect(); } },16000);
+    },2300);
+  }
 }
 /* pan the camera to centre a habitat */
 function scrollToHabitat(id,smooth){
