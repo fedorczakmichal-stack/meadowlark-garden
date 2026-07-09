@@ -3287,7 +3287,8 @@ function envHome(cx,by,phase,gr){ // Home — a tended homestead garden
   // a soft row of individual rounded bushes (varied sizes and tones) instead of the old hedge-block
   const hgB=nightTint(frost('#5E9A4E'),phase), hgL=nightTint(frost('#79B25C'),phase), hgD=nightTint(frost('#4C8440'),phase);
   let g='<g>';
-  [[-196,0,19],[-160,4,24],[-122,-2,21],[-86,3,25],[-52,-1,20],[-22,4,16]].forEach(([dx,dy,r],i)=>{
+  // (shifted left so the nearest bush clears the oak's flared base + root buttresses — no root-on-bush overlap)
+  [[-232,0,19],[-198,4,24],[-164,-2,21],[-130,3,25],[-100,-1,20],[-72,4,16]].forEach(([dx,dy,r],i)=>{
     const bx=cx+dx, byy=by-2+dy;
     g+=`<ellipse cx="${(bx-r*0.45).toFixed(0)}" cy="${byy+3}" rx="${(r*0.62).toFixed(0)}" ry="${(r*0.5).toFixed(0)}" fill="${hgD}"/>`+
        `<ellipse cx="${(bx+r*0.4).toFixed(0)}" cy="${byy+4}" rx="${(r*0.55).toFixed(0)}" ry="${(r*0.45).toFixed(0)}" fill="${i%2?hgD:hgB}"/>`+
@@ -3303,7 +3304,7 @@ function envHome(cx,by,phase,gr){ // Home — a tended homestead garden
   // stepping stones following the new route
   [[124,-70],[106,-8],[76,14],[28,58],[-8,116]].forEach(p=>{ g+=`<ellipse cx="${cx+p[0]}" cy="${by+p[1]}" rx="5.5" ry="2.6" fill="#CFC3A6" opacity=".7"/>`; });
   // the trail's head slips INTO a clump of woods on the treeline (twin of the river's source)
-  const hdk=DUSKY(phase), hc=nightStep(hdk?'#374B49':'#83AC6B'), hl=nightStep(hdk?'#46585B':'#A6C68E');
+  const hdk=DUSKY(phase), hc=nightStep(frost(hdk?'#374B49':'#83AC6B')), hl=nightStep(frost(hdk?'#46585B':'#A6C68E'));
   g+=`<g fill="${hc}"><ellipse cx="${cx+132}" cy="${by-146}" rx="24" ry="20"/><ellipse cx="${cx+168}" cy="${by-150}" rx="22" ry="19"/><ellipse cx="${cx+150}" cy="${by-162}" rx="20" ry="18"/></g>`;
   g+=`<g fill="${hl}" opacity=".7"><ellipse cx="${cx+142}" cy="${by-154}" rx="12" ry="10"/><ellipse cx="${cx+162}" cy="${by-146}" rx="10" ry="9"/></g>`;
   // (birdhouse and potted flower removed — the tulip grows straight from the bed instead)
@@ -3379,7 +3380,7 @@ function envStream(cx,by,dusky,gr){ // Future — a river springing from the woo
   // cornflowers + bearded irises on the banks (never in the channel; right-bank ones clear of the willow at cx+84)
   g+=scatterFlowers(cx,[[-96,by+46,'cornflower','blue',.5],[-72,by+18,'iris',null,.48,58],[126,by+34,'cornflower','blue',.48],[152,by+52,'iris',null,.46,56]],gr);
   // the source emerges from WITHIN a bush clump sitting right over the river's head (tucked below the treeline)
-  const fc=nightStep(dusky?'#374B49':'#83AC6B'), fl=nightStep(dusky?'#46585B':'#A6C68E');
+  const fc=nightStep(frost(dusky?'#374B49':'#83AC6B')), fl=nightStep(frost(dusky?'#46585B':'#A6C68E'));
   g+=`<g fill="${fc}"><ellipse cx="${cx+36}" cy="${by-120}" rx="26" ry="20"/><ellipse cx="${cx+74}" cy="${by-122}" rx="24" ry="18"/><ellipse cx="${cx+56}" cy="${by-134}" rx="22" ry="18"/></g>`;
   g+=`<g fill="${fl}" opacity=".7"><ellipse cx="${cx+46}" cy="${by-128}" rx="13" ry="10"/><ellipse cx="${cx+68}" cy="${by-118}" rx="11" ry="8"/></g>`;
   return g;
