@@ -4439,20 +4439,25 @@ function renderMeadow(force,opt){
   if(!night && phase==='dusk') CAST.push({id:'bird', mid:'sing', x:682, y:415, sc:.58, off:.4, flt:22, fltAmp:2, fltSeed:233});   // the evening songbird sings from the hedgerow lilac's crown
   if(night){
     /* ── THE GARDEN SLEEPS (deep night): a deliberately SPARSER cast, not a dimmed day.
-       Nocturnal animals stay out (fox, hedgehog, mouse, snail, the croaking frog — and the
-       owl below); deer, bear, rabbit, turtle, ladybug and every butterfly/bee rest OUT OF
+       The small night shift stays out (hedgehog, mouse, snail, the croaking frog — and the
+       owl below); the fox curls up asleep on its ground and two deer bed down on the far
+       hillside (per Michal's wish the garden sleeps FULLY); bear, rabbit, turtle, ladybug
+       and every butterfly/bee rest OUT OF
        SIGHT until dawn; and a few sleepers remain to be found, each in the pack's dedicated
        night pose (motions flagged night:true): the duck head-tucked on the water, the stork's
        one-legged roost, the songbird asleep where it sang at dusk, the fish settled deep,
        the odonata roosting on the reeds. All are gentle in-place floats on the same flipbook
        engine — same reduced-motion / motion-calm gates, no new animation machinery. */
     CAST.push(
-    // nocturnal — awake and about
-    {id:'fox',      x:100,  y:500, sc:.92, off:.35, amp:62, yd:10},
+    // the small night shift stays out (hedgehog · mouse · snail · the croaking frog · the owl below)
     {id:'hedgehog', x:640,  y:512, sc:.80, off:.65, amp:40, yd:8},
     {id:'mouse',    x:800,  y:526, sc:.50, off:.48, amp:34, yd:6},
     {id:'snail',    x:2900, y:566, sc:.55, off:.85, amp:24, yd:2},
     {id:'frog',     mid:'croak', x:HABX.calm-120, y:530, sc:.70, off:.55, flt:18, fltAmp:2, fltSeed:302},   // the night chorus at the water's edge
+    {id:'fox',      mid:'sleep', x:240,  y:516, sc:.92, off:.35, flt:30, fltAmp:1.5, fltSeed:308},   // curled up among Body's meadow flowers, inside the camera frame
+    // sleeping deer bedded together on the far hillside — a doe and a fawn, sheltered by the thicket
+    {id:'deer',     mid:'sleep', x:1128, y:334, sc:.66, off:.2, flt:34, fltAmp:1, fltSeed:309, extra:' opacity=".6"'},
+    {id:'deer',     mid:'sleep', x:1188, y:340, sc:.48, off:.6, flt:36, fltAmp:1, fltSeed:310, extra:' opacity=".6"'},
     // asleep where you'd find them — the pack's dedicated night poses, breathing in place
     {id:'mallard',  mid:'sleep', x:HABX.calm+26,  y:521, sc:.92, off:.30, flt:30, fltAmp:3, fltSeed:301, extra:' opacity=".9"'},   // head tucked, adrift on the dark pond
     {id:'stork',    mid:'sleep', x:2520, y:533, sc:1, off:.45, flt:34, fltAmp:2, fltSeed:305, extra:' opacity=".85"'},             // one-legged roost in the shallows
@@ -4468,8 +4473,9 @@ function renderMeadow(force,opt){
   if(!night && total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-170,y:HABY.calm-170,sc:.52,off:.66,flt:22});   // over the pond's west edge, clear of the pine crown
   // the dusk owl's perch: a dead snag ROOTED in the treeline band — a visible trunk stub rises out
   // of the forest silhouette and forks into the branch the owl sits on (no more branch-in-mid-air)
-  if(dusky) lv+=`<g opacity=".85" pointer-events="none">`
-    +`<path d="M1564 352 C 1566 346 1568 340 1572 336" stroke="#241E38" stroke-width="7" fill="none" stroke-linecap="round"/>`
+  if(dusky) lv+=`<g opacity=".9" pointer-events="none">`
+    +`<path d="M1566 381 L1566 378 C 1565 362 1567 346 1572 336" stroke="#241E38" stroke-width="8" fill="none" stroke-linecap="round"/>`
+    +`<path d="M1560 382 C 1563 378 1569 376 1574 377 L1566 382 Z" fill="#241E38"/>`
     +`<path d="M1570 338 C 1584 334.5 1598 333.5 1614 334.5" stroke="#241E38" stroke-width="4.4" fill="none" stroke-linecap="round"/>`
     +`<path d="M1574 337 C 1568 332 1563 327 1560 322" stroke="#241E38" stroke-width="2.6" fill="none" stroke-linecap="round"/>`
     +`<path d="M1602 334 C 1608 331 1613 327 1616 323" stroke="#241E38" stroke-width="2" fill="none" stroke-linecap="round"/>`

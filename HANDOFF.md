@@ -505,4 +505,9 @@ najświeższy art; bundle nie ma też ogrodowych patchy).
 w linii lasu (pień 7px wyrasta z pasa mgły/lasu y352 → rozwidlenie → gałąź główna + 2 tipy; owl x 1560→1600, snag
 1564-1616 — całość głęboko W kadrze Meaning). Lis nocą CELOWO czuwa (nokturnalny — nocna zmiana ogrodu); jeśli Michał
 zechce pełnego snu — uśpić w night-cast. CACHE `v74`.
+**v75** (2026-07-09, feedback Michała #2): **noc śpi w PEŁNI** — lis nocą już NIE chodzi: `fox mid:'sleep'` zwinięty
+w kłębek (240,516 — W KADRZE Body, między kwiatami; pierwsza próba 112 wypadła poza okno ±138!); **2 śpiące jelonki**
+na dalekim stoku (deer `sleep` 1128/.66 + 1188/.48, op .6 — kadr Connection, przy gąszczu); **snag sowy dostał PEŁNY
+pień** do y381 + odziomek (stoi na podłodze łąki za kwiatami — koniec „gałęzi w powietrzu"). Nocna zmiana czuwająca:
+jeż·mysz·ślimak·żaba(croak)·sowa. CACHE `v75`.
 
