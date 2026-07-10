@@ -2248,31 +2248,30 @@ function drawForest(W,dusky,winter){
   // v77 (from the design pack): the horizon forest is RANKS of single trees fading into haze —
   // not one scalloped mass — with two dark DOORWAYS where the trail (x≈930) and the river
   // (x≈2548) slip INTO the woods. Palette from sceneHues(season); night/dawn tinted per-colour.
-  // v79: the forest no longer stops at one band — two far ranks climb the foothills and a line
-  // of sparse spruces stands on the mountains' lower slopes, so the wood runs UP TO the range.
+  // v79: the forest no longer stops at one band — two far ranks climb the foothills toward the
+  // range. v83 (Michał's screenshot): background trees may stand ONLY on green — the grey is
+  // mountain. So every far-rank tree now rides the FOOTHILL BAND's own edge (never above it),
+  // and the slope spruces that stood on the grey flanks are gone.
   const S=_gaSeason, H=GA.sceneHues(S);
   let band='';
-  // slope spruces — tiny, heavily hazed, on the near range's lower flanks; they keep clear of
-  // the trail pass (930) and the river valley (2548) so both corridors stay open sky
-  { const spCol=mix(mix(H.spruce,H.haze,0.62),'#5C6472',0.1); let sl='';
-    for(let x=40,i=0; x<W; x+=74+((i*37)%46), i++){
-      if(Math.abs(x-930)<86||Math.abs(x-2548)<108) continue;
-      const hh=10+((i*13)%9), sy=290+((i*7)%8), sxo=x+((i*17)%18)-9;
-      sl+=`<path d="M${sxo} ${sy} L${sxo-Math.round(hh*0.34)} ${sy} L${sxo} ${sy-hh} L${sxo+Math.round(hh*0.34)} ${sy} Z" fill="${spCol}" opacity=".7"/>`;
-      if(i%3===0) sl+=`<path d="M${sxo+22} ${sy+3} L${sxo+22-Math.round(hh*0.26)} ${sy+3} L${sxo+22} ${sy+3-Math.round(hh*0.72)} L${sxo+22+Math.round(hh*0.26)} ${sy+3} Z" fill="${spCol}" opacity=".5"/>`;
-    }
-    band+=sl; }
+  // the wavy(300,26) foothill edge: nodes every 320px alternate 274/326 with smoothstep between —
+  // sample it so a tree's base always sits BELOW the green edge, i.e. ON the foothill
+  const foothillEdge=(x)=>{ const seg=Math.floor(x/320), t=(x-seg*320)/320;   // nodes: 300→274→326→274→326…
+    const yA=(seg===0)?300:((seg%2===1)?274:326), yB=(seg%2===0)?274:326;
+    const ss=t*t*(3-2*t); return yA+(yB-yA)*ss; };
   // two far ranks on the rolling foothills (small + hazier) — hand-stepped sparse rows, NOT
   // forestBand at tiny sc: its step scales down with sc, which quietly quintupled the raster
   // string to ~2 MB. A single hazy row per rank reads the same at this size for ~2% of the cost.
-  const rank=(baseY,step,hMin,hMax,hz,seedO,gapW)=>{ const r=GA.rng(seedO); let s='';
+  const rank=(dy,step,hMin,hMax,hz,seedO,gapW)=>{ const r=GA.rng(seedO); let s='';
     for(let x=24;x<W;x+=step*(0.72+r()*0.56)){
+      const jy=r()*5, kr=r(), hh=hMin+r()*(hMax-hMin);
       if(Math.abs(x-930)<gapW||Math.abs(x-2548)<gapW+16) continue;
-      const kr=r(), kind=kr<0.2?'spruce':(kr<0.3?'tall':'round'), hh=hMin+r()*(hMax-hMin);
-      s+=`<g transform="translate(${x.toFixed(0)} ${(baseY+r()*5).toFixed(0)})">`+GA.bgTree(kind,hh,S,(seedO+((x*7)|0))>>>0,hz)+'</g>'; }
+      const by=Math.min(340,foothillEdge(x)+dy+jy);            // ride the green edge, never the grey slope
+      const kind=kr<0.2?'spruce':(kr<0.3?'tall':'round');
+      s+=`<g transform="translate(${x.toFixed(0)} ${by.toFixed(0)})">`+GA.bgTree(kind,hh,S,(seedO+((x*7)|0))>>>0,hz)+'</g>'; }
     return s; };
-  band+=rank(304,17,9,15,0.72,29,40);
-  band+=rank(322,21,14,21,0.5,17,54);
+  band+=rank(9,17,9,15,0.72,29,40);
+  band+=rank(22,21,14,21,0.5,17,54);
   band+='<g transform="translate(1550 342)">'+GA.forestBand(0,1.05,S,7,[-620,998],1560)+'</g>';
   band=band.replace(/#[0-9A-Fa-f]{6}/g,m=>nightTint(m,_phase));
   return band;
@@ -2309,8 +2308,10 @@ function drawMountains(mtn,seasonName,dusky){
   }
   s+=`</g>`;
   s+=`<rect x="0" y="238" width="${PANO_W}" height="108" fill="url(#mhz)" opacity="${dusky?0.3:0.55}"/>`;   // haze pooling at the mountains' feet
-  s+=`<ellipse cx="2548" cy="296" rx="12" ry="26" fill="${SNOW}" opacity="${dusky?0.12:0.2}" filter="url(#glDof)"/>`;   // valley breath above the river doorway
-  s+=`<ellipse cx="930" cy="292" rx="15" ry="18" fill="${SNOW}" opacity="${dusky?0.08:0.13}" filter="url(#glDof)"/>`;   // and a softer one over the trail pass
+  // valley breath above the river doorway — WIDE and faint (a tight bright ellipse read as a
+  // second moon on the phone), plus a softer one over the trail pass
+  s+=`<ellipse cx="2548" cy="300" rx="26" ry="34" fill="${SNOW}" opacity="${dusky?0.06:0.1}" filter="url(#glDof)"/>`;
+  s+=`<ellipse cx="930" cy="296" rx="24" ry="22" fill="${SNOW}" opacity="${dusky?0.05:0.08}" filter="url(#glDof)"/>`;
   return s;
 }
 function drawMidground(W,dusky){
@@ -2362,9 +2363,12 @@ function drawMidground(W,dusky){
     // crest — skip those items instead of painting art that gets hard-cut by the white edge
     if(_gaSeason.snow && it.y>414) continue;
     const depth=clamp((it.y-358)/82,0,1), sc=lerp(0.42,1.05,depth), hz=hazeOf(it.y);
-    if(it.r<0.42){                                            // grass tuft — the quiet filler
+    if(it.r<0.28){                                            // grass tuft — the quiet filler
       const gc=mix(mix(dusky?'#42604A':'#679C55',H2.haze,hz),'#54683C',it.v*0.25);
       g+=GA.sceneTuft(it.x,it.y,sc*1.5,nightStep(frost(gc)));
+    } else if(it.r<0.42){                                     // v83: a real pack SWARD — more grass, as asked (defs-cached, near-free)
+      const GK=['fescue','meadow','timothy','cocksfoot'];
+      g+=`<g opacity="${(1-hz*0.55).toFixed(2)}">${gaGrass(it.x,it.y,GK[Math.floor(it.v*4)%4],0.05+depth*0.08,0.8+Math.round(it.v*2)/10)}</g>`;
     } else if(it.r<0.60){                                     // low leafy puff (the old vocabulary, kept)
       g+=plant(it.x,it.y,sc*(0.55+it.v*0.3),depth<0.45?PB:PF,it.v<0.5?0:3,ACC[Math.floor(it.v*6)%6]);
     } else if(it.r<0.74){                                     // an Atlas shrub — species varies, never a row
@@ -4888,6 +4892,13 @@ function renderMeadow(force,opt){
       if(fclear(fx)) continue;
       const fy=550+((fi*23)%26), fsc=0.26+((fi*13)%12)/100;
       st+=gaGrass(fx,fy,FG[fi%4],fsc,0.8+((fi*7)%20)/100);
+    }
+    // v83: a second, lower row of smaller swards offset between the first — Michał asked for
+    // MORE of the pack's grasses, and the defs-cache makes every extra instance ~100 bytes
+    for(let fx=196,fi=0; fx<W-90; fx+=148+((fi*37)%64), fi++){
+      if(fclear(fx)) continue;
+      const fy=566+((fi*17)%20), fsc=0.19+((fi*11)%10)/100;
+      st+=gaGrass(fx,fy,FG[(fi+2)%4],fsc,0.8+((fi*9)%20)/100);
     }
   }
   // the six growth-trees: static host (accent tint + contact shadow + tree art). Their transient
