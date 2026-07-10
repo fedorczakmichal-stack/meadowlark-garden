@@ -519,4 +519,33 @@ ciemna mokra ziemia pod drzewem (7.4 s fade in/out), `.wleaves/.wleaf` 4 listki 
 PROPS — komponują się z transform-atrybutem), **motyl-GOŚĆ** przylatuje do podlanego drzewa po 2.3 s i zostaje 16 s
 (g.fable float + `mkFloat` bo regFloat jest renderMeadow-LOKALNY — keyframes dopisywane do `#wander-kf`; fableCollect
 po spawn/remove — snapshoty chronią resztę; gość tylko gdy nie-noc + motion full). Wszystko motion-gated. CACHE `v76`.
+**v77** (2026-07-10): **IMPORT NA ŻYWO z Claude Design (DesignSync MCP!) + funkcje 1-7.** Projekty czytane PROSTO z
+claude.ai/design (`DesignSync get_file`, projectId Rosliny `c58bf01e…`, zwierzęta `f99303ad…`) — zip-handoffy były
+STARE: (a) atlas zdalny +278 l.: **darnie traw** (12 gatunków, GRASS z areaW/clumps, grassAbove=multi-kępa z głębią,
+oat-head), **scatterPts** (farthest-point → owoce/jagody/kwiecie SHRUBÓW I KORON bez zbrylania; canopy-scatter
+podmieniony), **SCENERY**: `sceneHues` (palety sezonowe, zimowa woda=LÓD), `bgTree` (5 rodzajów drzew sztafażowych,
+zimą nagie+czapy), `forestBand` (4 rzędy w mgle; SPORTOWANY z gapX→gapXs — DWIE BRAMY), `ribbon(spf)`;
+(b) zwierzęta: **8 NOWYCH gatunków** (ant/bumblebee/firefly/grasshopper/grasssnake/hare/mole/skylark), frig+=`zzz()`
+(literki snu), fox.sleep wzbogacony (oddech+westchnięcie+Zzz). Silnik: 38 gatunków (assembler preferuje
+`scratchpad/remote/animals-fable`, zzz wstrzyknięty do nagłówka).
+- **SCENA**: `drawForest` PRZEPISANY → `GA.forestBand(0,1.05,S,7,[-620,998],1560)` w translate(1550 342) + regex
+  nightTint per-hex; **bramy** dokładnie na trailu (930) i źródle rzeki (2548); KLUMPY (trail-head woods + river
+  source bush) USUNIĘTE — dokładnie skargi ze zrzutów Michała w uploads projektu (noc: droga/rzeka w ślepe bloby).
+  Rzeka: zimą lodowa nakładka + pęknięcia zamiast dash-flow. Trawy front=darnie (krok 264, 6 gatunków), dywan/tło j.w.
+- **ZWIERZĘTA w scenie**: skowronek `song` wysoko nad Body (imiennik!), 2 trzmiele (hover/nectar), konik `chirp`;
+  goście wg dayHash: zając (świt, [770,860] wzgórze), kret `surface` (knoll 1600, co 5. dzień), zaskroniec `slither`
+  ([2698,2758] przy stawie, co 4. dzień), czapla (świt/co 3. dzień), jaskółki (lato), pustułka `hover` (co 2. dzień);
+  NOC: 3 świetliki (2 `lantern` + `beacon` NA DĘBIE), trzmiel `flowerbed` (śpi w kwiecie), konik `roost` na trzcinie.
+  BEHAV+= heron/hare/grasssnake. Motyl-gość po podlaniu USUNIĘTY (życzenie); conditional-motyle=różne gatunki.
+- **FUNKCJE 1-7**: (1) `startRain/maybeRain` — deterministyczna mżawka ~90 s w wylosowane godziny (hash ymd|h %5,
+  minuty 8+…), po niej `rain-glisten` na koronach 60 s; nie zimą; (2) goście j.w.; (3) `fishLeap/scheduleLeap` —
+  skok ryby nad stawem co ~2-4 min (dzień); (4) konstelacje Look Back: ≥6 gwiazd → nici nearest-neighbour ≤240 j.
+  op .15; (5) ZNALEZISKA: `maybeFinding` po tend (hash %6, max 1/dzień) → toast + karta w NOWYM foldzie „Findings
+  from the garden" (`meadowlark.findings`, 5 rodzajów SVG); (6) long-press 500 ms na siedlisku → `focusHabitat`
+  (zoom 1.8 + centrowanie; drugi long-press wraca; `_zoomGet/_zoomSet` wystawione z init, `_lpConsume` tłumi click);
+  (7) **Meadow sounds opt-in**: `mlSound` — WebAudio syntetyzowane NA URZĄDZENIU (szum wiatru brown-noise+LFO,
+  ptaki dzień/świt, świerszcze zmierzch/noc), master 0.05, seg w Settings, default OFF, visibilitychange suspend,
+  zero requestów (obietnica prywatności nienaruszona).
+- ⚠ nowe pułapki: heredoc NIE w środku `&&`; sceneHues wymaga NAGŁÓWKA metody (sed-range obciął); forest-string
+  ~370 KB/raster — obserwować perf re-rastrów na starszych iPhone. CACHE `v77`.
 

@@ -322,6 +322,17 @@
   .wleaves{pointer-events:none}
   .wleaves .wleaf{opacity:0;animation:wLeaf 2.6s ease-out both}
   @keyframes wLeaf{0%{opacity:0;translate:0 0;rotate:0deg}15%{opacity:.95}100%{opacity:0;translate:var(--lx,12px) -34px;rotate:60deg}}
+  /* a passing drizzle (rare, gentle) and the glisten it leaves on the crowns */
+  .rainfall line{stroke:#9DBBD6;stroke-width:1.1;stroke-linecap:round;opacity:0;animation:rainFall 1.1s linear infinite}
+  @keyframes rainFall{0%{transform:translate(0,-40px);opacity:0}12%{opacity:.32}85%{opacity:.3}100%{transform:translate(-10px,560px);opacity:0}}
+  .rain-veil{animation:rainVeil 3s var(--ease) both}
+  @keyframes rainVeil{from{opacity:0}to{opacity:.1}}
+  /* one quiet leap of a fish over the pond — an arc, a flash, two rings */
+  .leapfish{animation:fishLeap 1.6s cubic-bezier(.35,.1,.4,1) both}
+  @keyframes fishLeap{0%{transform:translate(0,10px) rotate(-24deg);opacity:0}12%{opacity:1}50%{transform:translate(27px,-30px) rotate(6deg)}88%{opacity:1}100%{transform:translate(54px,12px) rotate(42deg);opacity:0}}
+  .leapring{transform-box:fill-box;transform-origin:center;opacity:0;animation:leapRing 1s ease-out both}
+  @keyframes leapRing{0%{opacity:.7;transform:scale(.3)}100%{opacity:0;transform:scale(2.2)}}
+  body.motion-calm .rainfall,body.motion-calm .rain-veil,body.motion-calm .leapfish,body.motion-calm .leapring{display:none!important}
   body.motion-calm .water-pour,body.motion-calm .tap-ring,body.motion-calm .wetpatch,body.motion-calm .wleaves{display:none!important}
   .godray{opacity:.07;animation:rayBreath 8s ease-in-out infinite alternate}
   @keyframes rayBreath{from{opacity:.035}to{opacity:.1}}
@@ -1043,6 +1054,7 @@
         <details class="lb-fold" id="foldGrown"><summary>How it's grown</summary><div class="fold-body" id="lbThenNow"></div></details>
         <details class="lb-fold" id="foldChapters"><summary>Chapters of this garden</summary><div class="fold-body" id="lbChapters"></div></details>
         <details class="lb-fold" id="foldPressed"><summary>Pressed flowers</summary><div class="fold-body" id="lbPressed"></div></details>
+        <details class="lb-fold" id="foldFinds"><summary>Findings from the garden</summary><div class="fold-body" id="lbFinds"></div></details>
         <details class="lb-fold" id="foldLetters"><summary>A letter to your future self</summary><div class="fold-body" id="lbLetters"></div></details>
         <details class="lb-fold" id="foldKeepsake"><summary>A keepsake</summary><div class="fold-body" id="lbKeepsake"></div></details>
       </div>
@@ -1067,6 +1079,10 @@
             <div class="set-row">
               <div><div class="s-label">Motion</div><div class="s-desc">Calm stills the swaying and drifting.</div></div>
               <div class="seg" data-seg="motion"><button data-v="full">Full</button><button data-v="calm">Calm</button></div>
+            </div>
+            <div class="set-row">
+              <div><div class="s-label">Meadow sounds</div><div class="s-desc">A faint wind; birds by day, crickets after dark. Made on your device, off unless you invite it.</div></div>
+              <div class="seg" data-seg="sound"><button data-v="off">Off</button><button data-v="on">On</button></div>
             </div>
             <div class="set-row">
               <div><div class="s-label">Text size</div><div class="s-desc">A little larger, for tired eyes.</div></div>
@@ -2082,7 +2098,7 @@ let store, memoryOnly=false;
 function freshStore(){
   const now=Date.now(), areas={};
   AREAS.forEach(a=>areas[a.id]={care:0,lastTendAt:0});
-  return { schema:1, meta:{ firstOpenAt:now, lastSeenAt:now, lastTendAt:0, appVersion:'1.0.0' }, areas, journal:[], settings:{ motion:'full', textScale:'normal', hemisphere:'north', theme:'auto', season:'auto', craftOcc:'general', craftStage:'curious', craftTitle:'' } };
+  return { schema:1, meta:{ firstOpenAt:now, lastSeenAt:now, lastTendAt:0, appVersion:'1.0.0' }, areas, journal:[], settings:{ motion:'full', textScale:'normal', hemisphere:'north', theme:'auto', season:'auto', sound:'off', craftOcc:'general', craftStage:'curious', craftTitle:'' } };
 }
 function coerce(s){
   const base=freshStore();
@@ -2110,6 +2126,7 @@ function coerce(s){
   out.settings.hemisphere = st.hemisphere==='south'?'south':'north';
   out.settings.theme      = ['morning','day','evening','night'].includes(st.theme)?st.theme:'auto';
   out.settings.season     = ['spring','summer','autumn','winter'].includes(st.season)?st.season:'auto';
+  out.settings.sound      = st.sound==='on'?'on':'off';
   out.settings.craftOcc   = (typeof st.craftOcc==='string'&&(CAREER_PACKS[st.craftOcc]||/^soc:\d{2}-\d{4}$/.test(st.craftOcc)))?st.craftOcc:'general';
   out.settings.craftStage = CRAFT_STAGE_IDS.includes(st.craftStage)?st.craftStage:'curious';
   out.settings.craftTitle = (typeof st.craftTitle==='string')?st.craftTitle.slice(0,80):'';
@@ -2217,24 +2234,14 @@ function ribbon(pts){
 }
 // a hazed treeline across the back — depth, and a destination the rivers/paths flow into
 function drawForest(W,dusky,winter){
-  const baseY=312;
-  const fr=c=>winter?mix(c,'#DCE8EE',dusky?0.32:0.5):c;   // frost the distant woods in winter
-  const hazeC=nightStep(fr(dusky?'#3A4A52':'#C2D6AC')), farC=nightStep(fr(dusky?'#465A5C':'#A6C68E')), nearC=nightStep(fr(dusky?'#374B49':'#83AC6B'));
-  let far='', near='';
-  for(let x=-20;x<W+40;x+=46){ const h=22+((x*13)%16); far+=`<ellipse cx="${x}" cy="${(baseY-2-h*0.3).toFixed(0)}" rx="29" ry="${h}"/>`; }
-  for(let x=12;x<W+40;x+=38){ const h=27+((x*17)%20); near+=`<path d="M${x-25} ${baseY+14} C ${x-25} ${(baseY-h*0.4).toFixed(0)} ${x-11} ${baseY-h} ${x} ${baseY-h} C ${x+11} ${baseY-h} ${x+25} ${(baseY-h*0.4).toFixed(0)} ${x+25} ${baseY+14} Z"/>`; }
-  let g=`<rect x="0" y="${baseY-34}" width="${W}" height="64" fill="${hazeC}" opacity="${dusky?.18:.22}"/>`;
-  g+=`<g fill="${farC}" opacity="${dusky?.5:.62}">${far}</g>`;
-  g+=`<g fill="${nearC}" opacity="${dusky?.62:.8}">${near}</g>`;
-  g+=`<path d="M0 ${baseY+12} C ${(W*0.3).toFixed(0)} ${baseY+4} ${(W*0.7).toFixed(0)} ${baseY+18} ${W} ${baseY+10} L${W} ${baseY+36} L0 ${baseY+36} Z" fill="${nearC}" opacity=".5"/>`;
-  if(winter){ // a soft cap of snow settled along the top of the near treeline
-    let cap=''; for(let x=12;x<W+40;x+=38){ const h=27+((x*17)%20); cap+=`<path d="M${x-16} ${(baseY-h+2).toFixed(0)} q ${16} ${(-8).toFixed(0)} ${32} 0" stroke="#F4F9FC" stroke-width="4" fill="none" stroke-linecap="round" opacity="${dusky?.4:.7}"/>`; }
-    g+=`<g>${cap}</g>`;
-  }
-  return g;
+  // v77 (from the design pack): the horizon forest is RANKS of single trees fading into haze —
+  // not one scalloped mass — with two dark DOORWAYS where the trail (x≈930) and the river
+  // (x≈2548) slip INTO the woods. Palette from sceneHues(season); night/dawn tinted per-colour.
+  const S=_gaSeason;
+  let band='<g transform="translate(1550 342)">'+GA.forestBand(0,1.05,S,7,[-620,998],1560)+'</g>';
+  band=band.replace(/#[0-9A-Fa-f]{6}/g,m=>nightTint(m,_phase));
+  return band;
 }
-// a DENSE MID-GROUND band of mixed plants between the woods and the meadow — two layered rows for depth,
-// closely packed but each plant distinct (back row smaller/hazier, front row larger/richer).
 function drawMidground(W,dusky){
   const PB=(dusky?['#46584F','#506357','#3C4D45']:['#9DC487','#A9CE93','#8CB877']).map(c=>nightStep(frost(c)));   // back row (atmospheric)
   const PF=(dusky?['#3C4E45','#47594F','#34453D']:['#7FB263','#8CC06D','#6CA052']).map(c=>nightStep(frost(c)));   // front row (richer)
@@ -2466,12 +2473,18 @@ const GA=(()=>{ class GA_CLS {
     { name:'Flowering', short:'Flower', at:1.0, desc:'The head opens fully \u2014 feathery plume, bottlebrush or bearded ear \u2014 casting its pollen to the wind.' }
   ];
   GRASS = {
-    meadow:   { blades:14, spread:54, len:110, w:2.4, arch:0.55, head:'panicle', headCol:'#A9B36E', headLen:42, culm:1.12, headN:4, seedGrad:['#8FBE5A','#5A8A38'] },
-    fescue:   { blades:24, spread:72, len:60,  w:1.7, arch:0.16, head:'none',    headCol:'#AECBBE', headLen:0,  culm:1.0,  headN:0, seedGrad:['#A2C4B2','#5E8A78'] },
-    fountain: { blades:16, spread:64, len:132, w:2.7, arch:0.85, head:'brush',   headCol:'#B58AA0', headLen:38, culm:1.12, headN:6, seedGrad:['#8AB258','#5A8636'] },
-    pampas:   { blades:14, spread:56, len:150, w:3.3, arch:0.5,  head:'plume',   headCol:'#C4B99C', headLen:70, culm:1.24, headN:5, seedGrad:['#A6BE6A','#6E9648'] },
-    wheat:    { blades:6,  spread:26, len:140, w:2.7, arch:0.2,  head:'grain',   headCol:'#CFA640', headLen:40, culm:1.18, headN:5, seedGrad:['#BBC468','#8E9642'] },
-    reed:     { blades:10, spread:30, len:156, w:2.1, arch:0.24, head:'feather', headCol:'#CDBE9E', headLen:58, culm:1.2,  headN:4, seedGrad:['#9CBE68','#67924A'] }
+    meadow:   { blades:18, spread:54, len:104, w:2.4, arch:0.55, head:'panicle', headCol:'#A9B36E', headLen:40, culm:1.12, headN:4, areaW:152, clumps:11, seedGrad:['#8FBE5A','#5A8A38'] },
+    fescue:   { blades:24, spread:74, len:58,  w:1.7, arch:0.16, head:'none',    headCol:'#AECBBE', headLen:0,  culm:1.0,  headN:0, areaW:132, clumps:12, seedGrad:['#A2C4B2','#5E8A78'] },
+    fountain: { blades:18, spread:64, len:128, w:2.7, arch:0.85, head:'brush',   headCol:'#B58AA0', headLen:38, culm:1.12, headN:6, areaW:104, clumps:5,  seedGrad:['#8AB258','#5A8636'] },
+    pampas:   { blades:20, spread:56, len:150, w:3.3, arch:0.5,  head:'plume',   headCol:'#C4B99C', headLen:70, culm:1.24, headN:5, areaW:78,  clumps:3,  seedGrad:['#A6BE6A','#6E9648'] },
+    wheat:    { blades:5,  spread:22, len:138, w:2.7, arch:0.2,  head:'grain',   headCol:'#CFA640', headLen:40, culm:1.18, headN:5, areaW:150, clumps:16, seedGrad:['#BBC468','#8E9642'] },
+    reed:     { blades:10, spread:30, len:154, w:2.1, arch:0.24, head:'feather', headCol:'#CDBE9E', headLen:58, culm:1.2,  headN:4, areaW:120, clumps:7,  seedGrad:['#9CBE68','#67924A'] },
+    timothy:  { blades:14, spread:32, len:120, w:2.2, arch:0.18, head:'brush',   headCol:'#B7A86A', headLen:28, culm:1.16, headN:4, areaW:140, clumps:11, seedGrad:['#9CC066','#5E8A3C'] },
+    cocksfoot:{ blades:16, spread:50, len:126, w:2.6, arch:0.42, head:'panicle', headCol:'#9BAE76', headLen:40, culm:1.14, headN:5, areaW:106, clumps:6,  seedGrad:['#8FB85E','#5A8638'] },
+    miscanthus:{blades:16, spread:52, len:150, w:2.9, arch:0.55, head:'plume',   headCol:'#DAC8C0', headLen:56, culm:1.22, headN:5, areaW:84,  clumps:3,  seedGrad:['#A6BE6A','#6E9648'] },
+    barley:   { blades:5,  spread:22, len:136, w:2.7, arch:0.26, head:'grain',   headCol:'#D4A93E', headLen:44, culm:1.18, headN:5, areaW:150, clumps:15, seedGrad:['#C6C060','#94933E'] },
+    oat:      { blades:6,  spread:28, len:138, w:2.6, arch:0.22, head:'oat',     headCol:'#CBB45E', headLen:46, culm:1.16, headN:5, areaW:148, clumps:13, seedGrad:['#B9C06A','#8E9642'] },
+    tufted:   { blades:20, spread:60, len:96,  w:1.6, arch:0.32, head:'feather', headCol:'#C9BE9E', headLen:44, culm:1.2,  headN:6, areaW:130, clumps:8,  seedGrad:['#A2C06A','#5E8A48'] }
   };
   STONE_STAGES = [
     { name:'Pebble', short:'Pebble', at:0.0, desc:'A stone small enough to sit in the palm, rolled smooth in a streambed or scattered loose across a field.' },
@@ -2590,6 +2603,30 @@ const GA=(()=>{ class GA_CLS {
       season:'Jul – Aug', sizeText:'60 – 100 cm', note:'The staff of life — a cultivated cereal whose bearded golden ears have fed civilisations for ten thousand years.' },
     { id:'reed', common:'Feather Reed Grass', latin:'Calamagrostis \u00d7 acutiflora', family:'Poaceae', type:'grass', kind:'reed',
       season:'Jun – Sep', sizeText:'1 – 1.5 m', note:'A strictly upright grass sending up narrow, feathery flower-spikes that stand like lit tapers well into winter.' },
+    { id:'timothy', common:'Timothy', latin:'Phleum pratense', family:'Poaceae', type:'grass', kind:'timothy',
+      season:'Jun \u2013 Aug', sizeText:'40 \u2013 100 cm', note:'The classic hay grass of the old meadow, running its dense, cat\u2019s-tail flower-spikes up above a deep, close-knit sward.' },
+    { id:'cocksfoot', common:'Cocksfoot', latin:'Dactylis glomerata', family:'Poaceae', type:'grass', kind:'cocksfoot',
+      season:'Jun \u2013 Jul', sizeText:'50 \u2013 120 cm', note:'A robust, tussocky meadow grass whose one-sided heads clench into tight green knots \u2014 the raised claw that gives it its country name.' },
+    { id:'miscanthus', common:'Silver Grass', latin:'Miscanthus sinensis', family:'Poaceae', type:'grass', kind:'miscanthus',
+      season:'Sep \u2013 Nov', sizeText:'1.5 \u2013 2.5 m', note:'A stately ornamental clump that unfurls fans of silvery, pink-flushed plumes above arching leaves, holding them bleached and shining into winter.' },
+    { id:'barley', common:'Barley', latin:'Hordeum vulgare', family:'Poaceae', type:'grass', kind:'barley',
+      season:'Jul \u2013 Aug', sizeText:'60 \u2013 100 cm', note:'A bearded cereal whose nodding ears bristle with long straw-gold awns, setting a whole field shivering like silk in the least wind.' },
+    { id:'oat', common:'Oat', latin:'Avena sativa', family:'Poaceae', type:'grass', kind:'oat',
+      season:'Jul \u2013 Aug', sizeText:'60 \u2013 150 cm', note:'A cereal of open, airy heads whose flattened spikelets dangle like little lanterns from fine, ever-trembling pedicels.' },
+    { id:'tufted', common:'Tufted Hair-Grass', latin:'Deschampsia cespitosa', family:'Poaceae', type:'grass', kind:'tufted',
+      season:'Jun \u2013 Aug', sizeText:'60 \u2013 120 cm', note:'A dense evergreen tussock that throws up a vast, airy haze of tiny spikelets, catching the low sun in a shimmering cloud above the sward.' },
+    { id:'flint', common:'Flint', latin:'Cryptocrystalline silica', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'flint',
+      season:'—', sizeText:'5 – 15 cm', note:'A hard nodule of silica born in chalk and clay, its glassy grey heart wrapped in a pale chalky cortex — struck for tools and fire since the Stone Age.' },
+    { id:'granite', common:'Granite', latin:'Quartz · feldspar · mica', family:'Igneous', rockClass:'Igneous', type:'stone', kind:'granite',
+      season:'—', sizeText:'to boulders', note:'A coarse igneous rock crystallised slowly deep underground, its speckled interlock of quartz, feldspar and mica making it enduringly hard.' },
+    { id:'quartz', common:'Rock Crystal', latin:'Silicon dioxide', family:'Silicate mineral', rockClass:'Mineral', type:'stone', kind:'quartz',
+      season:'—', sizeText:'3 – 20 cm', note:'The commonest mineral of the crust, growing clear six-sided prisms from silica-rich waters in the veins and cavities of every rock.' },
+    { id:'amethyst', common:'Amethyst Geode', latin:'Violet quartz', family:'Silicate mineral', rockClass:'Mineral', type:'stone', kind:'amethyst',
+      season:'—', sizeText:'to 40 cm', note:'A hollow nodule lined with a druse of violet quartz, its colour drawn from traces of iron set aglow by faint natural radiation.' },
+    { id:'slate', common:'Slate', latin:'Metamorphosed shale', family:'Metamorphic', rockClass:'Metamorphic', type:'stone', kind:'slate',
+      season:'—', sizeText:'flags', note:'Mudstone squeezed and heated until its clays realign, splitting cleanly into flat grey sheets long prized for roofs and writing slates.' },
+    { id:'sandstone', common:'Sandstone', latin:'Cemented sand grains', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'sandstone',
+      season:'—', sizeText:'to blocks', note:'Layered sand grains cemented over ages into a warm banded rock, its bedding lines a quiet record of ancient dunes and river beds.' },
     { id:'box', common:'Boxwood', latin:'Buxus sempervirens', family:'Buxaceae', type:'shrub', shrubKind:'box', evergreen:true,
       canopy:['#3E6B34','#477A3B','#4E8340','#3E6B34','#579048','#5E9A4E','#4E8340','#68A657','#6EAB5C'],
       season:'Evergreen', sizeText:'1 \u2013 4 m', note:'A dense, small-leaved evergreen that clips into a firm dark mound and holds its colour, unbroken, through the whole turning year.' },
@@ -3118,7 +3155,7 @@ const GA=(()=>{ class GA_CLS {
     for(let i=0;i<3;i++){ const a=-2.5+i*0.55; s+=this.puff(Math.cos(a)*F.w*0.5,Math.sin(a)*F.h*0.5+F.cy,F.rB*(0.54-0.06*i),hi,i*1.3,'0.85'); }
     s+=`<ellipse cx="${(-F.w*0.16).toFixed(1)}" cy="${(F.cy-F.h*0.34).toFixed(1)}" rx="${(F.w*0.5).toFixed(1)}" ry="${(F.h*0.4).toFixed(1)}" fill="url(#gaCanopyHi)"/>`;
     outline.forEach(p=>{ if(p[1]>F.cy-F.h*0.15){ s+=`<path d="M ${(p[0]-9).toFixed(1)} ${p[1].toFixed(1)} q 4.5 5 9 0 q 4.5 5 9 0" stroke="${dk}" stroke-width="1.1" fill="none" opacity="0.26"/>`; } });
-    const scatter=(n,tag,rad)=>{ const r=this.rng(this.hashId(sp.id+tag)); const o=[]; for(let i=0;i<n;i++){ const a=r()*6.2832, rr=Math.sqrt(r())*(rad||0.82); o.push([Math.cos(a)*F.w*rr,Math.sin(a)*F.h*rr+F.cy]); } return o; };
+    const scatter=(n,tag,rad)=>{ const r=this.rng(this.hashId(sp.id+tag)); return this.scatterPts(n,r,rad||0.82,F.w,F.h,F.cy); };   // fruit/blossom spread out, never clumped (v77 pack)
     const extra=this.sm(0.6,1,g);
     if(F.droop){ const dl=this.lp(6,28,this.sm(0.4,1,g));
       for(let i=0;i<10;i++){ const a=(i/10)*6.2832; const bx=Math.cos(a)*F.w*0.9; const by=Math.sin(a)*F.h*0.88+F.cy; if(by<F.cy-F.h*0.45) continue;
@@ -3177,9 +3214,15 @@ const GA=(()=>{ class GA_CLS {
     return s; }
 
   // ---------- shrubs (mature bushes only) ----------
-  shrubScatter(F,n,rnd,radMul){ const o=[]; radMul=radMul||0.82;
-    for(let i=0;i<n;i++){ const a=rnd()*6.2832, rr=Math.sqrt(rnd())*radMul;
-      o.push([Math.cos(a)*F.w*rr, Math.sin(a)*F.h*rr+F.cy]); } return o; }
+  scatterPts(n,rnd,radMul,W,H,cy){ radMul=radMul||0.82; const pts=[];
+    for(let i=0;i<n;i++){ let best=null,bd=-1;
+      for(let k=0;k<14;k++){ const a=rnd()*6.2832, rr=Math.sqrt(rnd())*radMul;
+        const x=Math.cos(a)*W*rr, y=Math.sin(a)*H*rr+cy;
+        let d=1e9; for(let j=0;j<pts.length;j++){ const dx=x-pts[j][0], dy=y-pts[j][1]; const dd=dx*dx+dy*dy; if(dd<d) d=dd; }
+        if(d>bd){ bd=d; best=[x,y]; } }
+      pts.push(best); }
+    return pts; }
+  shrubScatter(F,n,rnd,radMul){ return this.scatterPts(n,rnd,radMul,F.w,F.h,F.cy); }
   shrubStems(F,rnd,twCol,twHi){ let body=''; const stemN=F.stems; const F2=n=>(+n).toFixed(1);
     const topY=F.cy+F.h*0.28;
     if(stemN>0){
@@ -3267,6 +3310,80 @@ const GA=(()=>{ class GA_CLS {
     if(S.snow){ body+=this.shrubSnow(F,winterBare); }
     return `<g>${body}</g>`; }
 
+  // ── SCENERY palette + staffage forest (v77, from the design pack) ──
+  sceneHues(S){ const k=S.key;
+    if(k==='Spring') return { sky:['#EFEDDA','#E4E7CA'], sun:'#F6EFC9', haze:'#DDE4C4', ground:['#DCE2B8','#CBD6A2','#B9C88E','#A9BB7E'], leafs:['#A9CE77','#8CB85E','#7FA24B','#95C468'], trunk:'#7A6444', spruce:'#527A54', water:['#93BEAC','#D5E8DA','#54847A'], bank:'#8A9A66', road:['#D9C69C','#E8DAB6','#A98F5E','#BCA274'], field:'#AFC284' };
+
+    if(k==='Autumn') return { sky:['#F0E6C8','#EADCB6'], sun:'#F2D794', haze:'#E6D9B4', ground:['#E3D3A4','#D3BC84','#C0A468','#AE9054'], leafs:['#E0B54E','#CE8A32','#B4622A','#C9A34A','#A8842E'], trunk:'#6E5638', spruce:'#4E7050', water:['#89ACA0','#C9DCD2','#4E7A74'], bank:'#9A8A56', road:['#D5BE92','#E4D4AC','#A08654','#B29368'], field:'#C4A870' };
+    if(k==='Winter') return { sky:['#EAEDE9','#DEE5E5'], sun:'#F4F4EA', haze:'#DFE6E4', ground:['#F1F1E9','#E8EBE2','#DDE2D7','#D2D9CD'], leafs:['#8A7A66','#7A6C5A','#6E6046'], trunk:'#6E6046', spruce:'#48604E', water:['#D9E4E6','#F0F5F5','#A4BCC2'], bank:'#B9BFAE', road:['#EAEBE2','#F3F3EB','#B9C2C4','#CDD2C6'], field:'#C2BFA6' };
+    return { sky:['#EFEBD2','#E7E7C4'], sun:'#F6ECB4', haze:'#DCE0BE', ground:['#D8D8A8','#C6CC92','#B3BE7E','#A2AF6C'], leafs:['#6FA24B','#5E9242','#4C7A34','#7FAE55'], trunk:'#6E5A3A', spruce:'#4E7250', water:['#85B2A2','#C6E0D2','#4E8074'], bank:'#7E8E56', road:['#D9C69C','#E8DAB6','#A98F5E','#B49A6C'], field:'#AEBE7C' }; }
+
+  // one simplified staffage tree, base at (0,0); haze 0..1 fades it into the distance
+  bgTree(kind,h,S,seedN,haze){ const F=n=>(+n).toFixed(1); const H=this.sceneHues(S); const rnd=this.rng((seedN>>>0)||1);
+    const hz=this.cl(haze||0,0,0.9); const mx=(c,e)=>this.mix(c,H.haze,this.cl(hz+(e||0),0,0.94));
+    const bare=!!S.bare; const tr=mx(H.trunk,0.06); let s='';
+    if(kind==='spruce'){ const w=h*0.52; const col=mx(H.spruce);
+      s+=`<path d="M 0 0 L 0 ${F(-h*0.2)}" stroke="${tr}" stroke-width="${F(Math.max(0.8,h*0.05))}"/>`;
+      for(let i=0;i<3;i++){ const yb=-h*(0.14+i*0.26), yt=yb-h*(0.38-0.05*i), ww=w*(1-i*0.27);
+        s+=`<path d="M 0 ${F(yt)} L ${F(ww*0.5)} ${F(yb)} Q 0 ${F(yb+h*0.025)} ${F(-ww*0.5)} ${F(yb)} Z" fill="${this.mix(col,'#2E4234',0.09*i)}"/>`;
+        if(S.snow) s+=`<ellipse cx="0" cy="${F(yt+h*0.03)}" rx="${F(ww*0.17)}" ry="${F(Math.max(0.8,h*0.022))}" fill="#F2F6F4" opacity="0.92"/>`; }
+      return s; }
+    if(kind==='pine'){ const th=h*0.6, tw=Math.max(0.8,h*0.04); const col=mx(H.spruce,0.03);
+      s+=`<path d="M ${F(-tw)} 0 C ${F(-tw*0.4)} ${F(-th*0.5)} ${F(tw*0.3)} ${F(-th*0.6)} ${F(-tw*0.2)} ${F(-th)} L ${F(tw*0.5)} ${F(-th)} C ${F(tw*0.8)} ${F(-th*0.55)} ${F(tw*0.5)} ${F(-th*0.4)} ${F(tw)} 0 Z" fill="${tr}"/>`;
+      s+=`<ellipse cx="${F(-h*0.14)}" cy="${F(-th-h*0.1)}" rx="${F(h*0.22)}" ry="${F(h*0.1)}" fill="${this.mix(col,'#2E4234',0.12)}"/>`;
+      s+=`<ellipse cx="${F(h*0.12)}" cy="${F(-th-h*0.16)}" rx="${F(h*0.24)}" ry="${F(h*0.11)}" fill="${col}"/>`;
+      s+=`<ellipse cx="${F(-h*0.02)}" cy="${F(-th-h*0.24)}" rx="${F(h*0.19)}" ry="${F(h*0.09)}" fill="${this.mix(col,'#EFF2E2',0.16)}"/>`;
+      if(S.snow) s+=`<ellipse cx="0" cy="${F(-th-h*0.3)}" rx="${F(h*0.16)}" ry="${F(h*0.03)}" fill="#F2F6F4" opacity="0.9"/>`;
+      return s; }
+    const tall=kind==='tall'; const th=tall?h*0.24:h*0.38; const tw=Math.max(0.8,h*(kind==='birch'?0.035:0.05));
+    const trunkC = kind==='birch'? this.mix('#E8E2D2',H.haze,hz*0.5) : tr;
+    s+=`<path d="M ${F(-tw)} 0 L ${F(-tw*0.45)} ${F(-th)} L ${F(tw*0.45)} ${F(-th)} L ${F(tw)} 0 Z" fill="${trunkC}"/>`;
+    if(kind==='birch') s+=`<path d="M ${F(-tw*0.3)} ${F(-th*0.3)} h ${F(tw*0.8)} M ${F(-tw*0.4)} ${F(-th*0.66)} h ${F(tw*0.7)}" stroke="${this.mix('#5E5648',H.haze,hz*0.5)}" stroke-width="${F(Math.max(0.4,h*0.008))}" opacity="0.6"/>`;
+    if(bare){ const nb=tall?4:5;
+      for(let i=0;i<nb;i++){ const a=tall? this.lp(-16,16,i/(nb-1)) : this.lp(-56,56,i/(nb-1))+(rnd()*2-1)*9; const L=h*(tall?0.6:0.42)*(0.8+0.35*rnd());
+        const ex=Math.sin(a*Math.PI/180)*L, ey=-th-Math.cos(a*Math.PI/180)*L;
+        s+=`<path d="M 0 ${F(-th)} Q ${F(ex*0.35)} ${F(-th+(ey+th)*0.55)} ${F(ex)} ${F(ey)}" stroke="${trunkC}" stroke-width="${F(Math.max(0.5,h*0.016))}" fill="none" stroke-linecap="round"/>`; }
+      return s; }
+    const cols=H.leafs; const base=this.mix(cols[Math.floor(rnd()*cols.length)],H.haze,hz*0.88);
+    const dk=this.mix(base,'#3A5230',0.22), hi=this.mix(base,'#F6EFC9',0.2);
+    if(tall){ const ch=h*0.8;
+      s+=`<ellipse cx="0" cy="${F(-th-ch*0.48)}" rx="${F(h*0.15)}" ry="${F(ch*0.5)}" fill="${dk}"/>`;
+      s+=`<ellipse cx="${F(-h*0.02)}" cy="${F(-th-ch*0.52)}" rx="${F(h*0.12)}" ry="${F(ch*0.44)}" fill="${base}"/>`;
+      s+=`<ellipse cx="${F(-h*0.04)}" cy="${F(-th-ch*0.62)}" rx="${F(h*0.07)}" ry="${F(ch*0.3)}" fill="${hi}" opacity="0.8"/>`; }
+    else { const cy=-th-h*0.3;
+      s+=`<ellipse cx="0" cy="${F(cy)}" rx="${F(h*0.31)}" ry="${F(h*0.27)}" fill="${dk}"/>`;
+      s+=`<ellipse cx="${F(-h*0.15)}" cy="${F(cy+h*0.07)}" rx="${F(h*0.2)}" ry="${F(h*0.16)}" fill="${this.mix(base,'#3A5230',0.1)}"/>`;
+      s+=`<ellipse cx="${F(h*0.14)}" cy="${F(cy+h*0.04)}" rx="${F(h*0.21)}" ry="${F(h*0.17)}" fill="${base}"/>`;
+      s+=`<ellipse cx="${F(-h*0.03)}" cy="${F(cy-h*0.12)}" rx="${F(h*0.19)}" ry="${F(h*0.14)}" fill="${hi}" opacity="0.85"/>`; }
+    return s; }
+
+  // rank behind rank of single trees; gapX opens a doorway where a road or river slips in
+  forestBand(baseY,sc,S,seedN,gapXs,halfSpan){ gapXs=gapXs||[]; const F=n=>(+n).toFixed(1); const H=this.sceneHues(S); const rnd=this.rng((seedN>>>0)||7);
+    halfSpan=halfSpan||178; let s='';
+    const rows=[ {dy:-9, hz:0.74, hMin:11, hMax:16, step:10},
+                 {dy:-3, hz:0.5,  hMin:15, hMax:22, step:12},
+                 {dy:3,  hz:0.26, hMin:20, hMax:30, step:13},
+                 {dy:9,  hz:0.08, hMin:25, hMax:37, step:15} ];
+    rows.forEach((r,ri)=>{
+      if(ri===3){ const uy=baseY+r.dy*sc; const uc=this.mix(H.spruce,'#2E3E30',0.25); let d=`M ${F(-halfSpan)} ${F(uy+3*sc)} `;
+        for(let x=-halfSpan;x<=halfSpan;x+=14*sc){ d+=`Q ${F(x+7*sc)} ${F(uy-4*sc)} ${F(Math.min(halfSpan,x+14*sc))} ${F(uy+2*sc)} `; }
+        d+=`L ${F(halfSpan)} ${F(uy+7*sc)} L ${F(-halfSpan)} ${F(uy+7*sc)} Z`;
+        s+=`<path d="${d}" fill="${S.snow?this.mix(uc,'#DDE4E2',0.45):uc}" opacity="0.5"/>`;
+        gapXs.forEach(gx=>{ s+=`<path d="M ${F(gx-9*sc)} ${F(uy+7*sc)} Q ${F(gx)} ${F(uy-16*sc)} ${F(gx+9*sc)} ${F(uy+7*sc)} Z" fill="${this.mix(H.spruce,'#232E26',0.55)}" opacity="0.65"/>`; }); }
+      let x=-halfSpan+rnd()*8*sc;
+      while(x<halfSpan){ const gw=(gapXs.length&&ri===3)?(5+ri*3.4)*sc:-1;
+        if(gw<0||!gapXs.some(gx=>Math.abs(x-gx)<=gw)){ const kr=rnd(); const kind=kr<0.15?'spruce':(kr<0.24?'tall':'round');
+          const hh=this.lp(r.hMin,r.hMax,rnd())*sc;
+          s+=`<g transform="translate(${F(x)} ${F(baseY+r.dy*sc)})">`+this.bgTree(kind,hh,S,(seedN+ri*131+((x*7)|0))>>>0,r.hz)+`</g>`; }
+        x+=r.step*sc*(0.66+rnd()*0.62); } });
+    return s; }
+
+  ribbon(spf,N){ N=N||64; const pts=[]; for(let i=0;i<=N;i++) pts.push(spf(i/N));
+    const path=(mul)=>{ let d=''; for(let i=0;i<pts.length;i++){ const p=pts[i]; d+=(i?' L ':'M ')+(p.x-p.w*mul*0.5).toFixed(1)+' '+p.y.toFixed(1); }
+      for(let i=pts.length-1;i>=0;i--){ const p=pts[i]; d+=' L '+(p.x+p.w*mul*0.5).toFixed(1)+' '+p.y.toFixed(1); }
+      return d+' Z'; };
+    return {pts,path}; }
+
   flowerAbove(sp,g,S){ S=S||this.SEASONS.Summer; const spike=['spike','bluebell','foxglove','snowdrop'].includes(sp.bloomKind);
     const phase=(S&&S.forceBloom)?'bloom':this.phenophase(sp,S); const dormant=phase==='dormant'; const bulb=this.isBulb(sp);
     const seedSwell=this.sm(0.03,0.12,g);
@@ -3342,39 +3459,77 @@ const GA=(()=>{ class GA_CLS {
       for(let i=0;i<nb;i++){ const t=nb>1?i/(nb-1):0; const sy=-Lh*0.1-t*Lh*0.9; const env=Math.pow(Math.sin(Math.min(1,t*1.05)*Math.PI),0.7); const spread=Wd*env*(0.7+0.5*((i*7)%5)/5); const dir=i%2?1:-1;
         s+=`<path d="M 0 ${F(sy)} Q ${F(dir*spread*0.5)} ${F(sy-3)} ${F(dir*spread)} ${F(sy-9)}" stroke="${headCol}" stroke-width="0.75" fill="none" opacity="0.72" stroke-linecap="round"/>`; }
       return s; }
+    if(kind==='oat'){ const rows=Math.max(3,Math.round(5*(0.55+0.5*open))); s+=`<line x1="0" y1="2" x2="0" y2="${F(-Lh)}" stroke="${cBot}" stroke-width="1.2"/>`;
+      for(let i=0;i<rows;i++){ const t=rows>1?i/(rows-1):0.5; const y=-Lh*0.22-t*Lh*0.74; const dir=i%2?1:-1; const ped=Lh*0.24*(0.6+0.5*(1-t))*open;
+        const ex=dir*ped, ey=y+ped*0.62;
+        s+=`<path d="M 0 ${F(y)} Q ${F(dir*ped*0.55)} ${F(y+ped*0.12)} ${F(ex)} ${F(ey)}" stroke="${cTop}" stroke-width="0.7" fill="none" opacity="0.7"/>`;
+        const sl=6.5*open; s+=`<path d="M ${F(ex)} ${F(ey)} q ${F(-1.9)} ${F(sl*0.5)} 0 ${F(sl)} q ${F(1.9)} ${F(-sl*0.5)} 0 ${F(-sl)} Z" fill="${headCol}" opacity="0.85"/>`;
+        s+=`<line x1="${F(ex)}" y1="${F(ey)}" x2="${F(ex+dir*1.6)}" y2="${F(ey-sl*0.75)}" stroke="${cBot}" stroke-width="0.5" opacity="0.6"/>`; }
+      return s; }
     const nb=Math.max(3,Math.round(6*open)); s+=`<line x1="0" y1="2" x2="0" y2="${F(-Lh)}" stroke="${cBot}" stroke-width="1.2"/>`;
     for(let i=0;i<nb;i++){ const t=nb>1?i/(nb-1):0.5; const y=-Lh*0.22-t*Lh*0.74; const dir=i%2?1:-1; const bl=Lh*0.24*(0.6+0.5*(1-t))*open;
       s+=`<path d="M 0 ${F(y)} q ${F(dir*bl*0.7)} ${F(-bl*0.3)} ${F(dir*bl)} ${F(-bl*0.8)}" stroke="${cTop}" stroke-width="0.8" fill="none" opacity="0.72"/><ellipse cx="${F(dir*bl)}" cy="${F(y-bl*0.8)}" rx="1.3" ry="2.2" fill="${headCol}" opacity="0.8" transform="rotate(${F(dir*20)} ${F(dir*bl)} ${F(y-bl*0.8)})"/>`; }
     return s; }
-  grassAbove(sp,g,S){ S=S||this.SEASONS.Summer; const G=this.GRASS[sp.kind]||this.GRASS.meadow;
-    const rnd=this.rng(this.hashId(sp.id+'|grassV1')); const P=this.grassPalette(G,S); let s='';
+  grassAbove(sp,g,S,opts){ opts=opts||{}; S=S||this.SEASONS.Summer; const G=this.GRASS[sp.kind]||this.GRASS.meadow;
+    const P=this.grassPalette(G,S); let s='';
+    const areaW=G.areaW||130, nClumps=G.clumps||7;
+    // a wide, soft ground-shadow band so the whole spread reads as one grounded patch of turf
+    if(!opts.single && !S.snow) s+=`<ellipse cx="0" cy="4" rx="${(areaW*0.94).toFixed(0)}" ry="7" fill="rgba(52,36,16,0.10)"/>`;
     const seedOp=1-this.sm(0.12,0.22,g);
     if(seedOp>0.02) s+=`<g opacity="${seedOp.toFixed(2)}" transform="translate(0 7)">${this.seed(this.sm(0.02,0.12,g))}</g>`;
     const grow=this.sm(0.11,0.92,g); if(grow<=0.01) return s;
-    const n=Math.max(2,Math.round(this.lp(2,G.blades,this.sm(0.16,0.72,g))));
-    const items=[];
-    for(let i=0;i<n;i++){ const t=n>1?i/(n-1):0.5;
-      const lean=this.lp(-G.spread,G.spread,t)*(0.82+0.34*rnd());
-      const x0=(t-0.5)*G.w*3.2+(rnd()*2-1)*2.2;
-      const bl=G.len*grow*(0.62+0.5*rnd())*(1-0.24*Math.abs(t-0.5));
-      const w=G.w*(0.8+0.45*rnd());
-      const arch=G.arch*(0.7+0.55*rnd())*(lean>=0?1:-1);
-      items.push({x0,lean,bl,w,arch,back:rnd()<0.42}); }
-    items.sort((a,b)=>(a.back===b.back)?0:(a.back?-1:1));
-    items.forEach(b=>{ const top=b.back?this.mix(P.top,P.bot,0.55):P.top; const bot=b.back?this.mix(P.bot,'#39512A',0.28):P.bot;
-      s+=this.grassBlade(b.x0,b.lean,b.bl,b.w,b.arch,top,bot); });
-    if(G.head!=='none'){ const em=this.sm(0.58,0.98,g);
-      if(em>0.02){ const nc=G.headN; let hc=G.headCol; if(S.key==='Winter') hc=this.mix(hc,'#CBB98A',0.5); else if(S.key==='Autumn') hc=this.mix(hc,'#D6AE58',0.4);
-        for(let k=0;k<nc;k++){ const t=nc>1?k/(nc-1):0.5; const lean=this.lp(-G.spread*0.45,G.spread*0.45,t)*(0.7+0.5*rnd());
-          const clen=G.len*G.culm*grow*(0.88+0.16*rnd()); const rad=lean*Math.PI/180, dx=Math.sin(rad), dy=-Math.cos(rad);
-          const carch=(G.head==='brush')?0.55:0.12; const sgn=lean>=0?1:-1;
-          const tipx=dx*clen*(1-0.1*carch), tipy=dy*clen*(1-0.28*carch); const cx=dx*clen*0.5+sgn*carch*clen*0.32, cy=dy*clen*0.5;
-          const tx=2*(tipx-cx), ty=2*(tipy-cy); const rot=Math.atan2(tx,-ty)*180/Math.PI;
-          s+=`<path d="M 0 0 Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${tipx.toFixed(1)} ${tipy.toFixed(1)}" stroke="${P.bot}" stroke-width="${Math.max(1,G.w*0.5).toFixed(1)}" fill="none" stroke-linecap="round"/>`;
-          s+=`<g transform="translate(${tipx.toFixed(1)} ${tipy.toFixed(1)}) rotate(${rot.toFixed(1)})">${this.grassHead(G.head,G.headLen,em,hc,this.mix(hc,P.bot,0.2),hc)}</g>`; } } }
+    // spread the grass into many tufts across a wide area, with depth: back rows sit higher, smaller, hazier
+    let clumps;
+    if(opts.single){ clumps=[{cx:0,cy:0,scale:1,pale:0,seed:this.hashId(sp.id+'|iconclump')}]; }
+    else { const rc=this.rng(this.hashId(sp.id+'|sward')); clumps=[];
+      for(let c=0;c<nClumps;c++){ const t=nClumps>1?c/(nClumps-1):0.5;
+        const cx=this.lp(-areaW,areaW,t)+(rc()*2-1)*(areaW/Math.max(1,nClumps)*1.05);
+        const depth=rc();
+        clumps.push({ cx, cy:-depth*22+(rc()*2-1)*4, scale:this.lp(1.0,0.5,depth)*this.lp(0.82,1.12,rc()), pale:depth,
+          vigor:this.lp(0.66,1.18,rc()), dens:this.lp(0.58,1.12,rc()), leanBias:(rc()*2-1)*15,
+          spreadMul:this.lp(0.8,1.22,rc()), archMul:this.lp(0.78,1.3,rc()),
+          headMul:(rc()<0.2?0:this.lp(0.5,1.3,rc())), hue:(rc()*2-1),
+          seed:this.hashId(sp.id+'|clump'+c) }); }
+      clumps.sort((a,b)=>b.pale-a.pale); }
+    clumps.forEach(cl=>{ s+=this.grassClump(sp,G,P,g,grow,cl,S); });
     return s; }
 
+  grassClump(sp,G,P,g,grow,cl,S){ const rnd=this.rng(cl.seed);
+    const vigor=cl.vigor||1, dens=cl.dens||1, leanBias=cl.leanBias||0, spreadMul=cl.spreadMul||1, archMul=cl.archMul||1, headMul=(cl.headMul==null?1:cl.headMul), hue=cl.hue||0;
+    let topC=this.mix(P.top,'#CDD4BE',cl.pale*0.42), botC=this.mix(P.bot,'#AEB49C',cl.pale*0.42);
+    // subtle per-tuft colour shift — warm straw (+) or cool blue-green (−) — so neighbours never match
+    const ht=Math.abs(hue)*0.16, tone=hue>=0?'#C9C46E':'#6FA285';
+    topC=this.mix(topC,tone,ht); botC=this.mix(botC,tone,ht*0.8);
+    const spr=G.spread*spreadMul, arch0=G.arch*archMul;
+    const n=Math.max(3,Math.round(this.lp(3,G.blades,this.sm(0.16,0.72,g))*dens));
+    const items=[];
+    for(let i=0;i<n;i++){ const t=n>1?i/(n-1):0.5;
+      const lean=this.lp(-spr,spr,t)*(0.82+0.34*rnd())+leanBias;
+      const x0=(t-0.5)*G.w*3.4+(rnd()*2-1)*2.4;
+      const bl=G.len*grow*vigor*(0.62+0.5*rnd())*(1-0.2*Math.abs(t-0.5));
+      const w=G.w*(0.8+0.45*rnd());
+      const arch=arch0*(0.7+0.55*rnd())*(lean>=0?1:-1);
+      items.push({x0,lean,bl,w,arch,back:rnd()<0.42}); }
+    items.sort((a,b)=>(a.back===b.back)?0:(a.back?-1:1));
+    let body='';
+    items.forEach(b=>{ const top=b.back?this.mix(topC,botC,0.55):topC; const bot=b.back?this.mix(botC,'#39512A',0.28):botC;
+      body+=this.grassBlade(b.x0,b.lean,b.bl,b.w,b.arch,top,bot); });
+    if(G.head!=='none' && headMul>0){ const em=this.sm(0.58,0.98,g);
+      if(em>0.02){ const nc=Math.max(1,Math.round(G.headN*headMul)); let hc=G.headCol; if(S.key==='Winter') hc=this.mix(hc,'#CBB98A',0.5); else if(S.key==='Autumn') hc=this.mix(hc,'#D6AE58',0.4);
+        hc=this.mix(hc,'#D8DCC4',cl.pale*0.4); const culmC=this.mix(botC,'#39512A',0.1);
+        for(let k=0;k<nc;k++){ const t=nc>1?k/(nc-1):0.5; const lean=this.lp(-spr*0.45,spr*0.45,t)*(0.7+0.5*rnd())+leanBias*0.5;
+          const clen=G.len*G.culm*grow*vigor*(0.88+0.16*rnd()); const rad=lean*Math.PI/180, dx=Math.sin(rad), dy=-Math.cos(rad);
+          const carch=(G.head==='brush')?0.55:0.12, sgn=lean>=0?1:-1;
+          const tipx=dx*clen*(1-0.1*carch), tipy=dy*clen*(1-0.28*carch), ccx=dx*clen*0.5+sgn*carch*clen*0.32, ccy=dy*clen*0.5;
+          const tx=2*(tipx-ccx), ty=2*(tipy-ccy), rot=Math.atan2(tx,-ty)*180/Math.PI;
+          const hl=G.headLen*this.lp(0.82,1.16,rnd());
+          body+=`<path d="M 0 0 Q ${ccx.toFixed(1)} ${ccy.toFixed(1)} ${tipx.toFixed(1)} ${tipy.toFixed(1)}" stroke="${culmC}" stroke-width="${Math.max(1,G.w*0.5).toFixed(1)}" fill="none" stroke-linecap="round"/>`;
+          body+=`<g transform="translate(${tipx.toFixed(1)} ${tipy.toFixed(1)}) rotate(${rot.toFixed(1)})">${this.grassHead(G.head,hl,em,hc,this.mix(hc,botC,0.2),hc)}</g>`; } } }
+    const op=(1-cl.pale*0.26).toFixed(2);
+    return `<g transform="translate(${cl.cx.toFixed(1)} ${cl.cy.toFixed(1)}) scale(${cl.scale.toFixed(3)})" opacity="${op}">${body}</g>`; }
+
   // ---------- stones ----------
+
   blobPath(w,h,cy,rndFn,jag){ const F=n=>(+n).toFixed(1); const N=12, pts=[];
     for(let i=0;i<N;i++){ const a=i/N*6.2832; const rr=1+(rndFn()*2-1)*jag; pts.push([Math.cos(a)*w/2*rr, Math.sin(a)*h/2*rr+cy]); }
     let d=`M ${F((pts[0][0]+pts[N-1][0])/2)} ${F((pts[0][1]+pts[N-1][1])/2)}`;
@@ -3731,10 +3886,7 @@ function envHome(cx,by,phase,gr){ // Home — a tended homestead garden
   g+=`<path d="${ribbon(ppts.map(p=>({x:p.x,y:p.y,w:Math.max(2,p.w*0.42)})))}" fill="#F3E6CC" opacity=".5"/>`;
   // stepping stones following the new route
   [[124,-70],[106,-8],[76,14],[28,58],[-8,116]].forEach(p=>{ g+=`<ellipse cx="${cx+p[0]}" cy="${by+p[1]}" rx="5.5" ry="2.6" fill="#CFC3A6" opacity=".7"/>`; });
-  // the trail's head slips INTO a clump of woods on the treeline (twin of the river's source)
-  const hdk=DUSKY(phase), hc=nightStep(frost(hdk?'#374B49':'#83AC6B')), hl=nightStep(frost(hdk?'#46585B':'#A6C68E'));
-  g+=`<g fill="${hc}"><ellipse cx="${cx+132}" cy="${by-146}" rx="24" ry="20"/><ellipse cx="${cx+168}" cy="${by-150}" rx="22" ry="19"/><ellipse cx="${cx+150}" cy="${by-162}" rx="20" ry="18"/></g>`;
-  g+=`<g fill="${hl}" opacity=".7"><ellipse cx="${cx+142}" cy="${by-154}" rx="12" ry="10"/><ellipse cx="${cx+162}" cy="${by-146}" rx="10" ry="9"/></g>`;
+  // (the trail now runs INTO the forest doorway drawn by drawForest — the old woods-blob is gone)
   // (birdhouse and potted flower removed — the tulip grows straight from the bed instead)
   g+=`<g class="sway" style="animation-duration:7.6s;animation-delay:-2s"><g transform="translate(${cx+96} ${by+40})">${wildflower('tulip',null,.5,60,gr)}</g></g>`;
   // tidy garden beds — tulips, daffodils and a rose, only beside the trail, never on it
@@ -3802,7 +3954,16 @@ function envStream(cx,by,dusky,gr){ // Future — a river springing from the woo
   // just the water (vertical gradient fades the source into the treeline — no hard bank outline at the head) + a lighter core
   g+=`<path d="${ribbon(pts)}" fill="url(#streamGrad)"/>`;
   g+=`<path d="${ribbon(pts.map(p=>({x:p.x,y:p.y,w:Math.max(2,p.w*0.5)})))}" fill="#C4E8DD" opacity=".4"/>`;
-  // sparkle midlines DRIFT DOWNSTREAM (animated dash offset) — this is what makes the river visibly flow
+  // water life by season: flowing sparkle midlines — or, in winter, the river FREEZES to pale
+  // ice with quiet crack lines (the design pack's winter water), and nothing animates
+  if(_gaSeason.snow){
+    g+=`<path d="${ribbon(pts.map(p=>({x:p.x,y:p.y,w:Math.max(2,p.w*0.9)})))}" fill="#EDF4F5" opacity=".55"/>`;
+    const rr=(n)=>{ const t=Math.sin(n*127.3+7.1)*43758.5; return t-Math.floor(t); };
+    for(let ci=0;ci<5;ci++){ const t0=0.12+ci*0.17, p0=pts[Math.min(pts.length-1,Math.round(t0*(pts.length-1)))];
+      const x0=p0.x+(rr(ci)*2-1)*p0.w*0.3, y0=p0.y;
+      g+=`<path d="M ${x0.toFixed(0)} ${y0.toFixed(0)} l ${(6+rr(ci+9)*14).toFixed(0)} ${(3+rr(ci+3)*6).toFixed(0)} l ${(5+rr(ci+5)*10).toFixed(0)} ${(-2-rr(ci+7)*4).toFixed(0)}" stroke="#A4BCC2" stroke-width="1.1" fill="none" opacity=".6"/>`; }
+  } else {
+    // sparkle midlines DRIFT DOWNSTREAM (animated dash offset) — this is what makes the river visibly flow
   { let md=`M${pts[0].x} ${pts[0].y+10}`;
     for(let i=1;i<pts.length;i++){ const a=pts[i-1],b=pts[i],my=(a.y+b.y)/2; md+=` C ${a.x} ${my} ${b.x} ${my} ${b.x} ${b.y}`; }
     g+=`<path class="flow" d="${md}" stroke="#EAF8F3" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="3 24" opacity=".5"/>`;
@@ -3812,14 +3973,12 @@ function envStream(cx,by,dusky,gr){ // Future — a river springing from the woo
   g+=`<g stroke="#CDEFE6" stroke-width="2.2" fill="none" opacity=".5" stroke-linecap="round"><path d="M${cx+30} ${by+6} q 14 5 26 1"/><path d="M${cx+8} ${by+92} q 16 6 30 1"/></g>`;
   // reeds + cattail on the banks — the channel itself stays clear (no boulders in the water's path)
   // cornflowers + bearded irises on the banks (never in the channel; right-bank ones clear of the willow at cx+84)
+  }
   // reed beds from the atlas (feather reed — blades + seed heads), rooted on both banks;
   // the east clump is the darter's perch/roost. gaTint keeps them dimmed at dusk/night.
   g+=gaGrass(cx-92,by+54,'reed',.30,.9)+gaGrass(cx+96,by+52,'reed',.27,.9);
   g+=scatterFlowers(cx,[[-96,by+46,'cornflower','blue',.5],[-72,by+18,'iris',null,.48,58],[126,by+34,'cornflower','blue',.48],[152,by+52,'iris',null,.46,56]],gr);
-  // the source emerges from WITHIN a bush clump sitting right over the river's head (tucked below the treeline)
-  const fc=nightStep(frost(dusky?'#374B49':'#83AC6B')), fl=nightStep(frost(dusky?'#46585B':'#A6C68E'));
-  g+=`<g fill="${fc}"><ellipse cx="${cx+36}" cy="${by-120}" rx="26" ry="20"/><ellipse cx="${cx+74}" cy="${by-122}" rx="24" ry="18"/><ellipse cx="${cx+56}" cy="${by-134}" rx="22" ry="18"/></g>`;
-  g+=`<g fill="${fl}" opacity=".7"><ellipse cx="${cx+46}" cy="${by-128}" rx="13" ry="10"/><ellipse cx="${cx+68}" cy="${by-118}" rx="11" ry="8"/></g>`;
+  // (the river now flows OUT of the forest doorway — the old source-blob is gone)
   return g;
 }
 function envPool(cx,by,dusky,gr){ // Calm — a broad still reflecting pool, mist, lavender
@@ -3951,6 +4110,9 @@ const FABLE_BEHAV={
   frog:     {go:'hop',    spd:22, idles:[['sit',5],['croak',1]]},
   mouse:    {go:'scurry', spd:46, idles:[['nibble',3],['alert',1]]},
   owl:      {idles:[['perch',3],['headturn',1]]},
+  heron:    {go:'stalk',  spd:11, idles:[['strike',1]]},
+  hare:     {go:'lope',   spd:44, idles:[['alert',2]],                  rare:[['sprint',0.5]]},
+  grasssnake:{go:'slither',spd:16, idles:[['coil',1]]},
   bee:      {}, dragonfly:{}, butterfly:{}
 };
 // EVERY atlas animal is drawn facing RIGHT — verified 2026-07-06 with a centre-line RAW-render
@@ -4352,8 +4514,8 @@ function renderMeadow(force,opt){
     const fclear=x=> cores2.some(c=>Math.abs(x-c)<110)
       || Math.abs(x-(HABX.future+34))<150 || Math.abs(x-HABX.calm)<200 || Math.abs(x-800)<80
       || Math.abs(x-BEARX)<BEARAMP+18 || FABLE_RUNS.some(r=>x>r[0]-30&&x<r[1]+30);
-    const FG=['meadow','fescue','fountain'];
-    for(let fx=120,fi=0; fx<W-90; fx+=196+((fi*53)%88), fi++){
+    const FG=['meadow','timothy','fescue','tufted','fountain','cocksfoot'];
+    for(let fx=120,fi=0; fx<W-90; fx+=264+((fi*53)%96), fi++){
       if(fclear(fx)) continue;
       const fy=550+((fi*23)%26), fsc=0.26+((fi*13)%12)/100;
       st+=gaGrass(fx,fy,FG[fi%3],fsc,0.8+((fi*7)%20)/100);
@@ -4445,6 +4607,13 @@ function renderMeadow(force,opt){
     {id:'bee',      mid:'patrol', x:HABX.craft-140, y:HABY.craft-36, sc:.44, off:.12, flt:14,fltAmp:16,fltSeed:221},
     {id:'bee',      mid:'waggle', x:HABX.craft+40,  y:HABY.craft-52, sc:.42, off:.55, flt:13,fltAmp:14,fltSeed:222},
     {id:'bee',      mid:'patrol', x:HABX.craft+176, y:HABY.craft-70, sc:.4,  off:.30, flt:13,fltAmp:15,fltSeed:223},
+    // the meadow's namesake: a skylark in song-flight, high over Body's flowers
+    {id:'skylark',  mid:'song',   x:420,  y:96,  sc:.5, off:.25, flt:16, fltAmp:10, fltSeed:501},
+    // bumblebees working the flower beds (heavier, rounder cousins of the hive bees)
+    {id:'bumblebee',mid:'hover',  x:284,  y:468, sc:.5, off:.4,  flt:13, fltAmp:14, fltSeed:502},
+    {id:'bumblebee',mid:'nectar', x:1596, y:450, sc:.48,off:.7,  flt:14, fltAmp:11, fltSeed:503},
+    // a grasshopper chirping in the front grass
+    {id:'grasshopper',mid:'chirp',x:470,  y:540, sc:.5, off:.1,  flt:18, fltAmp:2,  fltSeed:504},
     // the odonata trio from the v73 pack — the hawker hovers the stream head, the darter keeps
     // its sit-and-sally perch by the east reeds, the demoiselle flutters low over the water
     {id:'dragonfly',mid:'hover',  x:HABX.future+6,  y:HABY.future-40, sc:.78, off:.80, flt:14,fltAmp:26,fltSeed:205},
@@ -4490,16 +4659,41 @@ function renderMeadow(force,opt){
     {id:'stork',    mid:'sleep', x:2520, y:533, sc:1, off:.45, flt:34, fltAmp:2, fltSeed:305, extra:' opacity=".85"'},             // one-legged roost in the shallows
     {id:'bird',     mid:'sleep', x:682,  y:415, sc:.60, off:.40, flt:26, fltAmp:1.5, fltSeed:306, extra:' opacity=".92"'},          // asleep on the lilac where it sang at dusk
     {id:'fish',     mid:'rest',  x:HABX.calm-92, y:520, sc:.45, off:.25, flt:24, fltAmp:2, fltSeed:307, extra:' opacity=".3"'},    // settled low under the dark water
+    {id:'firefly',  mid:'lantern', x:500,  y:470, sc:.5, off:.2, flt:15, fltAmp:34, fltSeed:506},   // wandering lanterns
+    {id:'firefly',  mid:'lantern', x:2600, y:498, sc:.5, off:.7, flt:17, fltAmp:28, fltSeed:507},
+    {id:'firefly',  mid:'beacon',  x:1752, y:468, sc:.5, off:.4, flt:20, fltAmp:1,  fltSeed:508},   // one beacons from the old oak
+    {id:'bumblebee',mid:'flowerbed',x:300, y:486, sc:.48,off:.3, flt:24, fltAmp:1,  fltSeed:509},   // asleep inside a meadow flower
+    {id:'grasshopper',mid:'roost', x:2412, y:502, sc:.5, off:.6, flt:22, fltAmp:1,  fltSeed:510},   // clinging to the west reeds
     {id:'darter',    mid:'roost', x:HABX.future+96, y:HABY.future-4, sc:.52, off:.20, flt:26, fltAmp:2, fltSeed:303},  // asleep on the east reeds
     {id:'demoiselle',mid:'roost', x:HABX.calm-158,  y:HABY.calm+26,  sc:.48, off:.60, flt:28, fltAmp:2, fltSeed:304}    // asleep on the lavender
     );
   }
   // the owl LIVES on the old snag: it day-roosts asleep on the main bough, and wakes to perch at dusk
+  // ── rare guests (deterministic per day/phase — a reason to visit at different hours):
+  //    a heron stalking the pond's east shallows at dawn (and on 'heron days' in daylight),
+  //    swallows skimming the summer sky, a kestrel windhovering over the knoll ──
+  const dayHash=GA.hashId(localYMD(new Date()));
+  if(!night){
+    if(phase==='dawn' || (dayHash%3===0 && phase==='day'))
+      CAST.push({id:'heron', x:2980, y:524, sc:.9, off:.3, amp:28, yd:3, extra:' opacity=".95"'});
+    if(seasonName==='summer' && !dusky){
+      CAST.push({id:'swallow', mid:'flight', x:900,  y:138, sc:.6, off:.15, flt:11, fltAmp:46, fltSeed:401});
+      CAST.push({id:'swallow', mid:'flight', x:1980, y:118, sc:.52, off:.6, flt:12, fltAmp:52, fltSeed:402});
+    }
+    if(phase==='dawn')
+      CAST.push({id:'hare', x:815, y:342, sc:.6, off:.5, amp:45, yd:6, extra:' opacity=".85"'});
+    if(phase==='day' && dayHash%5===1)
+      CAST.push({id:'mole', mid:'surface', x:1600, y:502, sc:.6, off:.3, flt:30, fltAmp:1, fltSeed:505});
+    if(phase==='day' && dayHash%4===2)
+      CAST.push({id:'grasssnake', x:2728, y:548, sc:.7, off:.6, amp:30, yd:3, extra:' opacity=".9"'});
+    if(phase==='day' && (dayHash%2===1))
+      CAST.push({id:'kestrel', mid:'hover', x:HABX.meaning+56, y:236, sc:.55, off:.4, flt:14, fltAmp:5, fltSeed:403});
+  }
   if(dusky) CAST.push({id:'owl',mid:'perch',x:1768,y:408,sc:.45,off:.5,amp:0,yd:0,extra:' opacity=".9"'});
   else CAST.push({id:'owl',mid:'sleep',x:1768,y:408,sc:.45,off:.5,flt:36,fltAmp:1,fltSeed:311,extra:' opacity=".85"'});
-  if(!night && total>=12) CAST.push({id:'swallowtail',mid:'flit',x:HABX.meaning-90,y:HABY.meaning-150,sc:.5,off:.33,flt:20});
+  if(!night && total>=12) CAST.push({id:'commonblue',mid:'flit',x:HABX.meaning-90,y:HABY.meaning-150,sc:.48,off:.33,flt:20});
   if(!night && total>=20) CAST.push({id:'peacock',mid:'flutter',x:HABX.future-60,y:HABY.future-130,sc:.5,off:.5,flt:21,fltAmp:24});
-  if(!night && total>=28) CAST.push({id:'butterfly',mid:'flutter',x:HABX.calm-170,y:HABY.calm-170,sc:.52,off:.66,flt:22});   // over the pond's west edge, clear of the pine crown
+  if(!night && total>=28) CAST.push({id:'swallowtail',mid:'flit',x:HABX.calm-170,y:HABY.calm-170,sc:.5,off:.66,flt:22});   // over the pond's west edge, clear of the pine crown
   // (the owl's dead-oak perch is CANVAS art now — see THE OLD SNAG in the static layers above)
   // painter's order: farther (smaller y) first, nearer last — a nearer animal always crosses IN FRONT
   // (deterministic, so fableCollect's id|x|off snapshot keys survive every rebuild unchanged)
@@ -4560,7 +4754,16 @@ function renderMeadow(force,opt){
 
   // pointer-only (the cards in the drawer are the keyboard/screen-reader controls) — first tap raises
   // the in-scene bubble by the tree; the bubble's Water button (or a second tap) opens the tend sheet
-  svg.querySelectorAll('.treeTap').forEach(el=>{ el.addEventListener('click',()=>sceneTap(el.dataset.area)); });
+  svg.querySelectorAll('.treeTap').forEach(el=>{
+    el.addEventListener('click',()=>{ if(_lpConsume){ _lpConsume=false; return; } sceneTap(el.dataset.area); });
+    // long-press (500 ms, still finger) = a close-up of this corner; a pan or lift cancels it
+    let lpT=null,sx=0,sy=0;
+    el.addEventListener('pointerdown',ev=>{ sx=ev.clientX; sy=ev.clientY;
+      lpT=setTimeout(()=>{ lpT=null; _lpConsume=true; focusHabitat(el.dataset.area); },500); });
+    const lpCancel=()=>{ if(lpT){ clearTimeout(lpT); lpT=null; } };
+    el.addEventListener('pointermove',ev=>{ if(Math.hypot(ev.clientX-sx,ev.clientY-sy)>9) lpCancel(); });
+    el.addEventListener('pointerup',lpCancel); el.addEventListener('pointercancel',lpCancel); el.addEventListener('pointerleave',lpCancel);
+  });
   updateHabDots();
 }
 
@@ -4635,6 +4838,19 @@ function patchGlow(id){
    sugar — the cards in the drawer stay the keyboard / screen-reader path, so the bubble is
    aria-hidden and never in the tab order. No numbers here, only the stage word. ── */
 let bubbleArea=null, bubbleTimer=null;
+let _zoomGet=null,_zoomSet=null,_lpConsume=false;
+/* long-press a habitat → a warm close-up (zoom in on that corner); long-press again → step back out */
+function focusHabitat(id){
+  if(!_zoomSet||!_zoomGet) return;
+  hideTendBubble();
+  const zoomed=_zoomGet()>0;
+  _zoomSet(zoomed?0:2);
+  setTimeout(()=>{ scrollToHabitat(id,false);
+    const wrap=document.getElementById('sceneWrap');
+    if(!zoomed&&wrap){ const svg2=wrap.querySelector('svg'); const hgt=svg2?svg2.getBoundingClientRect().height:0;
+      wrap.scrollTop=Math.max(0,(HABY[id]/PANO_H)*hgt - wrap.clientHeight*0.62); }
+  },40);
+}
 function sceneTap(id){
   if(bubbleArea===id){ hideTendBubble(); openTend(id); return; }   // second tap goes straight in
   tapRing(id); showTendBubble(id);
@@ -4711,24 +4927,69 @@ function wateringCan(id){
   lf.innerHTML=lv2;
   svg.appendChild(lf);
   setTimeout(()=>{ if(lf.isConnected) lf.remove(); },4200);
-  // and a visitor: once the pour settles, a butterfly comes to see the freshly tended corner
-  // (day and dusk only — at night the garden, butterflies included, stays asleep)
-  if(dayPhase()!=='night'){
-    setTimeout(()=>{
-      const svg2=document.querySelector('#sceneWrap svg.scene-svg'); if(!svg2) return;
-      if(store.settings.motion!=='full'||reduceMotion()) return;
-      const fl=mkFloat(cx*3+careOf(id)*17, 18, 19);   // (regFloat is renderMeadow-local; append the keyframes ourselves)
-      const wkf=svg2.querySelector('#wander-kf'); if(wkf && wkf.textContent.indexOf(fl.id)<0) wkf.textContent+=fl.css;
-      const vis=document.createElementNS(NS,'g');
-      vis.setAttribute('class','fable'); vis.setAttribute('data-id','butterfly'); vis.setAttribute('data-mid','flutter');
-      vis.setAttribute('data-x',String(cx+26)); vis.setAttribute('data-off','2.1'); vis.setAttribute('data-flt','1');
-      vis.setAttribute('transform',`translate(${(cx+26).toFixed(0)} ${(topY-16).toFixed(0)})`);
-      vis.innerHTML=`<g class="float" style="animation:${fl.id} ${fl.dur}s ease-in-out infinite alternate"><g class="face"><g class="fin" transform="scale(.5)"></g></g></g>`;
-      svg2.appendChild(vis);
-      fableCollect();                                   // register the guest (walker snapshots keep everyone else in place)
-      setTimeout(()=>{ if(vis.isConnected){ vis.remove(); fableCollect(); } },16000);
-    },2300);
-  }
+}
+/* ── a PASSING DRIZZLE: a rare, gentle weather event. Deterministic per (day,hour) — some hours it
+   quietly rains for ~90 s over the whole meadow, then the crowns glisten for a minute. Never in
+   winter (snow owns that season), never a requirement, fully motion-gated. ── */
+let _rainOn=false;
+function startRain(dur){
+  if(_rainOn) return; if(store.settings.motion!=='full'||reduceMotion()) return;
+  if(season()==='winter') return;
+  const svg=document.querySelector('#sceneWrap svg.scene-svg'); if(!svg) return;
+  _rainOn=true;
+  const NS='http://www.w3.org/2000/svg';
+  const g=document.createElementNS(NS,'g'); g.setAttribute('class','rainfall'); g.setAttribute('aria-hidden','true'); g.setAttribute('pointer-events','none');
+  let ln='';
+  for(let i=0;i<64;i++){ const x=(i*97+31)%PANO_W, y=(i*53)%80;
+    ln+=`<line x1="${x}" y1="${y}" x2="${x-3}" y2="${y+15}" style="animation-delay:${-(i*0.13).toFixed(2)}s"/>`; }
+  g.innerHTML=`<rect class="rain-veil" width="${PANO_W}" height="${PANO_H}" fill="#5E7A96"/>`+ln;
+  svg.appendChild(g);
+  setTimeout(()=>{
+    if(g.isConnected) g.remove();
+    _rainOn=false;
+    // after the rain: the crowns glisten quietly for a while
+    const svg2=document.querySelector('#sceneWrap svg.scene-svg'); if(!svg2) return;
+    const gl=document.createElementNS(NS,'g'); gl.setAttribute('class','rain-glisten'); gl.setAttribute('aria-hidden','true'); gl.setAttribute('pointer-events','none');
+    let dots='';
+    HAB.forEach((id,hi)=>{ const cx=HABX[id]+(HAB_TX[id]||0), st2=stageOf(careOf(id));
+      const ty=HABY[id]-TREE_HT[st2]*treeScale(id)*0.7;
+      for(let k=0;k<4;k++){ dots+=`<circle class="twinkle" style="--d:${(3+((hi*4+k)%5)).toFixed(1)}s;animation-delay:-${((hi*7+k*3)%6)}s" cx="${cx-30+k*19}" cy="${(ty+((k*17)%26)).toFixed(0)}" r="1.6" fill="#EAF6FF" opacity=".8"/>`; } });
+    gl.innerHTML=dots;
+    svg2.appendChild(gl);
+    setTimeout(()=>{ if(gl.isConnected) gl.remove(); },60000);
+  }, dur||90000);
+}
+function maybeRain(){
+  const d=new Date();
+  const h=GA.hashId(localYMD(d)+'|'+d.getHours());
+  if(h%5!==0) return;                                  // most hours stay dry
+  const startMin=8+(h>>3)%40;                          // this hour's shower window
+  const m=d.getMinutes();
+  if(m>=startMin && m<startMin+2) startRain(90000);
+}
+/* ── one quiet leap of a fish over the pond, every few minutes by day ── */
+function fishLeap(){
+  if(store.settings.motion!=='full'||reduceMotion()) return;
+  if(dayPhase()==='night') return;
+  const svg=document.querySelector('#sceneWrap svg.scene-svg'); if(!svg) return;
+  const NS='http://www.w3.org/2000/svg';
+  const lx=HABX.calm-60+((Date.now()/1000|0)%80), ly=520;
+  const g=document.createElementNS(NS,'g'); g.setAttribute('aria-hidden','true'); g.setAttribute('pointer-events','none');
+  g.setAttribute('transform',`translate(${lx} ${ly})`);
+  g.innerHTML=`<g class="leapfish"><path d="M0 0 C 4 -5 10 -6 15 -3 C 12 -1 12 1 15 3 C 10 6 4 5 0 0 Z" fill="${nightTint('#4F91A8',_phase)}"/><circle cx="12.4" cy="-1" r="0.9" fill="#20323C"/></g>`
+    +`<ellipse class="leapring" cx="2" cy="4" rx="9" ry="2.4" fill="none" stroke="#DDF1F8" stroke-width="1.2"/>`
+    +`<ellipse class="leapring" style="animation-delay:1.15s" cx="52" cy="6" rx="9" ry="2.4" fill="none" stroke="#DDF1F8" stroke-width="1.2"/>`;
+  svg.appendChild(g);
+  setTimeout(()=>{ if(g.isConnected) g.remove(); },2400);
+}
+let _leapTimer=null;
+function scheduleLeap(){
+  if(_leapTimer) return;
+  const wait=110000+Math.random()*130000;
+  _leapTimer=setTimeout(()=>{ _leapTimer=null;
+    if(document.getElementById('view-meadow').classList.contains('active')) fishLeap();
+    scheduleLeap();
+  }, wait);
 }
 /* pan the camera to centre a habitat */
 function scrollToHabitat(id,smooth){
@@ -4882,6 +5143,41 @@ function renderJournal(){
   }));
 }
 
+/* ── FINDINGS: once in a while (at most once a day, deterministic) the garden leaves a small
+   thing after a watering — a feather, a smooth pebble, an acorn… kept as quiet keepsake cards in
+   Look back. No counter, no collection meter — justsmall gifts that stay. ── */
+const FINDING_KINDS=[
+  {id:'feather', label:'a feather',        line:'Left on the grass, light as the morning.',
+   svg:'<svg viewBox="0 0 44 44" aria-hidden="true"><path d="M31 6 C 22 8 13 18 11 33 L 13 35 C 26 31 33 20 33 8 Z" fill="#C9D6E4"/><path d="M12 34 C 18 24 24 16 31 8" stroke="#8FA6BC" stroke-width="1.4" fill="none"/><path d="M15 28 L 21 27 M18 22 L 25 20 M22 16 L 28 13" stroke="#AFC2D4" stroke-width="1.1"/></svg>'},
+  {id:'pebble', label:'a smooth pebble',   line:'River-worn, warm from the sun.',
+   svg:'<svg viewBox="0 0 44 44" aria-hidden="true"><ellipse cx="22" cy="26" rx="13" ry="9" fill="#A9A196"/><ellipse cx="19" cy="23" rx="6" ry="3.6" fill="#C4BCB0" opacity=".8"/><circle cx="27" cy="28" r="1.2" fill="#7E766B"/><circle cx="17" cy="29" r=".9" fill="#7E766B"/></svg>'},
+  {id:'acorn', label:'an acorn',           line:'The old oak lets one go now and then.',
+   svg:'<svg viewBox="0 0 44 44" aria-hidden="true"><ellipse cx="22" cy="27" rx="7" ry="9" fill="#B98A4E"/><path d="M13 21 A 9 6 0 0 1 31 21 L 30 24 L 14 24 Z" fill="#7A5A34"/><path d="M22 12 C 22 14 22 16 22 18" stroke="#5A4026" stroke-width="1.6"/></svg>'},
+  {id:'shell', label:'a snail shell',      line:'Spiralled and empty, a tiny architecture.',
+   svg:'<svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="24" r="11" fill="#C99A5A"/><path d="M33 24 A 11 11 0 1 1 22 13 A 8 8 0 1 1 22 29 A 4 4 0 1 0 22 21" stroke="#A87B3E" stroke-width="1.8" fill="none"/></svg>'},
+  {id:'seedhead', label:'a dried seed-head', line:'It rattles softly, full of next year.',
+   svg:'<svg viewBox="0 0 44 44" aria-hidden="true"><path d="M22 38 C 22 28 22 20 22 12" stroke="#A99B72" stroke-width="1.8"/><g fill="#C8BE9A"><circle cx="22" cy="10" r="2.4"/><circle cx="17" cy="14" r="1.8"/><circle cx="27" cy="14" r="1.8"/><circle cx="15" cy="19" r="1.5"/><circle cx="29" cy="19" r="1.5"/></g></svg>'},
+];
+function getFindings(){ try{ return JSON.parse(localStorage.getItem('meadowlark.findings')||'[]'); }catch(_){ return []; } }
+function saveFindings(a){ try{ localStorage.setItem('meadowlark.findings',JSON.stringify(a)); }catch(_){} }
+function maybeFinding(area){
+  const today=localYMD(new Date());
+  const f=getFindings();
+  if(f.some(x=>x&&x.ymd===today)) return;                       // at most one small find a day
+  const h=GA.hashId(today+'|'+area+'|'+store.journal.length);
+  if(h%6!==0) return;                                            // and most days, none at all
+  const kind=FINDING_KINDS[h%FINDING_KINDS.length];
+  f.push({kind:kind.id,ymd:today,area}); saveFindings(f);
+  setTimeout(()=>toast('The garden left you '+kind.label+' — kept in Look back.'),2100);
+}
+function renderFindings(){
+  const box=document.getElementById('lbFinds'); if(!box) return;
+  const items=getFindings().filter(x=>x&&FINDING_KINDS.some(k=>k.id===x.kind)).slice().reverse();
+  if(!items.length){ box.innerHTML=''; return; }
+  box.innerHTML='<p class="sub" style="margin:0 0 10px">Small things the garden left after a watering — yours to keep.</p>'
+    +'<div class="pressed-grid">'+items.map(x=>{ const k=FINDING_KINDS.find(kk=>kk.id===x.kind); const a=AREA[x.area]||{label:'the meadow'};
+      return `<div class="pressed-card">${k.svg}<div class="pressed-date">${niceDay(x.ymd,{day:'numeric',month:'short'})}</div><div class="pressed-text">${k.label} · by ${a.label}</div></div>`; }).join('')+'</div>';
+}
 /* 'pressed flowers': one-tap keepsakes from the journal. A private local album (no sharing, no score) —
    accumulation-as-memory, the same spirit the journal already honours. Stored beside the main save. */
 function getPressed(){ try{ return JSON.parse(localStorage.getItem('meadowlark.pressed')||'[]'); }catch(_){ return []; } }
@@ -5033,7 +5329,7 @@ function renderRitual(){
 }
 /* a fold only shows when there's something inside it — an empty section never asks to be opened */
 function syncFolds(){
-  [['foldGrown','lbThenNow'],['foldChapters','lbChapters'],['foldPressed','lbPressed'],
+  [['foldGrown','lbThenNow'],['foldChapters','lbChapters'],['foldPressed','lbPressed'],['foldFinds','lbFinds'],
    ['foldLetters','lbLetters'],['foldKeepsake','lbKeepsake']].forEach(([fid,bid])=>{
     const f=document.getElementById(fid), b=document.getElementById(bid); if(!f||!b) return;
     let show=!!b.innerHTML.trim();
@@ -5215,7 +5511,7 @@ function renderPath(){
   lbMemPool=[...store.journal].sort(()=>Math.random()-.5); lbMemI=0;
   skyMeetClose();
   renderRitual();
-  renderThenNow(); renderChapters(); renderPressed(); renderLetters(); renderKeepsake();
+  renderThenNow(); renderChapters(); renderPressed(); renderFindings(); renderLetters(); renderKeepsake();
   syncFolds();
 
   // ── Nocne Niebo Powrotów (v59 HERO) — the sky is the emotional centerpiece of Look Back ──
@@ -5301,6 +5597,7 @@ function renderPath(){
     s+=ridge;
     // (8) the returns themselves — one faint star per entry; density grows softly, and they settle in on open
     let rt='';
+    const cpts=[];
     entries.forEach((e,idx)=>{
       let gx=34+hh(idx,61)*(W-68);
       let gy=26+Math.pow(hh(idx,67),0.92)*((HZ-150)-26);   // stay above the horizon-glow haze, where a light would drown
@@ -5326,8 +5623,19 @@ function renderPath(){
       g+=`<circle${st} cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${rr.toFixed(1)}" fill="${core}"/>`;
       g+=`<circle cx="${(gx-rr*0.3).toFixed(1)}" cy="${(gy-rr*0.3).toFixed(1)}" r="${(rr*0.4).toFixed(1)}" fill="#FFFDF6" opacity=".85"/>`;
       g+=`</g></g>`;
+      cpts.push([gx,gy]);
       rt+=g;
     });
+    // quiet constellations: once the sky has enough lights, each finds its nearest neighbour and a
+    // faint thread joins them — figures grow out ofdensity, never out of a count
+    if(cpts.length>=6){ let thr=''; const used=new Set();
+      cpts.forEach((p,i)=>{ let bj=-1,bd=1e9;
+        cpts.forEach((q,j)=>{ if(j===i) return; const d=(p[0]-q[0])*(p[0]-q[0])+(p[1]-q[1])*(p[1]-q[1]); if(d<bd){bd=d;bj=j;} });
+        if(bj<0||bd>240*240) return; const key=Math.min(i,bj)+'-'+Math.max(i,bj);
+        if(used.has(key)) return; used.add(key);
+        thr+=`<line x1="${cpts[i][0].toFixed(1)}" y1="${cpts[i][1].toFixed(1)}" x2="${cpts[bj][0].toFixed(1)}" y2="${cpts[bj][1].toFixed(1)}"/>`; });
+      if(thr) s+=`<g stroke="#8E86B8" stroke-width="1" opacity=".15" stroke-linecap="round">${thr}</g>`;
+    }
     s+=`<g class="rt-reveal">${rt}</g>`;
     s+=`</svg>`;
     wrap.innerHTML=s;
@@ -5439,6 +5747,7 @@ function doTend(){
   wateringCan(area);                  // the little can tips over the crown (overlay-only, motion-gated)
   growHabitat(area); renderCards();   // smooth cross-fade re-raster: the tree AND its habitat's flowers grow — no full rebuild/flash
   showTendToast(a, res);
+  maybeFinding(area);   // rare, at most daily: the garden sometimes leaves a small keepsake
 }
 let lastToast={area:null,t:0};
 function showTendToast(a,res){
@@ -5453,6 +5762,44 @@ function showTendToast(a,res){
   else if(res.gap>=WEEK) msg=`You came back, and it counts the same as ever. ${a.label} grows a little.`;
   else msg=`A small return, kept. ${a.label} grows a little.`;
   toast(msg);
+}
+/* ── MEADOW SOUNDS (opt-in): a whisper of wind, birds by day, crickets after dark — all
+   SYNTHESIZED on-device with WebAudio. Nothing is downloaded, nothing plays until the person
+   turns it on (the toggle tap is the user gesture iOS needs), and it stays very, very quiet. ── */
+let _au=null,_auTimers=[];
+function mlSound(on){
+  if(!on){ _auTimers.forEach(clearTimeout); _auTimers=[];
+    if(_au){ try{ _au.ctx.close(); }catch(_){} _au=null; } return; }
+  if(_au) return;
+  let ctx; try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(_){ return; }
+  const master=ctx.createGain(); master.gain.value=0.05; master.connect(ctx.destination);
+  // wind: a loop of soft brown noise breathing through a low-pass
+  const len=ctx.sampleRate*4, buf=ctx.createBuffer(1,len,ctx.sampleRate), ch=buf.getChannelData(0);
+  let last=0; for(let i=0;i<len;i++){ const w=Math.random()*2-1; last=(last+0.02*w)/1.02; ch[i]=last*3.4; }
+  const src=ctx.createBufferSource(); src.buffer=buf; src.loop=true;
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=260;
+  const wg=ctx.createGain(); wg.gain.value=0.5;
+  const lfo=ctx.createOscillator(); lfo.frequency.value=0.06;
+  const lg=ctx.createGain(); lg.gain.value=0.22; lfo.connect(lg); lg.connect(wg.gain); lfo.start();
+  src.connect(lp); lp.connect(wg); wg.connect(master); src.start();
+  _au={ctx,master};
+  const blip=(f0,f1,t0,d,g)=>{ const o=ctx.createOscillator(), og=ctx.createGain();
+    o.frequency.setValueAtTime(f0,t0); o.frequency.exponentialRampToValueAtTime(f1,t0+d);
+    og.gain.setValueAtTime(0.0001,t0); og.gain.exponentialRampToValueAtTime(g,t0+d*0.3); og.gain.exponentialRampToValueAtTime(0.0001,t0+d);
+    o.connect(og); og.connect(master); o.start(t0); o.stop(t0+d+0.02); };
+  const chirp=()=>{ const t=ctx.currentTime+0.05, n=2+((Math.random()*2)|0);
+    for(let k=0;k<n;k++) blip(2300+Math.random()*500, 1700+Math.random()*300, t+k*0.19, 0.13, 0.05); };
+  const cricket=()=>{ const t=ctx.currentTime+0.03;
+    for(let k=0;k<6;k++) blip(4200,4050, t+k*0.042, 0.028, 0.018); };
+  const loop=()=>{
+    if(!_au) return;
+    const ph=dayPhase();
+    if(ph==='night'||ph==='dusk'){ cricket(); _auTimers.push(setTimeout(loop, 1100+Math.random()*2400)); }
+    else { chirp(); _auTimers.push(setTimeout(loop, 4200+Math.random()*9000)); }
+  };
+  _auTimers.push(setTimeout(loop, 900));
+  document.addEventListener('visibilitychange',()=>{ if(!_au) return;
+    if(document.hidden) _au.ctx.suspend(); else if(store.settings.sound==='on') _au.ctx.resume(); });
 }
 /* the box-breath tool in the 'if today is heavy' panel — opt-in, private, nothing counted */
 function wireBreathe(){
@@ -5527,6 +5874,7 @@ function wireImmersive(){
 function applySettings(){
   document.body.classList.toggle('motion-calm', store.settings.motion==='calm');
   document.body.classList.toggle('text-large', store.settings.textScale==='large');
+  mlSound(store.settings.sound==='on');
   craftOccBtnText();
   document.querySelectorAll('.seg').forEach(seg=>{
     const key=seg.dataset.seg; if(!key) return;
@@ -5680,6 +6028,7 @@ function startOver(){
 /* ---- ambient tick: re-theme on phase/day change only (no data mutation) ---- */
 let lastPhase=null,lastYMD=null,lastBlend=null;
 function tick(){
+  maybeRain();
   const p=dayPhase(), y=localYMD(new Date()), bk=phaseBlendKey();
   if(p!==lastPhase || y!==lastYMD || bk!==lastBlend){
     lastPhase=p; lastYMD=y; lastBlend=bk;
@@ -5728,6 +6077,7 @@ function init(){
 
   // zoom in/out on the meadow (keeps the view centre stable; pan both axes when zoomed)
   const ZOOMS=[1,1.4,1.8,2.3]; let zoomIdx=0;
+  _zoomGet=()=>zoomIdx; _zoomSet=(i)=>{ zoomIdx=Math.max(0,Math.min(ZOOMS.length-1,i)); applyZoom(); };
   function applyZoom(){
     const wrap=document.getElementById('sceneWrap'); const z=ZOOMS[zoomIdx];
     const prev=parseFloat(getComputedStyle(wrap).getPropertyValue('--zoom'))||1;
@@ -5753,6 +6103,11 @@ function init(){
   }
 
   setInterval(tick,60000);
+  scheduleLeap();   // the pond's quiet fish-leap moments (day only, motion-gated)
+  if(store.settings.sound==='on'){   // saved ON: arm on the first touch (autoplay needs a gesture)
+    const kick=()=>{ document.removeEventListener('pointerdown',kick); mlSound(true); };
+    document.addEventListener('pointerdown',kick);
+  }
 
   // PWA: only when served (never on file://). No notifications, ever.
   if(location.protocol!=='file:'){
