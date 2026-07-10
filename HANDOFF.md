@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v80 (2026-07-10) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v84 (2026-07-10) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -560,3 +560,13 @@ pagórka = pszenica+owies gaGrass (stare bursztynowe wachlarze-badyle out); kopc
 (`_gaGrassDefs`, reset w renderMeadow, defs doklejane do <defs> _lastStaticInner, instancje=<use>); bucket g
 zaokrąglany do .1. Statyka ~2,2 MB, renderMeadow ~52 ms. ⚠ RÓWNOLEGŁA SESJA dosadzała w tym samym pliku
 (jałowiec+kostrzewa przy bramie, trawki przy źródle, sw.js v81) — zmiany addytywne, scalone. CACHE `v81`.
+
+**v82-v84** (2026-07-10): v82=rozplecenie po Codexie (main=TYLKO moja linia: odbudowa z v79+bloki v80; jego
+nakładka „v81" dawała puste plany — envMeadow ścięte o połowę, rzadkie drifty; żyje w 8d4a707; jego gałąź:
+meadowlark-sol) + SOWA USUNIĘTA (snag+gałąź+CAST; beacon-świetlik na skraju lasu) + pas cienia u stóp lasu.
+v83=drzewa tła TYLKO na zielonym (foothillEdge sampluje krawędź wavy; świerki stokowe out; oddech doliny=szeroka
+mgiełka nie dysk) + darnie w midground + 2. rząd frontowy. v84=3× FLORA (midground lerp(30,18), 3 rzędy darni od
+najdalszego, dywan step 25, TDRIFT 8×2 linie [i=5 wąskie okno!], posyp 110 szt) + 3. plan TYLKO SZARE GÓRY
+(wavy(300,26)→(332,7)+skirt-rect; ⚠ foothillEdge musi clampować ostatni segment wavy do W) + gaShrub DEF-CACHE
+(7 wariantów, <use>) + DZIK (bundle miał go od v73; BOARX 2270±56 polana, dzień trot+root bez charge, noc sleep;
+'peacock'=rusałka pawik-motyl). Giga-review 15 ag.: 5 fixów. Statyka 2,66 MB, render 35 ms. CACHE v84.
