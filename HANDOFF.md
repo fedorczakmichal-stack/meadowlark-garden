@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v70 (2026-07-09) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v77 (2026-07-10) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -10,148 +10,100 @@
 
 Dwa produkty w jednym repo, oba statyczne, serwowane przez GitHub Pages:
 
-- **`/` (root)** — landing „gentle comeback app" (uniwersalny, interaktywny: wybierasz zawód,
-  klikasz latarnię na drodze → trasa/płace/nić przeliczają się na żywo). Generowany z
-  `Meadowlark-v3/comeback/index.html` → `Meadowlark-v3/root-index.html` (ścieżki pod root, canonical→root, bez SW).
-- **`/garden/`** — **APKA**: łagodny self-care „calm garden". Twoje życie = panoramiczny ogród
-  **7 siedlisk** (body, home, connection, meaning, craft, future, calm), każde z drzewem rosnącym
-  przy „pielęgnacji". Pętla: otwórz → łagodne powitanie → dotknij siedliska/karty → „tend one small
-  thing" (szybka akcja / własne słowa / „Not now") → care rośnie → ogród kwitnie. Widoki (dolna nawigacja):
-  **Meadow** (scena), **Returns** (dziennik powrotów), **Look back** (krajobraz przebytej drogi +
-  kompas tygodnia + zasuszone kwiaty), **More** (ustawienia + „Your craft" + panel „If today is heavy").
-  Jest system **craft/kariera** (karta „road, mapped" + tygodniowa „nić"; 7 ręcznych zawodów + katalog 860+ z Supabase).
+- **`/` (root)** — landing „gentle comeback app" (interaktywny; generowany z `Meadowlark-v3/{comeback,root-index}.html`;
+  ma WŁASNĄ kopię `renderTrail` — konstelacji craftu).
+- **`/garden/`** — **APKA**: łagodny self-care „calm garden". Życie = panoramiczny ogród **7 siedlisk**
+  (body, home, connection, meaning, craft, future, calm), każde z drzewem rosnącym przy pielęgnacji.
+  **Od v71 = TRYB GRY (immersive)**: łąka wypełnia cały ekran (100dvh), UI to HUD — furtka `#gateBtn` (lewy-górny,
+  panel `#gatePanel`: Returns · Look back · Settings), pigułka „Tend one small thing" `#drawerHandle` obok furtki
+  (otwiera szufladkę `#meadowDrawer` z kartami), „If today is heavy" (prawy-górny), smukłe kropki siedlisk na samym
+  dole + zoom w rogu. Pętla: tap w siedlisko → dymek `.tend-bubble` → arkusz tend → konewka+wzrost. Long-press
+  siedliska = zbliżenie. **Look Back** = nocne niebo powrotów (1 wpis=1 gwiazda; tap→karta `.sky-meet` w niebie
+  z Press this/Another light; ≥6 gwiazd→nici konstelacji) + JEDEN rytuał naraz (`#lbRitual`: przybyły list ▸ kompas
+  tygodnia) + zwijane foldy (How it's grown · Chapters · Pressed flowers · Findings · Letters · Keepsake).
 
-**KONTRAKT DUSZY (nienaruszalny):** care tylko ROŚNIE; ŻADNA liczba pochodna od care nie trafia do
-widocznego DOM (stadia = SŁOWA przez `STAGE_WORD`); ZERO streaków, winy, liczników-braków, czerwonych
-ostrzeżeń, powiadomień, porównań, „jesteś w tyle". (Zliczenia dziennika/„returns" SĄ dozwolone.)
-Cel: spokojne, wolne od wstydu miejsce na trudne sezony. „Świetna funkcja", która dodaje presję/miarę — jest ZŁA.
+**KONTRAKT DUSZY (nienaruszalny):** care tylko ROŚNIE; żadna liczba pochodna od care nie trafia do DOM (stadia=SŁOWA);
+ZERO streaków, winy, liczników-braków, czerwonych ostrzeżeń, powiadomień, porównań. (Zliczenia dziennika dozwolone.)
+Zima = odpoczynek, nie strata (kwiaty nie więdną [forceBloom], staw nie zamarza; ale RZEKA zimą zamarza — autorska
+decyzja Michała w atlasie v77). Dźwięki (v77) są opt-in i syntetyzowane lokalnie — obietnica „nic nie opuszcza
+urządzenia" trzyma (jedyny wyjątek: jednorazowy fetch kroków craftu z Supabase przy wyborze z katalogu).
 
-## 2. Repo, gałęzie, DEPLOY
+## 2. Repo, gałęzie, DEPLOY, ŹRÓDŁA DESIGNU
 
-- Repo: `fedorczakmichal-stack/meadowlark-garden` (public). Klon roboczy:
-  `~/Documents/Claude/Projects/meadowlark-garden/` (apka w `garden/`).
-- **Deploy stabilny = `git push` na `main`** → GitHub Pages sam publikuje (serwuje z main root).
-  Za KAŻDYM razem bumpnij `garden/sw.js` `CACHE` (`meadowlark-garden-vNN`), inaczej PWA poda stary cache.
-- **Kanał podglądu:** push na `preview` albo `cursor/*` → workflow „Sync preview" rsyncuje `garden/`
-  tej gałęzi do `main:preview/` → https://…/meadowlark-garden/preview/ (z plakietką „Podgląd deweloperski").
-- **Ja pracuję na gałęzi `walker-director`**, potem: `push origin walker-director`,
-  `push --force origin walker-director:preview` (podgląd), a na koniec merge do `main`.
-- ⚠ **KOLIZJA Z CURSOREM:** Cursor pracuje równolegle w tym repo; jego push na `preview`/`cursor/*`
-  PODMIENIA `/preview/` (ostatni push wygrywa) i jego sync-bot dopisuje commity do `main` (folder `preview/`).
-  Dlatego: (a) `/garden/` (stabilne, z main) jest odporne na preview-syncy — kieruj tam Michała, nie na `/preview/`;
-  (b) push na `main` bywa odrzucany → pętla `git fetch + merge origin/main + merge walker-director + push`;
-  (c) ZAWSZE `git fetch` przed pracą.
-- ⚠ **GitHub Pages potrafi wisieć w „building"** → `gh api -X POST repos/fedorczakmichal-stack/meadowlark-garden/pages/builds`.
-- Stary `/meadowlark/` (repo `meadowlark`) PRZEKIEROWUJE tu; nie ruszać jego root sw.js (Vesa, network-first).
+- Repo: `fedorczakmichal-stack/meadowlark-garden` (public). Klon: `~/Documents/Claude/Projects/meadowlark-garden/`.
+- **Deploy = `git push` na `main`** → Pages. Za KAŻDYM deployem apki bumpnij `garden/sw.js` `CACHE` (`…-vNN`).
+  ⚠ Pages bywa wisi w „building" → `gh api -X POST repos/…/pages/builds`; potwierdzać curl-em sw.js na live.
+- ⚠ **KOLIZJA Z CURSOREM**: zawsze `git fetch` przed pracą; push bywa odrzucony → fetch+merge+push.
+- **ŹRÓDŁA DESIGNU (od v77): projekty Claude Design czytane NA ŻYWO przez `DesignSync` MCP** (get_project /
+  list_files / get_file po projectId; auth przez zalogowane konto claude.ai; duże pliki niech pobierają SUBAGENCI
+  i piszą na dysk). Projekty Michała: **Rośliny/Growth Atlas** `c58bf01e-3ddd-457e-9ef1-cfa42771dfaa`
+  (plik prawdy: `The Growth Atlas.dc.html`; `The Growth Atlas.html`=bundler-shell, `export-src.dc.html`=stara wersja)
+  i **Zwierzęta/Motion Atlas fable5** `f99303ad-a03d-4e0e-a6dc-b85ea77b277f` (prawda = MODUŁY `animals-fable/*.js`;
+  `animals-fable-bundle.js` bywa STARSZY i nie ma patchy ogrodu!). Zip-handoffy w Downloads traktować jako snapshoty.
+  ⚠ Michał wrzuca do uploads projektów ZRZUTY apki jako feedback — sprawdzać je przy imporcie.
 
-## 3. Architektura apki (`garden/index.html`, single-file: inline CSS+JS+SVG)
+## 3. Architektura apki (`garden/index.html` single-file + sidecary)
 
-Sidecary: `sw.js`, `manifest.json`, `fable-animals.js` (silnik sprite'ów zwierząt), `craft-index.json`, ikony (`icons/`), fonty (`fonts/`), splash iOS (`splash/`).
-Dane: 1 klucz localStorage `meadowlark.garden` (+ osobne klucze: `meadowlark.pressed`, `meadowlark.compass`,
-`meadowlark.craft.<soc>`). `coerce()` migruje stare zapisy; `persist()` łapie quota → tryb „memory only" + toast.
+Sidecary: `sw.js`, `manifest.json`, **`fable-animals.js` (4929 l., 38 gatunków)**, `craft-index.json`, ikony/fonty/splash.
+Dane localStorage: `meadowlark.garden` (+`.pressed`, `.compass`, `.letters`, **`.findings`**, `.craft.<soc>`).
 
-- **Scena (`renderMeadow`)**: panorama `PANO_W×PANO_H` w `#sceneWrap` (scroll + zoom). **Od v60 = DWIE warstwy w `.scene-plane`**
-  (obie wypełniają ten sam box PANO, więc zwierzęta/tapy leżą DOKŁADNIE nad rastrem): (1) **`<canvas class="scene-canvas">` = statyczny bitmapowy dekor**
-  (niebo→góry `drawForest` y≈312→mgła→wzgórza→`drawMidground`→env per siedlisko `env-<id>`→przejścia→drzewa `tw-<id>` [poświata accent + cień + drzewo]→
-  gwiazdy→sezonowy scatter) — generowany JAK DAWNIEJ jako string SVG, potem **rasteryzowany przez `Image`+`drawImage`** (`rasterScene()`,
-  re-rastr tylko gdy `sceneSig()` się zmieni albo na zoomie; backing @DPR≤3 z limitem 16M px pod iOS; `_lastStaticInner`=string,
-  `hiddenDefs()` inline'uje `#glDof`/`#daisy`/… bo raster to samodzielny dokument). (2) **overlay `<svg class="scene-svg">` = warstwa ŻYWA+INTERAKTYWNA**
-  (larki/skybirdy, `glw-<id>` iskry poświaty, **zwierzęta `g.fable`**, `drawSeasonOverlay` [wash+scatter+spadające], golden-wash `#glow`, veil nocny, **kolumny-tapy**).
-  **`fableCollect`/`fableTickNow` bez zmian** — dalej pytają `#sceneWrap svg`/`g.fable`; overlay = jedyny svg w `#sceneWrap`, `_sceneScale` z jego wysokości.
-  Cache: `sceneSig()` (rebuild tylko gdy sig się zmieni). **Tend: `growHabitat(id)`** = `renderMeadow(true,{staticOnly:true,crossfade:true})`
-  (re-rastr TYLKO canvasu z płynnym cross-fade przez tymczasowy `canvas.scene-fade` → drzewo+flora rosną bez flasha; animacje nietknięte) + `patchGlow`.
-  **Node-count: statyczny dekor w żywym DOM spadł ~3682→56 (full care) / ~1967→56 (low)**; zniknął też per-frame koszt filtra blur `glDof`. `patchTree`/`patchEnv` USUNIĘTE.
-- **Pory dnia**: `dayPhase()` (theme/godzina) → 'dawn/day/golden/dusk/night'. **`phaseBlend()`** =
-  ciągły cross-fade nieba+wzgórz w ~45min przed każdą granicą (sampleGrad+mix); `phaseBlendKey()` w
-  `sceneSig` + `tick()` (60s) → scena re-renderuje kilka razy w oknie przejścia. dayPhase i phaseBlend
-  MUSZĄ czytać ten sam czas/theme (czytają) — inaczej niebo≠logika. **v69: `store.settings.theme` rozszerzony
-  do {auto,morning,day,evening,night}** (dayPhase+phaseBlend mapują morning→dawn, night→night; `coerce` akceptuje).
-- **GROWTH ATLAS (od v65 = przełom; `GA` = INSTANCJA KLASY, port silnika z paczki „The Growth Atlas Popr3")**:
-  bogate drzewa (`crown`/`limb`/`barkTexture`/`canopy` z puffami, `TREE_FORM`/`CROWN`/`BARK`), kwiaty (17 gat.),
-  trawy, **6 typów KAMIENI** (flint/granite/quartz/amethyst/slate/sandstone: `STONE`/`oneStone`/`blobPath`),
-  fenologia. **KLUCZ: wszystko jest SEZONOWE przez param `S`** — `flowerAbove(sp,g,S)`/`treeAbove(sp,g,S)`/
-  `grassAbove`/`canopy(...,S)`/`oneStone(...,S)`; gradienty `defs(S)` (`ga*` id, night = `gaTint` przełącza `url(#ga→#gaN`).
-  **`mdwSeason(name)`** = wrapper: bierze `GA.SEASONS[key]` + nadpisuje kontrakt duszy — **`forceBloom:true`** (kwiaty
-  NIGDY nie więdną/nie dormują) i **`bare: key==='Winter'`** (drzewa liściaste zimą = gałęziasty ośnieżony szkielet,
-  „te z gałęziami"; sosna=coniferAbove wieczniezielona). `_gaSeason` = globalna (jak `_phase`) ustawiana na górze
-  `renderMeadow`. Glue: `tree()`→`GA.*Above(sp,g,mdwSeason(seasonName))`, `wildflower()`→`GA.flowerAbove(sp,gr,_gaSeason)`.
-  ⚠ canopy shade `dk` cieniuje ku `S.vein` (NIE stałej zieleni — inaczej jesienna korona ma „dziurę"/oliwkowy placek).
-- **Sezony na scenie**: (a) FLORA/DRZEWA/TRAWA/KAMIENIE sezonowe przez atlas (wyżej); (b) `seasonGrass()` = tint
-  `grassClump`; (c) **`frost(c)`** = szron zimą (jesień=złoto) na DEKORACJACH: żywopłot Home, krzewy `drawMidground`,
-  gąszcz Connection, kępy „głowy drogi"/„źródła rzeki" (v70); (d) **ZIMA-dalszy plan (v68)**: `hills` frostowane
-  (`mix(...,'#E9F1F6',...)`), `drawForest(W,dusky,winter)` frostuje las + czapy śniegu na treeline, `wavy(176)` biały;
-  koc śniegu `wavy(424/430)` na przodzie; (e) `drawSeasonOverlay` = wash + spadające cząstki `.fall`/`.spin` (motion-gated).
-- **KAMIENIE (2 warstwy, ugruntowane, nie zasłaniają roślin)**: `gaStone(x,y,sc,kind,seed)` (+cień/czapa) i moje
-  `myPebble()` (małe własne) + `stoneAndPebble()`. **`drawFarStones`** (16, na podłodze łąki y~430 w ŚREDNIM planie,
-  PRZED env=zasłonięte z przodu=nie lewitują) po pasku śniegu; **`drawNearStones`** (cairn ŁUPEK na knollu Meaning +
-  rzadki scatter pojedynczych w NISKIM froncie y~520, PO env=w froncie roślin) — `clear()` omija drzewa/wodę/ścieżki.
-- **MOTION ATLAS + walker** (`FABLE_BEHAV` + `fableTickNow`/`fableLoop`): każde zwierzę = mała maszyna
-  stanów (idzie po rewirze `f.lo/f.hi` clamped do panoramy → przystaje → gra zachowanie z paczki). **Zwrot =
-  znak prędkości; flip TYLKO na postoju** (nigdy interpolowany). Klatki chodu = flipbook (frame-set cache,
-  `set.lastK`); przełączane przez `style.display` (NIE visibility — WebBKit/iPhone nie przerysowywał visibility
-  pod zmieniającym się transformem = duch klatek). **Wszystkie zwierzęta z paczki patrzą natywnie W PRAWO** —
-  weryfikować center-line RAW renderem, `fl` nieużywane (0). Perf: `_sceneScale` cache (nie `getBoundingClientRect`
-  co klatkę); invalidacja na resize/orientation.
-- **Craft**: **`renderTrail()` = KONSTELACJA (od v53, NIE latarniana droga)** — etapy=gwiazdy na nocnym niebie,
-  bieżący najjaśniejszy, opcjonalny 6. arg `opts={W,H,sz,yPad}` (v61: `.cp-sky` full-bleed w arkuszu, `_craftSkyOpts`+`fitCraftSky()`);
-  `craftRoadSVG(p,userIdx)` = wrapper. **Baner „Your craft" (`#craftSlot`/`renderCraftInvite`) POD sceną na Meadow** (v58,
-  meadow-first; był nad sceną w v56). Płace w karcie za `<details>` ZAMKNIĘTYM (etos); wyszukiwarka BEZ płac. Landing ma
-  WŁASNĄ kopię `renderTrail` (osobny plik).
-- **Powitanie (od v63)**: NIE ma napisu nad sceną — `showSceneGreet()` pokazuje znikającą plakietkę `.scene-greet`
-  NA ŚRODKU sceny (fade-in→hold→fade-out), treść z pory dnia + sezonu (welcome-back ma pierwszeństwo); `renderGreeting()`→`showSceneGreet()`.
-- **Motyle (od v62/63)**: 4 gatunki z pakietu — `butterfly`/`swallowtail`/`commonblue`/`peacock` (w `fable-animals.js`,
-  jako floatery `flt` w CAST). Machają na motionach `flit`/`flutter` (NIE `sail`=szybowanie). **Craft = apiarium** (v64):
-  `envCraft` = 3 ule (`hive()`) + pszczoły, bez grządek/jabłek. **Connection drzewo = BIAŁE kwitnące** (v64, nie różowe).
-  Trawa `grassClump(...,seed)` = 6 wariantów kęp (v64).
-- **Look Back**: `renderPath` → `renderThenNow` + `renderMemoryCard` + **`renderCompass`** (kompas tygodnia,
-  rotacja `isoWeek`, write-back przez `tend('meaning',...)`) + **`renderPressed`** (zasuszone kwiaty z dziennika) + `renderChapters`.
-- **Heavy panel** (w „More"): linie kryzysowe tappable (tel:/sms:) + **`wireBreathe`** (box-breath 4-4-4-4, opt-in).
-- **Narzędzia testowe / UI (v67+v69)**: **pasek pod łąką** `#testBar` (`<details open>` „Preview…", po `.scene-hint`)
-  = Sezon (`data-seg="season"`) · Pora dnia (`data-seg="theme"`) · Rozwój łąki (`data-seg-demo`, steruje `demoCare`).
-  **Segi auto-wiring**: `applySettings()`/`wireSettings()` iterują WSZYSTKIE `.seg[data-seg]` → druga kopia segu (np. w More)
-  synchronizuje się sama; demo przez `[data-seg-demo]`+`syncDemoSegs()`. **More = pod-zakładki** `#moreSubtabs`
-  (`showMoreSub()`): Settings·Promise·Support·Garden (jedna sekcja naraz = koniec ściany tekstu); „If today is heavy" → Support.
-  Szerokie segi (Season/Time/preview) = `.set-row.stack` pełna szerokość, równe przyciski.
+- **Scena**: panorama 3100×600 w `#sceneWrap`; **canvas (statyczny raster) + overlay-SVG (żywe)** — patrz komentarze
+  WAVE 3 w kodzie; re-raster tylko przy zmianie `sceneSig()` (zawiera dayPhase|blend|season|motion|cares|demoCare).
+  **Draw order statyki**: niebo→gwiazdy/słońce→grzbiety→**`drawForest`=`GA.forestBand` (v77: 4 rzędy sztafażu w mgle,
+  translate(1550 342), nightTint per-hex regexem, BRAMY gapXs=[-620,998] = trail 930 i rzeka 2548)**→mgła→wzgórza→
+  midground→(zima: koc śniegu)→daleka trawa-tło→drawFarStones→env-siedliska (krzewy z paczki przez `gaShrub`,
+  rzeka z lodem zimą)→przejścia+samotny dereń→dywan trawy→nearStones+celowe kamienie→darnie frontowe `gaGrass`→
+  drzewa `tw-*`→**STARY DĄB (snag, dom sowy) na PIERWSZYM planie przy cairnie (1740,498) — rysowany PO drzewach**.
+- **GA (Growth Atlas, port w index.html)**: drzewa/kwiaty/**20 krzewów** (`shrubAbove`, per-instancja seed w `gaShrub`)/
+  **12 traw** (darnie `grassAbove` z areaW/clumps; front przez `gaGrass`)/**kamienie 11 zwykłych rodzajów**
+  (`STONE_KINDS` BEZ kryształów; menhiry/dolmeny itp. świadomie nieportowane)/**scatterPts** (owoce/jagody/kwiecie
+  równomiernie)/**SCENERY: sceneHues+bgTree+forestBand+ribbon(spf)**. Sezony przez `mdwSeason()` (forceBloom, zima
+  bare). `_gaSeason`/`_phase` globalne.
+- **Zwierzęta (MOTION ATLAS + walker)**: rejestr `window.__FABLE_ANIMALS` (38 gat.); walker w index.html
+  (`fableCollect` — snapshot `id|x|off` przeżywa rebuildy; flip TYLKO na postoju; `FABLE_BEHAV` z go/idles/rare).
+  **CAST z modelem głębi** (sort malarski po y; FAR jelenie/miś, MID owady przy koronach, NEAR walkery z rewirami
+  `FABLE_RUNS` — SYNC ręczny z CAST!). **Okludery**-kępy nad zwierzętami. **NOC = osobna rzadsza obsada**
+  (`night=phase==='night'`): czuwają jeż/mysz/ślimak/żaba-croak/sowa/świetliki; śpią w pozach paczki fox(Zzz!)/
+  jelonki/kaczka/bocian/ptaszek-na-lilaku/ryba-rest/roost ważek+konika/trzmiel-w-kwiecie; reszta znika. **Goście wg
+  `dayHash=GA.hashId(ymd)`**: czapla(świt|%3), jaskółki(lato), pustułka(%2), zając(świt), kret(%5), zaskroniec(%4).
+  Skowronek `song` nad Body codziennie. ⚠ REGUŁA OKIEN: snap-kadry kamer = HABX±138 j.; bohaterowie muszą lądować
+  W oknach; przy siedliskach uwzględniać PEŁNY rozrost koron (±150). Sowa: dzień=`sleep` na dębie, zmierzch/noc=`perch`.
+- **Podlewanie**: `sceneTap`→dymek→arkusz→`doTend`→`wateringCan` (konewka, 8 kropel, pluski `.wsplash`, mokra ziemia
+  `.wetpatch`, listki `.wleaf`) + `growHabitat` cross-fade + `maybeFinding` (znaleziska: hash%6, max 1/dzień →
+  fold „Findings"). Long-press 500 ms → `focusHabitat` (zoom 1.8; `_zoomGet/_zoomSet` wystawione z init).
+- **Wydarzenia ambientowe**: `maybeRain` (tick co 60 s; hash(ymd|h)%5===0 → mżawka ~90 s od minuty 8+, potem
+  glisten 60 s; nie zimą), `scheduleLeap` (skok ryby ~2-4 min, dzień). Wszystko motion-gated (Calm/reduced-motion).
+- **Dźwięki (v77, opt-in)**: `mlSound` — WebAudio synteza (wiatr=brown noise+LFO, ptaki dzień, świerszcze noc),
+  master 0.05, seg `data-seg="sound"` w Settings, default OFF, suspend na hidden. Zero assetów, zero requestów.
+- **Pory dnia/sezony**: `dayPhase()` (theme override; golden tylko z zegara), `phaseBlend()`, `season()`.
+  Wymuszanie w testach: `store.settings.theme/season` + `demoCare` + `applySettings(); lastSceneSig=''; renderMeadow(true)`.
 
 ## 4. Weryfikacja (reguła: bez live-servera, `file://`)
 
-- Headless system Chrome + CDP przez WebSocket (node 22): `--headless=new --remote-debugging-port
-  --force-device-scale-factor=2`; skrypty w scratchpadzie sesji.
-- **Harness inwariantów ruchu** (`verify_motion.mjs`): `window.__FABLE_TEST=1` + `__fableTest.tick(ms)`/`.state()`
-  → 120 symulowanych sekund; asercje: 0 moonwalku, flip tylko na postoju, nie wychodzi z rewiru, brak NaN.
-- Seed sceny: mutuj `store` + `applySettings(); lastSceneSig=''; renderMeadow(true)`. Do wymuszenia pory dnia
-  ustaw `store.settings.theme='morning'/'day'/'evening'/'night'` (od v69; NIE patchuj `dayPhase` — phaseBlend go nie widzi).
-  Do sezonu `store.settings.season='winter'` itd. Do rozwoju `demoCare=NN`.
-- **Sterownik CDP (sesyjny `drive.js`)**: node 22 ma globalny `WebSocket` → połącz z `page.webSocketDebuggerUrl`,
-  `Runtime.evaluate` seeduje store + klika segi/nawigację (`scrollToHabitat(id,false)`, `#zoomIn`), `Page.captureScreenshot`.
-  Chrome z `--remote-debugging-port=9322`. Wygodne do faz/sezonów/pór dnia + sprawdzania synchronizacji segów.
-- Zrzuty zawsze DSF 2; miękkie SVG w 1× spłaszcza kolory. Mobile portret = `--window-size=390,844 --force-device-scale-factor=3`.
-- ⚠ `captureBeyondViewport` NIE dociąga `loading="lazy"` — weryfikować scroll-testem.
-- ⚠ **Pages BYWA WISI** „building" (zator GitHub, 3–10 min) — kod trafia na main OK, live się opóźnia; nudge `gh api POST
-  …/pages/builds`; monitor w tle (curl sw.js do `garden-vNN`) potwierdza wejście na żywo.
+- Headless system Chrome + CDP (node 22, global WebSocket): `--headless=new --remote-debugging-port=93xx
+  --force-device-scale-factor=2..3` + **`Emulation.setDeviceMetricsOverride` (⚠ `--window-size`<500 NIE działa —
+  Chrome ma min szerokość okna!)**. Sterownik sesyjny: `scratchpad/harness/cdp.mjs` (wzór w pamięci projektu).
+- **Harness ruchu**: `window.__FABLE_TEST=1` + `__fableTest.tick(50)`/`.state()` ×90-120 s; asercje: 0 NaN,
+  0 wyjść z rewiru [lo,hi]±0.5, 0 moonwalku (znak dx vs dir przy mode==='go'), flip tylko na postoju.
+- Zrzuty: DSF≥2 (1× spłaszcza miękkie SVG); mobile portret 390×844@3; zamrażanie animacji do zrzutu:
+  `animation-play-state:paused` + ujemny `animation-delay`. `captureBeyondViewport` = artefakty fixed — scroll-testy.
+- Greeting w testach: `_greetAt=Date.now()` + zdjęcie klasy `show` z `#sceneGreet`.
+- Seed store: mutować ŻYWY `store` + `saveNow()` (zapis do localStorage + reload NADPISUJE autosave!).
+- **Panel sędziów** (workflow: równolegli agenci-recenzenci na zrzutach macierzy sezon×pora×kamera) łapie to, czego
+  asercje nie widzą (lewitacje, kolizje, sezonowe niespójności) — używać przy zmianach sceny.
+- ⚠ shellowe pułapki: heredoc NIE w środku łańcucha `&&` (rozrywa go); sed-range może obciąć nagłówek metody.
 
-## 5. Otwarte / odłożone (stan po v70)
+## 5. Otwarte / ryzyka (stan v77)
 
-- **Prywatność (audyt HIGH):** wybór zawodu z KATALOGU → `fetchStageTasks` wysyła kod SOC na Supabase
-  (`ozrxmahmzknojdjvbxnm`, l.~1294). Copy jest UCZCIWE od v55, ale to nie zero-request. Absolutne zero =
-  zbundlować kroki lokalnie (za duże dla 860+ SOC) → decyzja produktowa.
-- **Perf (odłożone z v60):** (a) kołysanie drzew `.sway` + migot gwiazd `.twinkle` ZAMROŻONE na canvasie
-  (klatka statyczna identyczna; żywy klimat niosą zwierzęta/pyłki) — gdyby brakowało sway, drzewa na osobny overlay-SVG;
-  (b) boot 300KB inline JS parsowane przed 1. paintem — dalsza optymalizacja startu.
-- **Connection accent** nadal różowy `#E68AB0` (chip nazwy + poświata drzewa nocą) — drzewo jest już białe (v64),
-  ale gdyby Michał chciał ZERO różu, zmienić akcent na koralowy/zielony (1 miejsce, kaskaduje do glow/kart).
-- **Nowy pakiet zwierząt** `Grafiki zwierząt do animacji5.zip` ma NIEUŻYTE gatunki: cat/dog/horse/boar/heron/swallow/
-  kestrel + więcej motyli — do ew. dodania do CAST (format modułowy, konwersja jak w v62).
-- ~~Zimowy wariant koron drzew (atlas = stałe kolory)~~ **ZROBIONE v65+**: atlas jest sezonowy przez `S` (mdwSeason);
-  zima = drzewa gałęziaste+śnieg, jesień=złoto, wiosna=kwiecie. Sezony NIE są już tylko overlayem.
-- **Staw Calm zimą zostaje teal** (nie zamarza — celowo, żeby nie czytał się jak „strata"); do ew. decyzji: oszronić/zamarznąć.
-- Habitat distinction / golden-hour: działają, można pogłębić.
-- **Pasek testowy pod łąką** jest tuż POD sceną-hero, więc na telefonie widać go po małym scrollu (nad „THE HEART…") —
-  gdyby Michał chciał od razu, skrócić `--scene-h` lub przypiąć pasek.
-- **Landing `/comeback` (repo-root `index.html`)** ma WŁASNĄ kopię `renderTrail` (konstelacja od v54) — jeśli zmieniasz
-  craft-scenę w apce, rozważ spójność z landingiem (osobny plik, źródła `Meadowlark-v3/{comeback,root-index}.html`).
-- Pełna pamięć projektu: `~/.claude/.../memory/project_meadowlark_calm_garden_app.md` (historia rund) +
-  `project_meadowlark_healthcare_landing.md` (strona/repo).
+- **Perf**: string lasu ~370 KB/raster (4 rzędy × ~90 drzew) — jeśli re-rastry (zmiany fazy) haczą na starszych
+  iPhone'ach, zmniejszyć gęstość rzędów/step. Boot ~340 KB inline JS — temat startu wciąż otwarty.
+- **FABLE_RUNS** = ręczny sync z CAST (rewiry walkerów ↔ strefy wykluczeń kamieni/darni frontowych).
+- **Nieużyte a dostępne**: ant (za mała na panoramę; ew. przy zbliżeniu), boar/cat/dog/horse; landmark-kamienie
+  (menhir/dolmen/mur/bazalt/obsydian/agat/rosequartz) w GA.STONE — świadomie poza łąką.
+- **Decyzje produktowe do ew. rewizji**: owady/bocian/żaba widoczne zimą (dzień); staw nie zamarza (rzeka TAK);
+  Connection-akcent nadal różowy `#E68AB0`; pond świeci nocą.
+- **Prywatność**: `fetchStageTasks` (Supabase, katalog craftów) — jedyny request; copy uczciwe od v55.
+- Pełna pamięć projektu: `~/.claude/projects/-Users-fedor-Desktop-Kodowanie/memory/project_meadowlark_calm_garden_app.md`.
 
 ## 6. Historia wersji (skrót)
 
