@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v78 (2026-07-10) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v79 (2026-07-10) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -93,7 +93,7 @@ Dane localStorage: `meadowlark.garden` (+`.pressed`, `.compass`, `.letters`, **`
   asercje nie widzą (lewitacje, kolizje, sezonowe niespójności) — używać przy zmianach sceny.
 - ⚠ shellowe pułapki: heredoc NIE w środku łańcucha `&&` (rozrywa go); sed-range może obciąć nagłówek metody.
 
-## 5. Otwarte / ryzyka (stan v78)
+## 5. Otwarte / ryzyka (stan v79)
 
 - **Perf**: string lasu ~370 KB/raster (4 rzędy × ~90 drzew) — jeśli re-rastry (zmiany fazy) haczą na starszych
   iPhone'ach, zmniejszyć gęstość rzędów/step. Boot ~340 KB inline JS — temat startu wciąż otwarty.
@@ -516,3 +516,24 @@ zmierzch/świt = fioletowe pasma + ALPENGLOW na śniegu; noc = sylwety + księż
 (mix #E9F1F6) + linia śniegu w dół (0.85); jesień/wiosna = skała bez zmian. `wavy(300,26)` hills[1] zostaje jako
 zielone pogórze przed lasem. Zweryfikowane headless (macierz 9 pór×sezonów, zrzut prosto z canvasa rastra,
 smoke-test standalone 0 NaN). CACHE `v78`.
+
+**v79** (2026-07-10): **LAS AŻ DO GÓR + rozsypany średni plan + żywy port Growth Atlas** (życzenia Michała:
+las ma się ciągnąć do gór; krzewy „jak ustawione w linii"; wykorzystać nowe wzory roślin/kamieni z Claude Design).
+(1) **Żywy import DesignSync** z projektu `c58bf01e…` (The Growth Atlas.dc.html, 183 KB klasa Component):
+w `GA_CLS` PODMIENIONE members `SPECIES`(101 wpisów: +35 aranżacji kamieni/scenerii)/`STONE`(+7 rodzajów:
+basalt/marble/obsidian/menhir/serpentine/agate/rosequartz)/`oneStone`(bogatszy)/`stoneAbove`(layout-driven)/
+`shrubSnow`, DODANE `STONE_LAYOUTS`/`roughBlock`/`dolmenForm`/`wallForm`/`sceneTuft`/`sceneMeadow`.
+⚠ METODA PODMIANY: granice memberów klasy wyznaczać SKANEREM stringów/template-literali/regexów (w pliku
+są obiekty z wpisami na 2-spacjowym wcięciu — regex „następny member" ucina w złym miejscu; pierwsza próba
+rozwaliła plik, `git checkout` uratował). (2) **drawForest**: 2 dalekie szeregi drzewek na pogórzu + rzadkie
+świerki na dolnych stokach pasma (bramy 930/2548 zachowane we wszystkich planach) — ⚠ NIE forestBand przy małym
+sc (step skaluje się w dół → string 2,1 MB!); własne pętle `rank()` z krokiem w px → las 482 KB, scena 1,54 MB,
+renderMeadow ~40 ms. (3) **drawMidground** PRZEPISANY na wzorzec sceneMeadow: deterministyczny rozsyp głębokościowy
+(GA.rng, wiersze y 358→440, skala/mgła ∝ głębia, sort po y), mix: kępy sceneTuft + stare pufy + krzewy atlasu
+(kinds liściaste: hawthorn/box/juniper/elder/guelder — broom/heather=pomarańczowe patyki w tej skali, wycięte) +
+drzewka bgTree (min h 16, inaczej brzoza=pieniek) + kwiatowe kropki (zimą→kępka) + kamyki/kamienie (MIDSTONES=jasne).
+(4) **Kamienie**: STONE_KINDS +marble+serpentine (basalt=czarna dziura, wycięty); `gaStoneArr(x,y,id,sc)` =
+aranżacje stoneAbove (skala transformem, zimą podmiana cieni na blade); kopczyk Meaning = `slate_cairn` 0.26
+(nowy renderer robił z pojedynczego łupka 0.5 SCHODY); + erratyk granitowy x1448. Murek suchy i piarg PRÓBOWANE
+I WYCIĘTE (siatka cegiełek / schody). CACHE `v79`. Zrzuty macierzy 9 pór×sezonów OK; feedback-uploady w projekcie
+design to STARE zrzuty v76 (bloby już naprawione w v77).

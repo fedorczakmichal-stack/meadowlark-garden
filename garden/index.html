@@ -2248,8 +2248,32 @@ function drawForest(W,dusky,winter){
   // v77 (from the design pack): the horizon forest is RANKS of single trees fading into haze —
   // not one scalloped mass — with two dark DOORWAYS where the trail (x≈930) and the river
   // (x≈2548) slip INTO the woods. Palette from sceneHues(season); night/dawn tinted per-colour.
-  const S=_gaSeason;
-  let band='<g transform="translate(1550 342)">'+GA.forestBand(0,1.05,S,7,[-620,998],1560)+'</g>';
+  // v79: the forest no longer stops at one band — two far ranks climb the foothills and a line
+  // of sparse spruces stands on the mountains' lower slopes, so the wood runs UP TO the range.
+  const S=_gaSeason, H=GA.sceneHues(S);
+  let band='';
+  // slope spruces — tiny, heavily hazed, on the near range's lower flanks; they keep clear of
+  // the trail pass (930) and the river valley (2548) so both corridors stay open sky
+  { const spCol=mix(mix(H.spruce,H.haze,0.62),'#5C6472',0.1); let sl='';
+    for(let x=40,i=0; x<W; x+=74+((i*37)%46), i++){
+      if(Math.abs(x-930)<86||Math.abs(x-2548)<108) continue;
+      const hh=10+((i*13)%9), sy=290+((i*7)%8), sxo=x+((i*17)%18)-9;
+      sl+=`<path d="M${sxo} ${sy} L${sxo-Math.round(hh*0.34)} ${sy} L${sxo} ${sy-hh} L${sxo+Math.round(hh*0.34)} ${sy} Z" fill="${spCol}" opacity=".7"/>`;
+      if(i%3===0) sl+=`<path d="M${sxo+22} ${sy+3} L${sxo+22-Math.round(hh*0.26)} ${sy+3} L${sxo+22} ${sy+3-Math.round(hh*0.72)} L${sxo+22+Math.round(hh*0.26)} ${sy+3} Z" fill="${spCol}" opacity=".5"/>`;
+    }
+    band+=sl; }
+  // two far ranks on the rolling foothills (small + hazier) — hand-stepped sparse rows, NOT
+  // forestBand at tiny sc: its step scales down with sc, which quietly quintupled the raster
+  // string to ~2 MB. A single hazy row per rank reads the same at this size for ~2% of the cost.
+  const rank=(baseY,step,hMin,hMax,hz,seedO,gapW)=>{ const r=GA.rng(seedO); let s='';
+    for(let x=24;x<W;x+=step*(0.72+r()*0.56)){
+      if(Math.abs(x-930)<gapW||Math.abs(x-2548)<gapW+16) continue;
+      const kr=r(), kind=kr<0.2?'spruce':(kr<0.3?'tall':'round'), hh=hMin+r()*(hMax-hMin);
+      s+=`<g transform="translate(${x.toFixed(0)} ${(baseY+r()*5).toFixed(0)})">`+GA.bgTree(kind,hh,S,(seedO+((x*7)|0))>>>0,hz)+'</g>'; }
+    return s; };
+  band+=rank(304,17,9,15,0.72,29,40);
+  band+=rank(322,21,14,21,0.5,17,54);
+  band+='<g transform="translate(1550 342)">'+GA.forestBand(0,1.05,S,7,[-620,998],1560)+'</g>';
   band=band.replace(/#[0-9A-Fa-f]{6}/g,m=>nightTint(m,_phase));
   return band;
 }
@@ -2340,10 +2364,52 @@ function drawMidground(W,dusky){
   const inStream=(x)=>Math.abs(x-(HABX.future+34))<85;   // keep the slope plants out of the river's corridor
   const inTrail=(x)=>Math.abs(x-(HABX.home+124))<72;      // …and out of the Home trail's corridor (it climbs the same slope)
   const inBearClearing=(x)=>Math.abs(x-BEARX)<BEARAMP+30; // …and clear a patch under the woods for the ambling bear
-  // BACK row — densely packed, small, hazy
-  for(let x=20,i=0; x<W; x+=42,i++){ if(inStream(x)||inTrail(x)||inBearClearing(x)) continue; const t=[0,1,2,0,3][i%5]; const sc=0.6+((i*17)%22)/100; const y=372+((i*13)%14); g+=plant(x+((i*23)%14)-7, y, sc, PB, t, ACC[i%6]); }
-  // FRONT row — slightly larger, richer, offset between the back ones
-  for(let x=48,i=0; x<W; x+=56,i++){ if(inStream(x)||inTrail(x)) continue; const t=[0,3,2,1,0,4][i%6]; const sc=0.8+((i*19)%28)/100; const y=412+((i*11)%16); g+=plant(x+((i*29)%16)-8, y, sc, PF, t, ACC[(i+2)%6]); }
+  /* v79 — the two straight ranks read as PLANTED (Michał). Rebuilt on the Atlas sceneMeadow
+     pattern: depth ROWS from the forest's feet down the slope, each row a random-x scatter with
+     y-jitter, scale and haze proportional to depth — plus small staffage TREES pulled out of the
+     wood (the forest walks down into the meadow), Atlas shrubs of mixed species, and pebbles.
+     Deterministic rng — the slope never reshuffles between rebuilds. */
+  const H2=GA.sceneHues(_gaSeason), rnd=GA.rng(4177);
+  const SHRUBS=['hawthorn','box','juniper','elder','guelder'];   // leafy kinds only — broom/heather read as bare sticks at this scale
+  const MIDSTONES=['flint','sandstone','chalk','limestone','marble','granite'];   // light kinds; the dark ones sink the slope
+  const items=[];
+  for(let y=358; y<440; y+=7+Math.round((y-358)*0.14)){
+    const depth=(y-358)/82;                                  // 0=at the treeline … 1=front of the band
+    const n=Math.round(lerp(14,9,depth));                    // denser far away (smaller things pack tighter)
+    for(let i=0;i<n;i++){
+      const x=20+rnd()*(W-40), yy=y+(rnd()*2-1)*4;
+      if(inStream(x)||inTrail(x)||(yy<392&&inBearClearing(x))) continue;
+      items.push({x,y:yy,r:rnd(),v:rnd()});
+    }
+  }
+  items.sort((a,b)=>a.y-b.y);                                // paint back-to-front so overlaps layer correctly
+  const hazeOf=(y)=>clamp(1-(y-358)/82,0,1)*0.5;             // how much a row melts toward the horizon haze
+  for(const it of items){
+    // in winter the snow blanket (wavy 424/430, drawn AFTER us) buries anything based below its
+    // crest — skip those items instead of painting art that gets hard-cut by the white edge
+    if(_gaSeason.snow && it.y>414) continue;
+    const depth=clamp((it.y-358)/82,0,1), sc=lerp(0.42,1.05,depth), hz=hazeOf(it.y);
+    if(it.r<0.42){                                            // grass tuft — the quiet filler
+      const gc=mix(mix(dusky?'#42604A':'#679C55',H2.haze,hz),'#54683C',it.v*0.25);
+      g+=GA.sceneTuft(it.x,it.y,sc*1.5,nightStep(frost(gc)));
+    } else if(it.r<0.60){                                     // low leafy puff (the old vocabulary, kept)
+      g+=plant(it.x,it.y,sc*(0.55+it.v*0.3),depth<0.45?PB:PF,it.v<0.5?0:3,ACC[Math.floor(it.v*6)%6]);
+    } else if(it.r<0.74){                                     // an Atlas shrub — species varies, never a row
+      g+=gaShrub(it.x,it.y,SHRUBS[Math.floor(it.v*SHRUBS.length)%SHRUBS.length],0.10+depth*0.13,Math.floor(it.v*997)+7,it.v>0.5);
+    } else if(it.r<0.86){                                     // a staffage tree strayed out of the forest
+      const th=Math.max(16,lerp(15,34,depth)*(0.8+it.v*0.4));  // below ~16 a birch is all trunk — a stump
+      const kind=th<21?(it.v<0.5?'spruce':'round'):(it.v<0.3?'spruce':(it.v<0.62?'round':'birch'));
+      let t=`<g transform="translate(${it.x.toFixed(0)} ${it.y.toFixed(0)})">`+GA.bgTree(kind,th,_gaSeason,(Math.floor(it.v*8191)+3)>>>0,hz*0.9)+'</g>';
+      g+=t.replace(/#[0-9A-Fa-f]{6}/g,m=>nightTint(m,_phase));
+    } else if(it.r<0.94){                                     // flower pinpricks — a distant blossom, one dot
+      if(_gaSeason.snow){ g+=GA.sceneTuft(it.x,it.y,sc*1.1,nightStep(frost(dusky?'#42604A':'#679C55'))); continue; }
+      const fc=ACC[Math.floor(it.v*6)%6];                    // ACC is pre-tinted at its definition — no second dip
+      g+=`<path d="M ${it.x.toFixed(1)} ${it.y.toFixed(1)} l 0 ${(-4.6*sc).toFixed(1)}" stroke="${nightTint(frost('#5E8E4E'),_phase)}" stroke-width="${(0.7*sc).toFixed(1)}"/><circle cx="${it.x.toFixed(1)}" cy="${(it.y-5.4*sc).toFixed(1)}" r="${(1.5*sc).toFixed(1)}" fill="${fc}"/>`;
+    } else {                                                  // a stone resting on the slope
+      if(it.v<0.62) g+=myPebble(it.x,it.y,sc*0.6,Math.floor(it.v*10)%5,(Math.floor(it.v*4093)+11)>>>0);
+      else g+=`<g opacity="${(0.9-hz*0.5).toFixed(2)}">${gaStone(it.x,it.y,0.07+depth*0.09,MIDSTONES[Math.floor(it.v*MIDSTONES.length)%MIDSTONES.length],(Math.floor(it.v*2039)+5)>>>0)}</g>`;
+    }
+  }
   return g;
 }
 function hex(c){ c=c.replace('#',''); return [parseInt(c.slice(0,2),16),parseInt(c.slice(2,4),16),parseInt(c.slice(4,6),16)]; }
@@ -2575,9 +2641,16 @@ const GA=(()=>{ class GA_CLS {
     sandstone:{ kind:'banded',  w:122, h:92, body:['#CBA06A','#9A6C3C'], band:['#DCBB8A','#8E6234'] },
     chalk:    { kind:'nodule',  w:100, h:80, body:['#ECE7DB','#C6C0AE'], cortex:'#F6F3EA' },
     limestone:{ kind:'boulder', w:120, h:88, body:['#CFC9BC','#9C968A'], speck:['#B2AA98','#E8E3D6','#8C867A'] },
+    basalt:   { kind:'columnar', w:118, h:150, body:['#4C5157','#292D33'], edge:'#7A808A' },
+    marble:   { kind:'boulder',  w:122, h:92,  body:['#ECEAE4','#C6C2B8'], speck:['#BAB4A6','#F7F5EF','#A29C90'], vein:'#ADA79A' },
+    obsidian: { kind:'glassy',   w:98,  h:86,  body:['#26262E','#0C0C12'], sheen:'#5E5E70' },
+    menhir:   { kind:'menhir',   w:58,  h:154, body:['#8E8779','#57524A'], edge:'#A8A092' },
     conglomerate:{ kind:'boulder', w:118, h:92, body:['#C89A6E','#8A5E38'], speck:['#E4CBA6','#6E4A2C','#A87848','#D8BC98'] },
     gneiss:   { kind:'banded',   w:120, h:90,  body:['#B8AEA2','#726A60'], band:['#D8CFC2','#7A5A52'], vein:'#8A7A6E' },
-    ironstone:{ kind:'nodule',   w:100, h:82,  body:['#8A5236','#5A2E1E'], cortex:'#C88A54', speck:['#3A1E12','#B26A3E'] }
+    serpentine:{ kind:'boulder', w:114, h:88,  body:['#7E9478','#48584A'], speck:['#3A4A3C','#C6D2BE','#5E7258'], vein:'#B6C6AC' },
+    ironstone:{ kind:'nodule',   w:100, h:82,  body:['#8A5236','#5A2E1E'], cortex:'#C88A54', speck:['#3A1E12','#B26A3E'] },
+    agate:    { kind:'banded',   w:96,  h:84,  body:['#C88A64','#8A4E36'], band:['#F0DCC2','#B06848','#E8B48C'], edge:'#EADCC8' },
+    rosequartz:{ kind:'crystal', w:92,  h:118, body:['#E8C6CE','#C89AA6'], tip:'#F8E8EC', points:5 }
   };
 
   SPECIES = [
@@ -2701,6 +2774,78 @@ const GA=(()=>{ class GA_CLS {
       season:'—', sizeText:'flags', note:'Mudstone squeezed and heated until its clays realign, splitting cleanly into flat grey sheets long prized for roofs and writing slates.' },
     { id:'sandstone', common:'Sandstone', latin:'Cemented sand grains', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'sandstone',
       season:'—', sizeText:'to blocks', note:'Layered sand grains cemented over ages into a warm banded rock, its bedding lines a quiet record of ancient dunes and river beds.' },
+    { id:'flint_nodule', common:'Flint Nodule', latin:'Cryptocrystalline silica', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'flint', arr:'single',
+      season:'—', sizeText:'8 – 20 cm', note:'A single flint nodule, its dark glassy core sheathed in a soft white cortex — the classic field stone of the chalk downs.' },
+    { id:'flint_cobbles', common:'Flint Cobbles', latin:'Cryptocrystalline silica', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'flint', arr:'pair',
+      season:'—', sizeText:'5 – 15 cm', note:'A pair of weathered flint cobbles such as turn up along every ploughed edge and hedge-bank.' },
+    { id:'flint_cairn', common:'Flint Cairn', latin:'Cryptocrystalline silica', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'flint', arr:'cairn',
+      season:'—', sizeText:'stacked', note:'Field flints gathered and stacked into a small cairn — the way a stony meadow is slowly cleared for the plough.' },
+    { id:'flint_field', common:'Flint Field', latin:'Cryptocrystalline silica', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'flint', arr:'field',
+      season:'—', sizeText:'strewn', note:'A whole scatter of flints strewn loose across the turf, from pebbles to fist-sized lumps, as a chalk-land meadow lies.' },
+    { id:'granite_boulder', common:'Granite Boulder', latin:'Quartz · feldspar · mica', family:'Igneous', rockClass:'Igneous', type:'stone', kind:'granite', arr:'single',
+      season:'—', sizeText:'to 1 m', note:'A single rounded granite boulder, weathered smooth and speckled, resting where the ground gave it up.' },
+    { id:'granite_cairn', common:'Granite Cairn', latin:'Quartz · feldspar · mica', family:'Igneous', rockClass:'Igneous', type:'stone', kind:'granite', arr:'cairn',
+      season:'—', sizeText:'stacked', note:'Granite cobbles balanced into a waymarking cairn, the kind that studs the open moor and mountain path.' },
+    { id:'granite_field', common:'Granite Field', latin:'Quartz · feldspar · mica', family:'Igneous', rockClass:'Igneous', type:'stone', kind:'granite', arr:'field',
+      season:'—', sizeText:'strewn', note:'A meadow strewn with granite of every size, dropped and rounded by the ice that once ground overhead.' },
+    { id:'erratic', common:'Glacial Erratic', latin:'Ice-borne boulder', family:'Igneous', rockClass:'Erratic', type:'stone', kind:'granite', arr:'single',
+      season:'—', sizeText:'1 – 3 m', note:'A lone boulder carried far from its parent rock by a glacier and set down, incongruous, in a soft green field.' },
+    { id:'chalk', common:'Chalk', latin:'Calcium carbonate', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'chalk', arr:'few',
+      season:'—', sizeText:'5 – 15 cm', note:'Soft white lumps of chalk, the pressed shells of an ancient sea, crumbling pale into the downland turf.' },
+    { id:'limestone', common:'Limestone', latin:'Calcium carbonate', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'limestone', arr:'pair',
+      season:'—', sizeText:'to blocks', note:'Pale grey limestone weathered into blocky clints, the bones of the hills that build the walls of upland meadows.' },
+    { id:'granite_tor', common:'Granite Tor', latin:'Weathered granite', family:'Igneous', rockClass:'Igneous', type:'stone', kind:'granite', arr:'tor',
+      season:'—', sizeText:'to 6 m', note:'Rounded granite blocks left stacked by the slow weathering-out of an old intrusion \u2014 a natural tor crowning the open moor.' },
+    { id:'sandstone_block', common:'Sandstone Block', latin:'Cemented sand grains', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'sandstone', arr:'single',
+      season:'—', sizeText:'to 1 m', note:'A single squared block of banded sandstone, its bedding lines running true \u2014 the honest building stone of the old field walls.' },
+    { id:'sandstone_outcrop', common:'Sandstone Outcrop', latin:'Cemented sand grains', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'sandstone', arr:'outcrop',
+      season:'—', sizeText:'exposed', note:'A shelf of sandstone breaking the turf, its warm banded steps worn round by centuries of wind and weather.' },
+    { id:'slate_outcrop', common:'Slate Outcrop', latin:'Metamorphosed shale', family:'Metamorphic', rockClass:'Metamorphic', type:'stone', kind:'slate', arr:'outcrop',
+      season:'—', sizeText:'exposed', note:'Grey slate standing on edge in stacked leaves, cleaving cleanly where the old mudstone was once folded and pressed.' },
+    { id:'slate_scree', common:'Slate Scree', latin:'Metamorphosed shale', family:'Metamorphic', rockClass:'Metamorphic', type:'stone', kind:'slate', arr:'scree',
+      season:'—', sizeText:'strewn', note:'A fan of broken slate spilled down a hillside, every flake a shard split by frost from the crag above.' },
+    { id:'quartz_cluster', common:'Quartz Cluster', latin:'Silicon dioxide', family:'Silicate mineral', rockClass:'Mineral', type:'stone', kind:'quartz', arr:'few',
+      season:'—', sizeText:'to 30 cm', note:'A cluster of clear quartz points grown shoulder to shoulder from a single vein, each prism sharing its neighbours\u2019 cold light.' },
+    { id:'chalk_boulder', common:'Chalk Boulder', latin:'Calcium carbonate', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'chalk', arr:'single',
+      season:'—', sizeText:'to 60 cm', note:'A soft white lump of chalk weathered from the down, the pressed remains of a warm sea now crumbling back into the turf.' },
+    { id:'limestone_pavement', common:'Limestone Pavement', latin:'Calcium carbonate', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'limestone', arr:'field',
+      season:'—', sizeText:'exposed', note:'Bare limestone worn into a rough pavement of blocks and clefts, scoured by ice and dissolved slowly along its joints by the rain.' },
+    { id:'basalt_columns', common:'Basalt Columns', latin:'Columnar basalt', family:'Igneous', rockClass:'Igneous', type:'stone', kind:'basalt', arr:'single',
+      season:'—', sizeText:'to 12 m', note:'Cooling lava contracted and split into a colonnade of tight-packed hexagonal columns — the giant\u2019s-causeway signature of the old volcanic country.' },
+    { id:'marble', common:'Marble', latin:'Metamorphosed limestone', family:'Metamorphic', rockClass:'Metamorphic', type:'stone', kind:'marble', arr:'single',
+      season:'—', sizeText:'to boulders', note:'Limestone recrystallised under heat and pressure into a dense, faintly veined white stone — the sculptor\u2019s rock since antiquity.' },
+    { id:'marble_blocks', common:'Marble Blocks', latin:'Metamorphosed limestone', family:'Metamorphic', rockClass:'Metamorphic', type:'stone', kind:'marble', arr:'pair',
+      season:'—', sizeText:'quarried', note:'Sawn blocks of veined marble left at the quarry edge, their cut faces catching the light like broken sugar.' },
+    { id:'obsidian', common:'Obsidian', latin:'Volcanic glass', family:'Igneous', rockClass:'Volcanic glass', type:'stone', kind:'obsidian', arr:'few',
+      season:'—', sizeText:'to 30 cm', note:'Lava chilled far too fast to crystallise, frozen instead as jet-black volcanic glass that flakes to a razor edge.' },
+    { id:'menhir', common:'Menhir', latin:'Standing stone', family:'Megalith', rockClass:'Megalith', type:'stone', kind:'menhir', arr:'single',
+      season:'—', sizeText:'2 \u2013 6 m', note:'A single great stone hauled upright and bedded in the turf by ancient hands \u2014 a marker whose meaning is long since lost.' },
+    { id:'standing_stones', common:'Standing Stones', latin:'Megalithic row', family:'Megalith', rockClass:'Megalith', type:'stone', kind:'menhir', arr:'standing',
+      season:'—', sizeText:'a circle', note:'Weathered megaliths standing shoulder to shoulder on the open moor, set in a line aligned to some long-forgotten sunrise.' },
+    { id:'conglomerate', common:'Puddingstone', latin:'Conglomerate', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'conglomerate', arr:'single',
+      season:'—', sizeText:'to blocks', note:'A pudding of rounded pebbles set fast in a sandy cement \u2014 old beach or riverbed gravel turned to a single freckled stone.' },
+    { id:'gneiss', common:'Gneiss', latin:'Banded metamorphic', family:'Metamorphic', rockClass:'Metamorphic', type:'stone', kind:'gneiss', arr:'single',
+      season:'—', sizeText:'to boulders', note:'One of the oldest rocks of the crust, its light and dark minerals drawn out into wandering bands by unimaginable heat and pressure.' },
+    { id:'serpentine', common:'Serpentine', latin:'Serpentinite', family:'Metamorphic', rockClass:'Metamorphic', type:'stone', kind:'serpentine', arr:'single',
+      season:'—', sizeText:'to blocks', note:'A green, waxy-looking rock veined like snakeskin, born where seawater worked slowly into the rock of the deep ocean floor.' },
+    { id:'ironstone', common:'Ironstone', latin:'Ferruginous nodule', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'ironstone', arr:'single',
+      season:'—', sizeText:'5 \u2013 20 cm', note:'A heavy rust-brown nodule stained through with iron \u2014 the ore that once fed the old furnaces, weathering to ochre in the field.' },
+    { id:'agate', common:'Agate', latin:'Banded chalcedony', family:'Silicate mineral', rockClass:'Mineral', type:'stone', kind:'agate', arr:'single',
+      season:'—', sizeText:'2 \u2013 12 cm', note:'A pebble of banded silica laid down ring on ring in an old gas-bubble, glowing amber and cream when cut and polished by the sea.' },
+    { id:'rose_quartz', common:'Rose Quartz', latin:'Pink quartz', family:'Silicate mineral', rockClass:'Mineral', type:'stone', kind:'rosequartz', arr:'single',
+      season:'—', sizeText:'to 20 cm', note:'Quartz blushed soft pink by a trace of titanium, growing in cloudy masses deep in the coarse pegmatite veins of old granite.' },
+    { id:'sandstone_tor', common:'Sandstone Tor', latin:'Weathered sandstone', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'sandstone', arr:'tor',
+      season:'—', sizeText:'to 8 m', note:'Wind and frost have hollowed and rounded a stack of bedded sandstone into a warm banded tor standing proud of the moor.' },
+    { id:'slate_cairn', common:'Slate Cairn', latin:'Metamorphosed shale', family:'Metamorphic', rockClass:'Metamorphic', type:'stone', kind:'slate', arr:'cairn',
+      season:'—', sizeText:'stacked', note:'Flat plates of slate balanced into a summit cairn, each flake split clean from the crag to mark the way in the mist.' },
+    { id:'marble_outcrop', common:'Marble Outcrop', latin:'Metamorphosed limestone', family:'Metamorphic', rockClass:'Metamorphic', type:'stone', kind:'marble', arr:'outcrop',
+      season:'—', sizeText:'exposed', note:'A shelf of white marble breaking the turf, its veined and sugary surface scoured smooth and bright by the weather.' },
+    { id:'stone_row', common:'Stone Row', latin:'Megalithic alignment', family:'Megalith', rockClass:'Megalith', type:'stone', kind:'menhir', arr:'row',
+      season:'—', sizeText:'an avenue', note:'A line of standing stones set marching across the moor toward the horizon \u2014 a prehistoric avenue whose purpose is long since lost.' },
+    { id:'dolmen', common:'Dolmen', latin:'Portal tomb', family:'Megalith', rockClass:'Megalith', type:'stone', kind:'granite', arr:'dolmen',
+      season:'—', sizeText:'3 \u2013 4 m', note:'Great uprights carrying a single vast capstone \u2014 the bare stone skeleton of a Neolithic tomb, its covering mound long weathered away.' },
+    { id:'drystone_wall', common:'Dry-Stone Wall', latin:'Fieldstone wall', family:'Vernacular', rockClass:'Fieldstone', type:'stone', kind:'limestone', arr:'wall',
+      season:'—', sizeText:'a field boundary', note:'Field stones fitted course on course without a drop of mortar into a long low wall \u2014 the hand-built spine of every upland pasture.' },
     { id:'box', common:'Boxwood', latin:'Buxus sempervirens', family:'Buxaceae', type:'shrub', shrubKind:'box', evergreen:true,
       canopy:['#3E6B34','#477A3B','#4E8340','#3E6B34','#579048','#5E9A4E','#4E8340','#68A657','#6EAB5C'],
       season:'Evergreen', sizeText:'1 \u2013 4 m', note:'A dense, small-leaved evergreen that clips into a firm dark mound and holds its colour, unbroken, through the whole turning year.' },
@@ -2787,28 +2932,14 @@ const GA=(()=>{ class GA_CLS {
       flower:{ months:['Winter'], kind:'spike', col:{deep:'#D9A81F',mid:'#F2C71E',light:'#FBE682'}, n:7, len:26 },
       berry:{ months:['Spring','Summer'], col:'#3A4A72', n:20, r:2.2 },
       season:'Flowers in winter', sizeText:'1 \u2013 2 m', note:'A bold, holly-leaved evergreen that lifts spikes of fragrant yellow flower through the darkest months, following them with a dusty-blue crop of berries.' },
-    { id:'flint', common:'Flint', latin:'Cryptocrystalline silica', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'flint',
-      season:'—', sizeText:'5 – 15 cm', note:'A hard nodule of silica born in chalk and clay, its glassy grey heart wrapped in a pale chalky cortex — struck for tools and fire since the Stone Age.' },
-    { id:'granite', common:'Granite', latin:'Quartz · feldspar · mica', family:'Igneous', rockClass:'Igneous', type:'stone', kind:'granite',
-      season:'—', sizeText:'to boulders', note:'A coarse igneous rock crystallised slowly deep underground, its speckled interlock of quartz, feldspar and mica making it enduringly hard.' },
-    { id:'quartz', common:'Rock Crystal', latin:'Silicon dioxide', family:'Silicate mineral', rockClass:'Mineral', type:'stone', kind:'quartz',
-      season:'—', sizeText:'3 – 20 cm', note:'The commonest mineral of the crust, growing clear six-sided prisms from silica-rich waters in the veins and cavities of every rock.' },
-    { id:'amethyst', common:'Amethyst Geode', latin:'Violet quartz', family:'Silicate mineral', rockClass:'Mineral', type:'stone', kind:'amethyst',
-      season:'—', sizeText:'to 40 cm', note:'A hollow nodule lined with a druse of violet quartz, its colour drawn from traces of iron set aglow by faint natural radiation.' },
-    { id:'slate', common:'Slate', latin:'Metamorphosed shale', family:'Metamorphic', rockClass:'Metamorphic', type:'stone', kind:'slate',
-      season:'—', sizeText:'flags', note:'Mudstone squeezed and heated until its clays realign, splitting cleanly into flat grey sheets long prized for roofs and writing slates.' },
-    { id:'sandstone', common:'Sandstone', latin:'Cemented sand grains', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'sandstone',
-      season:'—', sizeText:'to blocks', note:'Layered sand grains cemented over ages into a warm banded rock, its bedding lines a quiet record of ancient dunes and river beds.' },
-    { id:'chalk', common:'Chalk', latin:'Calcium carbonate', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'chalk',
-      season:'—', sizeText:'5 – 15 cm', note:'Soft white lumps of chalk, the pressed shells of an ancient sea, crumbling pale into the downland turf.' },
-    { id:'limestone', common:'Limestone', latin:'Calcium carbonate', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'limestone',
-      season:'—', sizeText:'to blocks', note:'Pale grey limestone weathered into blocky clints, the bones of the hills that build the walls of upland meadows.' },
-    { id:'conglomerate', common:'Puddingstone', latin:'Conglomerate', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'conglomerate',
-      season:'—', sizeText:'to blocks', note:'A pudding of rounded pebbles set fast in a sandy cement \u2014 old beach or riverbed gravel turned to a single freckled stone.' },
-    { id:'gneiss', common:'Gneiss', latin:'Banded metamorphic', family:'Metamorphic', rockClass:'Metamorphic', type:'stone', kind:'gneiss',
-      season:'—', sizeText:'to boulders', note:'One of the oldest rocks of the crust, its light and dark minerals drawn out into wandering bands by unimaginable heat and pressure.' },
-    { id:'ironstone', common:'Ironstone', latin:'Ferruginous nodule', family:'Sedimentary', rockClass:'Sedimentary', type:'stone', kind:'ironstone',
-      season:'—', sizeText:'5 \u2013 20 cm', note:'A heavy rust-brown nodule stained through with iron \u2014 the ore that once fed the old furnaces, weathering to ochre in the field.' },
+    { id:'bg_trees', common:'Distant Trees', latin:'Arbores in longinquo', family:'Scenery', type:'scenery', kind:'depthtrees',
+      season:'All year', sizeText:'middle distance', note:'Not specimens but staffage \u2014 simplified trees meant to stand in the middle distance and along the far hills, lending a plate its depth. The farther back they stand, the paler and hazier they are drawn.' },
+    { id:'road', common:'The Road', latin:'Via per agros', family:'Scenery', type:'scenery', kind:'road',
+      season:'All year', sizeText:'to the horizon', note:'A cart road setting out wide at the foot of the plate and narrowing turn by turn across the fields, until it slips through a dark doorway into the forest waiting on the horizon.' },
+    { id:'river', common:'The River', latin:'Flumen serpens', family:'Scenery', type:'scenery', kind:'river',
+      season:'All year', sizeText:'to the horizon', note:'A lowland river winding from the near bank to the far woods \u2014 broad and slow in the foreground, a bright thread by the time it reaches the trees. In winter it freezes to pale ice.' },
+    { id:'forest', common:'The Forest', latin:'Silva in horizonte', family:'Scenery', type:'scenery', kind:'forest',
+      season:'All year', sizeText:'the horizon', note:'The wood at the end of every road \u2014 not one green mass but rank behind rank of single trees, each row paler than the last until the farthest dissolves into the haze.' }
   ];
 
   // ---------- math ----------
@@ -3360,10 +3491,21 @@ const GA=(()=>{ class GA_CLS {
     this.shrubScatter(F,b.n||13,rnd,bare?0.7:0.82).forEach(p=>{
       s+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${(b.r||2.6).toFixed(1)}" fill="${b.col}"/><circle cx="${(p[0]-0.8).toFixed(1)}" cy="${(p[1]-0.9).toFixed(1)}" r="0.9" fill="#fff" opacity="0.5"/>`; });
     return s; }
-  shrubSnow(F,bare){ const F2=n=>(+n).toFixed(1); const topY=F.cy-F.h*0.72; let s='';
-    s+=`<path d="M ${F2(-F.w*0.58)} ${F2(topY+9)} Q 0 ${F2(topY-4)} ${F2(F.w*0.58)} ${F2(topY+9)} Q 0 ${F2(topY+15)} ${F2(-F.w*0.58)} ${F2(topY+9)} Z" fill="#F4F9FC" opacity="${bare?0.5:0.85}"/>`;
-    s+=`<ellipse cx="${F2(-F.w*0.32)}" cy="${F2(F.cy-F.h*0.18)}" rx="13" ry="4" fill="#EEF5FA" opacity="0.7"/><ellipse cx="${F2(F.w*0.3)}" cy="${F2(F.cy+F.h*0.04)}" rx="10" ry="3.5" fill="#EEF5FA" opacity="0.58"/>`;
-    return s; }
+  shrubSnow(F,bare){ const rnd=this.rng(919); let s='';
+    // soft snow blanket draped over the crown: a dense, overlapping run of downy puffs that
+    // merge into one continuous cap (no bead-string), with a faint bluish underside for depth
+    const span=F.w*0.9, topY=F.cy-F.h*0.6;
+    const dome=(t)=>1-Math.pow(Math.abs(t-0.5)*2,1.8);
+    const n=Math.max(10,Math.round(span/3.6));
+    for(let i=0;i<=n;i++){ const t=i/n, x=this.lp(-span,span,t), d=dome(t);
+      const y=topY-d*F.h*0.14, r=(5.2+d*4.8)*(0.9+0.2*rnd());
+      s+=this.puff(x,y+r*0.42,r,'#DDEAF1',rnd()*3,'0.5'); }
+    for(let i=0;i<=n;i++){ const t=i/n, x=this.lp(-span,span,t), d=dome(t);
+      const y=topY-d*F.h*0.14+(rnd()*2-1)*0.9, r=(5.2+d*4.8)*(0.9+0.2*rnd());
+      s+=this.puff(x,y,r,'#F7FBFE',rnd()*3); }
+    // dabs caught lower on the shoulders
+    s+=this.puff(-F.w*0.36,F.cy-F.h*0.02,F.rB*0.85,'#EDF4FA',0.7,'0.48')+this.puff(F.w*0.34,F.cy+F.h*0.12,F.rB*0.75,'#EDF4FA',1.9,'0.4');
+    return `<g opacity="${bare?'0.72':'1'}">${s}</g>`; }
   shrubAbove(sp,g,S){ S=S||this.SEASONS.Summer;
     const F=this.SHRUB_FORM[sp.shrubKind]||this.SHRUB_FORM.default;
     const evergreen=!!sp.evergreen; const rnd=this.rng(this.hashId(sp.id+'|shrubV1'));
@@ -3631,6 +3773,30 @@ const GA=(()=>{ class GA_CLS {
       const rnd=this.rng(sd); const layers=5; const lh=h*0.9/layers; const baseB=cy+h*0.45;
       for(let i=0;i<layers;i++){ const ly=baseB-i*lh; const lw=w*0.5*(1-0.05*i); const off=(rnd()*2-1)*3;
         s+=`<path d="M ${F(-lw+off)} ${F(ly)} Q ${F(off)} ${F(ly-2)} ${F(lw+off)} ${F(ly)} L ${F(lw+off-1.5)} ${F(ly-lh*0.9)} Q ${F(off)} ${F(ly-lh*0.9-2)} ${F(-lw+off+1.5)} ${F(ly-lh*0.9)} Z" fill="${i%2?dark:light}" stroke="${T.edge}" stroke-width="0.6" stroke-linejoin="round"/>`; }
+    } else if(T.kind==='columnar'){
+      const rnd=this.rng(sd); const baseB=cy+h*0.45; const ncol=5; const cw=(w/ncol)*0.94;
+      for(let i=0;i<ncol;i++){ const t=ncol>1?i/(ncol-1):0.5; const cx=this.lp(-w*0.42,w*0.42,t)+(rnd()*2-1)*2;
+        const ch=h*(0.5+0.46*(1-Math.abs(t-0.5)*1.3))*(0.86+0.28*rnd()); const topY=baseB-ch; const hw=cw/2;
+        s+=`<path d="M ${F(cx-hw)} ${F(baseB)} L ${F(cx-hw)} ${F(topY+hw*0.42)} L ${F(cx)} ${F(topY)} L ${F(cx+hw)} ${F(topY+hw*0.42)} L ${F(cx+hw)} ${F(baseB)} Z" fill="${dark}"/>`;
+        s+=`<path d="M ${F(cx-hw)} ${F(baseB)} L ${F(cx-hw)} ${F(topY+hw*0.42)} L ${F(cx)} ${F(topY)} L ${F(cx)} ${F(baseB)} Z" fill="${light}" opacity="0.5"/>`;
+        s+=`<path d="M ${F(cx-hw)} ${F(topY+hw*0.42)} L ${F(cx)} ${F(topY)} L ${F(cx+hw)} ${F(topY+hw*0.42)} L ${F(cx)} ${F(topY+hw*0.86)} Z" fill="${T.edge}" opacity="0.85"/>`;
+        for(let j=1;j<4;j++){ const jy=this.lp(baseB,topY,j/4); s+=`<line x1="${F(cx-hw)}" y1="${F(jy)}" x2="${F(cx+hw)}" y2="${F(jy)}" stroke="${T.edge}" stroke-width="0.6" opacity="0.4"/>`; } }
+    } else if(T.kind==='menhir'){
+      const rnd=this.rng(sd); const baseB=cy+h*0.46; const topY=baseB-h*0.95; const bw=w*0.5, tw2=w*0.34; const tilt=(rnd()*2-1)*4;
+      const pts=[[-bw,baseB],[-bw*0.96,baseB-h*0.32],[-tw2*1.05+tilt,baseB-h*0.62],[-tw2+tilt,topY+7],[tilt*0.5-2,topY],[tw2+tilt,topY+9],[tw2*1.03+tilt,baseB-h*0.55],[bw*0.98,baseB-h*0.28],[bw,baseB]];
+      let d=`M ${F(pts[0][0])} ${F(pts[0][1])}`; pts.slice(1).forEach(p=>d+=` L ${F(p[0])} ${F(p[1])}`); d+=' Z';
+      s+=`<path d="${d}" fill="${dark}"/>`;
+      s+=`<path d="M ${F(-bw)} ${F(baseB)} L ${F(-tw2+tilt)} ${F(topY+7)} L ${F(tilt*0.5-2)} ${F(topY)} L ${F(-3)} ${F(baseB)} Z" fill="${light}" opacity="0.5"/>`;
+      for(let j=1;j<5;j++){ const jy=this.lp(baseB,topY,j/5); s+=`<path d="M ${F(-bw*0.7)} ${F(jy)} Q 0 ${F(jy-2)} ${F(bw*0.7)} ${F(jy+1)}" stroke="${T.edge}" stroke-width="0.6" fill="none" opacity="0.32"/>`; }
+      const rr=this.rng(sd+4); for(let i=0;i<5;i++){ const px=(rr()*2-1)*bw*0.66, py=this.lp(topY+8,baseB,rr()); s+=`<circle cx="${F(px)}" cy="${F(py)}" r="${(1.2+rr()*2).toFixed(1)}" fill="#8F9A5E" opacity="0.28"/>`; }
+    } else if(T.kind==='glassy'){
+      const rnd=this.rng(sd);
+      s+=`<path d="${this.blobPath(w,h,cy,this.rng(sd),0.16)}" fill="${dark}"/>`;
+      for(let i=0;i<7;i++){ const a1=rnd()*6.2832, a2=a1+0.5+rnd()*0.9; const r1=0.3+rnd()*0.5, r2=0.3+rnd()*0.5;
+        const x1=Math.cos(a1)*w*0.44*r1, y1=cy+Math.sin(a1)*h*0.44*r1; const x2=Math.cos(a2)*w*0.44*r2, y2=cy+Math.sin(a2)*h*0.44*r2;
+        s+=`<path d="M 0 ${F(cy)} L ${F(x1)} ${F(y1)} L ${F(x2)} ${F(y2)} Z" fill="${i%2?light:T.sheen}" opacity="${(0.12+rnd()*0.16).toFixed(2)}"/>`; }
+      s+=`<path d="M ${F(-w*0.2)} ${F(cy-h*0.28)} Q ${F(-w*0.02)} ${F(cy-h*0.04)} ${F(w*0.1)} ${F(cy+h*0.2)}" stroke="${T.sheen}" stroke-width="${F(w*0.06)}" fill="none" opacity="0.5" stroke-linecap="round"/>`;
+      s+=`<ellipse cx="${F(-w*0.16)}" cy="${F(cy-h*0.22)}" rx="${F(w*0.12)}" ry="${F(h*0.16)}" fill="#FFFFFF" opacity="0.14"/>`;
     } else {
       s+=`<path d="${this.blobPath(w,h,cy,this.rng(sd),T.kind==='boulder'?0.12:0.2)}" fill="${dark}"/>`;
       s+=`<path d="${this.blobPath(w*0.8,h*0.68,cy-h*0.13,this.rng(sd),T.kind==='boulder'?0.12:0.2)}" fill="${light}" opacity="0.6"/>`;
@@ -3642,13 +3808,78 @@ const GA=(()=>{ class GA_CLS {
     if(S.snow && scMul>0.34){ const topY=cy-h*0.42; s+=`<path d="M ${F(-w*0.42)} ${F(topY+7)} Q 0 ${F(topY-3)} ${F(w*0.42)} ${F(topY+7)} Q 0 ${F(topY+11)} ${F(-w*0.42)} ${F(topY+7)} Z" fill="#F5F9FC" opacity="0.9"/>`; }
     return s; }
   stoneAbove(sp,g,S){ S=S||this.SEASONS.Summer; const F=n=>(+n).toFixed(1); const T=this.STONE[sp.kind]||this.STONE.flint;
+    if(sp.arr==='dolmen') return this.dolmenForm(sp,T,S);
+    if(sp.arr==='wall') return this.wallForm(sp,T,S);
+    const layout=this.STONE_LAYOUTS[sp.arr]||this.STONE_LAYOUTS.scatter;
     const base=this.hashId(sp.id+'|scatter'); const rnd=this.rng(base);
-    const layout=[{x:0,sc:1.0},{x:-80,sc:0.5},{x:76,sc:0.62},{x:-44,sc:0.32},{x:50,sc:0.28},{x:118,sc:0.22},{x:-118,sc:0.26}];
-    const arr=layout.map((it,i)=>({ x:it.x+(rnd()*2-1)*7, sc:it.sc*(0.86+0.28*rnd()), by:(rnd()*2-1)*3, seed:base+i*97+1 }));
+    const arr=layout.map((it,i)=>({ x:it.x+(rnd()*2-1)*6, sc:it.sc*(0.9+0.2*rnd()), dy:(it.dy||0)+(rnd()*2-1)*2, seed:base+i*97+1 }));
     arr.sort((a,b)=>b.sc-a.sc);
     let s='';
-    arr.forEach(it=>{ const sw=T.w*it.sc*0.5; s+=`<ellipse cx="${F(it.x)}" cy="${F(3+it.by)}" rx="${F(sw)}" ry="${F(sw*0.16)}" fill="rgba(52,36,16,0.16)"/>`; });
-    arr.forEach(it=>{ s+=`<g transform="translate(${F(it.x)} ${F(it.by)})">`+this.oneStone(sp,it.sc,it.seed,S)+`</g>`; });
+    arr.forEach(it=>{ if(it.dy>-6){ const sw=T.w*it.sc*0.5; s+=`<ellipse cx="${F(it.x)}" cy="${F(3+it.dy)}" rx="${F(sw)}" ry="${F(sw*0.16)}" fill="rgba(52,36,16,0.16)"/>`; } });
+    arr.forEach(it=>{ s+=`<g transform="translate(${F(it.x)} ${F(it.dy)})">`+this.oneStone(sp,it.sc,it.seed,S)+`</g>`; });
+    return s; }
+  STONE_LAYOUTS = {
+    single: [{x:0,sc:1.12}],
+    standing:[{x:-54,sc:1.0},{x:6,sc:1.16},{x:62,sc:0.86}],
+    trio:   [{x:2,sc:1.06},{x:-50,sc:0.72},{x:50,sc:0.64}],
+    pair:   [{x:-30,sc:1.0},{x:40,sc:0.64}],
+    few:    [{x:2,sc:1.0},{x:-54,sc:0.54},{x:52,sc:0.46},{x:22,sc:0.3}],
+    scatter:[{x:0,sc:0.92},{x:-80,sc:0.5},{x:76,sc:0.6},{x:-44,sc:0.32},{x:50,sc:0.28},{x:118,sc:0.22},{x:-116,sc:0.26}],
+    cairn:  [{x:0,sc:0.92,dy:0},{x:-5,sc:0.74,dy:-32},{x:7,sc:0.58,dy:-58},{x:-3,sc:0.42,dy:-78},{x:2,sc:0.3,dy:-94}],
+    field:  [{x:-122,sc:0.3},{x:-88,sc:0.44},{x:-52,sc:0.6},{x:-16,sc:0.34},{x:16,sc:0.52},{x:48,sc:0.28},{x:82,sc:0.46},{x:116,sc:0.34},{x:-32,sc:0.22},{x:66,sc:0.2}],
+    outcrop:[{x:-6,sc:1.02},{x:52,sc:0.74,dy:-6},{x:-58,sc:0.66},{x:26,sc:0.46,dy:-4},{x:-30,sc:0.4},{x:82,sc:0.34}],
+    tor:    [{x:0,sc:1.02,dy:0},{x:9,sc:0.94,dy:-46},{x:-8,sc:0.8,dy:-84},{x:5,sc:0.6,dy:-114},{x:-2,sc:0.4,dy:-140}],
+    scree:  [{x:-4,sc:0.64},{x:-54,sc:0.5},{x:50,sc:0.56},{x:-94,sc:0.34},{x:90,sc:0.4},{x:-26,sc:0.34},{x:28,sc:0.32},{x:-72,sc:0.24},{x:72,sc:0.26},{x:8,sc:0.3,dy:-2},{x:-40,sc:0.22},{x:44,sc:0.2}],
+    row:    [{x:-126,sc:0.6},{x:-74,sc:0.8},{x:-18,sc:1.02},{x:40,sc:0.86},{x:96,sc:0.64},{x:142,sc:0.44}]
+  };
+  roughBlock(cx,baseY,w,h,T,seed,tilt){ const F=n=>(+n).toFixed(1); const rnd=this.rng((seed>>>0)||1);
+    const dark=T.body[1], light=T.body[0], edge=T.edge||T.body[0];
+    const topY=baseY-h, r=Math.min(w,h)*0.18, j=(m)=>(rnd()*2-1)*m;
+    const pts=[ [-w/2+j(2), baseY-r], [-w/2+j(2), topY+r], [-w/2+r+j(2), topY+j(2)],
+                [w/2-r+j(2), topY+j(2)], [w/2+j(2), topY+r], [w/2+j(2), baseY-r],
+                [w/2-r+j(2), baseY+j(1)], [-w/2+r+j(2), baseY+j(1)] ];
+    let d='M '+F(pts[0][0])+' '+F(pts[0][1]); for(let i=1;i<pts.length;i++) d+=' L '+F(pts[i][0])+' '+F(pts[i][1]); d+=' Z';
+    let s=`<g transform="rotate(${F(tilt||0)} ${F(cx)} ${F(baseY)}) translate(${F(cx)} 0)">`;
+    s+=`<path d="${d}" fill="${dark}"/>`;
+    s+=`<path d="M ${F(-w/2+r)} ${F(topY+j(1))} L ${F(w/2-r)} ${F(topY+j(1))} L ${F(w/2-r)} ${F(topY+h*0.26)} Q 0 ${F(topY+h*0.33)} ${F(-w/2+r)} ${F(topY+h*0.26)} Z" fill="${light}" opacity="0.5"/>`;
+    s+=`<path d="M ${F(-w/2+1)} ${F(topY+r)} L ${F(-w/2+1)} ${F(baseY-r)}" stroke="${edge}" stroke-width="${F(Math.max(1.4,w*0.05))}" opacity="0.4" stroke-linecap="round"/>`;
+    if(T.band||T.kind==='banded'||T.kind==='layered'){ for(let i=1;i<4;i++){ const y=this.lp(baseY,topY,i/4); s+=`<path d="M ${F(-w/2+r)} ${F(y)} Q 0 ${F(y-2)} ${F(w/2-r)} ${F(y)}" stroke="${edge}" stroke-width="0.8" fill="none" opacity="0.3"/>`; } }
+    if(T.speck){ const ns=Math.max(6,Math.round(20*(w/80))); for(let i=0;i<ns;i++){ const px=j(w*0.4), py=this.lp(topY+3,baseY-2,rnd()); s+=`<circle cx="${F(px)}" cy="${F(py)}" r="${(0.6+rnd()*1.0).toFixed(1)}" fill="${T.speck[Math.floor(rnd()*T.speck.length)]}" opacity="0.7"/>`; } }
+    s+=`</g>`; return s; }
+  dolmenForm(sp,T,S){ const F=n=>(+n).toFixed(1); const base=this.hashId(sp.id); let s='';
+    s+=`<ellipse cx="-2" cy="4" rx="108" ry="12" fill="rgba(52,36,16,0.16)"/>`;
+    s+=this.roughBlock(0,-8,36,104,T,base+11,1);
+    s+=this.roughBlock(-50,0,42,120,T,base+21,4);
+    s+=this.roughBlock(52,0,44,116,T,base+31,-4);
+    s+=`<g transform="rotate(-5 0 -150)">`+this.roughBlock(0,-116,158,40,T,base+41,0)+`</g>`;
+    if(S.snow){ s+=`<path d="M -80 -150 Q 0 -167 80 -150 Q 0 -139 -80 -150 Z" fill="#F5F9FC" opacity="0.9" transform="rotate(-5 0 -150)"/>`; }
+    return s; }
+  wallForm(sp,T,S){ const F=n=>(+n).toFixed(1); const base=this.hashId(sp.id); const rnd=this.rng(base); let s='';
+    const wallW=300, courses=5, ch=17, y0=0;
+    s+=`<ellipse cx="0" cy="5" rx="${F(wallW*0.52)}" ry="13" fill="rgba(52,36,16,0.16)"/>`;
+    for(let r=0;r<courses;r++){ const y=y0-r*ch, rowW=wallW*(1-r*0.05); let x=-rowW/2+(r%2?9:0), i=0;
+      while(x < rowW/2-6){ let sw=this.lp(22,42,rnd()); if(x+sw>rowW/2) sw=rowW/2-x; if(sw<10) break;
+        s+=this.roughBlock(x+sw/2, y, sw-2, ch*(0.92+rnd()*0.22), T, base+r*97+i*13+1, (rnd()*2-1)*2); x+=sw+1.5; i++; } }
+    const topY=y0-courses*ch; let cx=-wallW*0.46, k=0;
+    while(cx < wallW*0.46){ const cw=this.lp(12,20,rnd()); s+=this.roughBlock(cx+cw/2, topY+2, cw, ch*1.2, T, base+7000+k*29, (rnd()*2-1)*8); cx+=cw+2; k++; }
+    if(S.snow){ const sy=topY-ch*1.2; s+=`<path d="M ${F(-wallW*0.5)} ${F(sy+4)} Q 0 ${F(sy-4)} ${F(wallW*0.5)} ${F(sy+4)} L ${F(wallW*0.5)} ${F(sy+9)} Q 0 ${F(sy+3)} ${F(-wallW*0.5)} ${F(sy+9)} Z" fill="#F3F7FA" opacity="0.85"/>`; }
+    return s; }
+  sceneTuft(x,y,ts,col){ const F=n=>(+n).toFixed(1);
+    return `<path d="M ${F(x)} ${F(y)} q ${F(-2.2*ts)} ${F(-4.2*ts)} ${F(-3.3*ts)} ${F(-6.8*ts)} M ${F(x)} ${F(y)} q ${F(0.3*ts)} ${F(-5*ts)} 0 ${F(-7.8*ts)} M ${F(x)} ${F(y)} q ${F(2.3*ts)} ${F(-3.9*ts)} ${F(3.5*ts)} ${F(-6.4*ts)} M ${F(x)} ${F(y)} q ${F(-1.1*ts)} ${F(-4.6*ts)} ${F(-1.5*ts)} ${F(-7.2*ts)} M ${F(x)} ${F(y)} q ${F(1.2*ts)} ${F(-4.4*ts)} ${F(1.7*ts)} ${F(-7*ts)}" stroke="${col}" stroke-width="${F(Math.max(0.5,1.05*ts))}" fill="none" stroke-linecap="round"/>`; }
+  sceneMeadow(S,H,HZ,seedN,skip){ const F=n=>(+n).toFixed(1); const rnd=this.rng((seedN>>>0)||3); let s='';
+    const win=!!S.snow;
+    for(let y=HZ+22;y<146;y+=this.lp(9,19,(y-HZ)/(150-HZ))){
+      const depth=(y-HZ)/(150-HZ); let n=Math.round(this.lp(7,10,depth)); if(win) n=Math.round(n*0.45);
+      for(let i=0;i<n;i++){ const x=(rnd()*2-1)*164; const yy=y+(rnd()*2-1)*5; if(skip&&skip(x,yy)) continue;
+        const sc2=this.lp(0.32,1.2,(yy-HZ)/(150-HZ)); const r=rnd();
+        const gcol=this.mix(this.mix(H.field,'#54683C',win?0.12:0.3*r),H.haze,(1.2-sc2)*0.42);
+        if(r<0.6) s+=this.sceneTuft(x,yy,sc2*0.8,gcol);
+        else if(r<0.76) s+=`<ellipse cx="${F(x)}" cy="${F(yy)}" rx="${F(2.2*sc2)}" ry="${F(1.4*sc2)}" fill="${this.mix('#8E8779',H.haze,(1.2-sc2)*0.4)}"/>`;
+        else if(!win&&(S.key==='Spring'||S.key==='Summer')){ const fc=S.key==='Spring'?'#F0EEE0':'#E4C95E';
+          s+=`<path d="M ${F(x)} ${F(yy)} L ${F(x)} ${F(yy-3.6*sc2)}" stroke="${gcol}" stroke-width="${F(0.55*sc2)}"/><circle cx="${F(x)}" cy="${F(yy-4.4*sc2)}" r="${F(1.15*sc2)}" fill="${fc}"/>`; }
+        else if(S.key==='Autumn') s+=`<circle cx="${F(x)}" cy="${F(yy)}" r="${F(1.05*sc2)}" fill="#B08A3E" opacity="0.75"/>`;
+        else s+=this.sceneTuft(x,yy,sc2*0.55,gcol);
+      } }
     return s; }
 
 
@@ -3822,9 +4053,11 @@ function scatterFlowers(cx,specs,gr){ let g='';
    Season-aware (snow caps in winter via _gaSeason.snow) and night-tinted like every other flora.
    Rule: stones add depth at the edges and along paths, never covering a plant or a growth-tree. */
 // every stone the MEADOW scatters is an ordinary field stone — flint, granite, slate, sandstone
-// plus the pack's new plain kinds. The pack's crystals/geodes/menhirs exist in GA.STONE but are
-// deliberately never placed (calm realism, no ornaments — the habitats stay the heroes).
-const STONE_KINDS=['flint','granite','slate','sandstone','chalk','limestone','conglomerate','gneiss','ironstone'];
+// plus the pack's plain kinds (v79 added the live pack's marble + serpentine; basalt tried and
+// cut — near-black, it sank into the grass as a hole). Crystals/geodes/megaliths exist in
+// GA.STONE but are deliberately never scattered (calm realism — the habitats stay the heroes);
+// of the new ARRANGEMENTS only the glacial erratic is placed (see drawNearStones).
+const STONE_KINDS=['flint','granite','slate','sandstone','chalk','limestone','conglomerate','gneiss','ironstone','marble','serpentine'];
 /* one pack SHRUB, grounded like a tree: soft contact shadow + season/night tint. Plate units are
    large (w≈70-100), so hedgerow scale is sc≈0.28-0.45. `seed` varies the silhouette per instance
    (clones the species with a salted id → a different deterministic rng stream), `flip` mirrors. */
@@ -3878,6 +4111,13 @@ function stoneCluster(cx,by,seed,spec){ const arr=spec.map((it,i)=>({dx:it[0],dy
 function stoneAndPebble(cx,by,seed,sc,kind,side){ side=side||1; const T=GA.STONE[(GA_SP[kind]||GA_SP.flint).kind];
   const mainHW=T.w*sc*0.5;
   return gaStone(cx,by,sc,kind,seed) + myPebble(cx+side*(mainHW*0.72+5), by+3, sc*0.52, ((seed>>>0)%5), (seed*7+53)>>>0); }
+/* a whole Atlas stone ARRANGEMENT (cairn / scree / outcrop / wall / field …) by species id —
+   stoneAbove lays it out at plate scale (±150 units), so we shrink with an outer transform.
+   Its baked shadows are warm-dark; on winter snow they swap for the pale scuff like gaStone's. */
+function gaStoneArr(x,y,id,sc){ const sp=GA_SP[id]; if(!sp) return '';
+  let s=GA.stoneAbove(sp,1,_gaSeason);
+  if(_gaSeason.snow) s=s.replace(/rgba\(52,36,16,[^)]*\)/g,'rgba(220,231,238,0.5)');
+  return `<g transform="translate(${x} ${y}) scale(${sc})">${gaTint(s)}</g>`; }
 
 /* ══ STONESCAPE (reworked) — two coherent layers so rocks build depth + rhythm, never pile up or hide a plant.
    FAR: small hazy rocks up on the slope (drawn before the midground, low opacity = aerial perspective).
@@ -3901,19 +4141,23 @@ function drawFarStones(W,dusky){ let g='';
     // grounded on the meadow floor in the MIDDLE distance — env plants (drawn AFTER) sit in front, so these read
     // as small distant rocks resting ON the ground, not floating on a hillside. Lighter rounded kinds only.
     const dy=430+((i*13)%18), sc=0.09+r(1)*0.08;
-    g+=`<g opacity="${dusky?0.6:0.84}">${gaStone(dsx,dy,sc,['granite','flint','sandstone','chalk','slate','limestone','gneiss'][Math.floor(r(2)*7)],(i*617+11)>>>0)}</g>`;
+    g+=`<g opacity="${dusky?0.6:0.84}">${gaStone(dsx,dy,sc,['granite','flint','sandstone','chalk','slate','limestone','gneiss','serpentine','marble'][Math.floor(r(2)*9)],(i*617+11)>>>0)}</g>`;
   }
   return g; }
 function drawNearStones(W,dusky){ let g='';
-  // the knoll's cairn — the Atlas's slate is a natural stack of flat slabs; set LOW on the knoll's front, well
-  // below the grass roots (grass roots at meaningY+30 and grow UP; this sits at +58, in front, clear).
-  g+=gaStone(HABX.meaning+120, HABY.meaning+58, 0.5, 'slate', 20001) + myPebble(HABX.meaning+94, HABY.meaning+64, 0.9, 0, 20002);
+  // the knoll's cairn — v79: the live pack's slate renders as bold flat steps at 0.5, so the single
+  // big slab became the pack's own CAIRN arrangement, small — a hand-stacked waymark, not stairs.
+  g+=gaStoneArr(HABX.meaning+120, HABY.meaning+58, 'slate_cairn', 0.26) + myPebble(HABX.meaning+94, HABY.meaning+64, 0.9, 0, 20002);
   // singles where stones truly gather: path edges · stream bank · pond rim · the knoll's slopes
   g+=gaStone(742,530,0.24,'flint',30001)+gaStone(854,538,0.19,'chalk',30002);            // either side of the trail's foot
   g+=gaStone(2406,514,0.26,'limestone',30003);                                            // west stream bank, above the wader's run
   g+=gaStone(3052,556,0.2,'gneiss',30004);                                                // hugging the pond's east rim
   g+=gaStone(1568,498,0.26,'granite',30005)+myPebble(1592,504,0.8,2,30006);               // the knoll's west slope
   g+=gaStone(1938,512,0.21,'ironstone',30007);                                            // its quieter east fall
+  // v79 — from the live pack's new arrangements, exactly ONE lands here: a lone glacial erratic
+  // in the open between Connection and Meaning. (The dry-stone wall and slate scree were tried
+  // and cut — at meadow scale they read as a brick grid and a staircase, not as landscape.)
+  g+=gaStoneArr(1448,522,'erratic',0.34);
   // a sparse scatter of single rocks in the open low foreground — well spaced, never on tree/water/path/plant band
   const cores=HAB.map(id=>HABX[id]+(HAB_TX[id]||0));
   const clear=x=> cores.some(c=>Math.abs(x-c)<104)                          // clear of every growth-tree
