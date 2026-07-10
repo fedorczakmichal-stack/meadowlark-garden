@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v77 (2026-07-10) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v78 (2026-07-10) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -93,7 +93,7 @@ Dane localStorage: `meadowlark.garden` (+`.pressed`, `.compass`, `.letters`, **`
   asercje nie widzą (lewitacje, kolizje, sezonowe niespójności) — używać przy zmianach sceny.
 - ⚠ shellowe pułapki: heredoc NIE w środku łańcucha `&&` (rozrywa go); sed-range może obciąć nagłówek metody.
 
-## 5. Otwarte / ryzyka (stan v77)
+## 5. Otwarte / ryzyka (stan v78)
 
 - **Perf**: string lasu ~370 KB/raster (4 rzędy × ~90 drzew) — jeśli re-rastry (zmiany fazy) haczą na starszych
   iPhone'ach, zmniejszyć gęstość rzędów/step. Boot ~340 KB inline JS — temat startu wciąż otwarty.
@@ -501,3 +501,18 @@ zimą nagie+czapy), `forestBand` (4 rzędy w mgle; SPORTOWANY z gapX→gapXs —
 - ⚠ nowe pułapki: heredoc NIE w środku `&&`; sceneHues wymaga NAGŁÓWKA metody (sed-range obciął); forest-string
   ~370 KB/raster — obserwować perf re-rastrów na starszych iPhone. CACHE `v77`.
 
+
+**v78** (2026-07-10): **PRAWDZIWE GÓRY na horyzoncie** (życzenie Michała: „za ostatnim lasem góry — albo prawdziwe,
+albo nic; teraz tylko zarys"). Stare 3 płaskie wstęgi `wavy(176/206/240)` USUNIĘTE → `drawMountains(mtn,season,dusky)`
+(~l.2255): DWA pasma z perspektywą powietrzną — dalekie wysokie (blade skały, POZIOMA linia wiecznego śniegu ~y234,
+czapy tylko na szczytach y<204, krawędź śniegu z PALCAMI `snowEdge`, nie „wylana płachta"; śnieg = sylwetka, skała
+nakłada się od dołu, clip `#mtnClipF` pilnuje krawędzi) + bliskie niższe (łupkowo-zielone, rim-light po grani,
+zimą śnieżny stroke). Fasety cienia = kliny WZDŁUŻ stoku po stronie OD światła (lightX: dzień=słońce 1700,
+dusky=księżyc 2160; bez pionowych szwów). Mgiełka `#mhz` między planami. **Art direction kotwic ręcznych:**
+dolina V dokładnie nad bramą RZEKI (x2548, szczyty flankujące 2455/2665 + „oddech doliny" glDof) — rzeka spływa
+Z GÓR; siodło obu pasm nad bramą ŚCIEŻKI (x930) — ścieżka idzie NA PRZEŁĘCZ; słońce (1700) i księżyc (2160)
+siedzą w przełęczach, nigdy nabite na szczyt. Paleta `MTN` per faza + `blendMtn` w cross-fade `phaseBlend`;
+zmierzch/świt = fioletowe pasma + ALPENGLOW na śniegu; noc = sylwety + księżycowe granie; zima = frost jak hills
+(mix #E9F1F6) + linia śniegu w dół (0.85); jesień/wiosna = skała bez zmian. `wavy(300,26)` hills[1] zostaje jako
+zielone pogórze przed lasem. Zweryfikowane headless (macierz 9 pór×sezonów, zrzut prosto z canvasa rastra,
+smoke-test standalone 0 NaN). CACHE `v78`.

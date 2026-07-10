@@ -2192,6 +2192,17 @@ const HILLS={
   dusk:['#8FB089','#6F9270','#506E5A','#3C4F48'],
   night:['#5C6E6A','#47585C','#37464E','#2C3742'],
 };
+// the mountain range behind the last forest rank — [far rock, near ridge, snow] per phase.
+// Far range sits pale and blue-hazed against the sky (atmospheric perspective); snow warms to
+// alpenglow at golden/dusk and cools to moonlight at night. Rock keeps its hue across seasons.
+const MTN={
+  day:   ['#9FB6CC','#7FA089','#F5F9FC'],
+  golden:['#AFA6C2','#8B9D7B','#FAEBD5'],
+  dawn:  ['#BCAFCC','#95A58D','#F6E9EE'],
+  dusk:  ['#6A6289','#516263','#DCC5CF'],
+  night: ['#3B3D59','#2E374A','#8B91AF'],
+};
+function blendMtn(a,b,t){ return MTN[a].map((c,i)=> t?mix(c,MTN[b][i],t):c); }
 /* Sunrise/sunset used to be a stage-light switch — sky palettes snapped at the top of the hour.
    phaseBlend() gives a continuous cross-fade in the ~45min before each boundary; the scene re-renders
    a handful of times across that window (sceneSig carries a blend bucket; tick() watches it). */
@@ -2241,6 +2252,69 @@ function drawForest(W,dusky,winter){
   let band='<g transform="translate(1550 342)">'+GA.forestBand(0,1.05,S,7,[-620,998],1560)+'</g>';
   band=band.replace(/#[0-9A-Fa-f]{6}/g,m=>nightTint(m,_phase));
   return band;
+}
+/* ── REAL MOUNTAINS behind the last forest rank ───────────────────────────────
+   Two ranges replace the old flat wavy strips: a high FAR range (pale rock, horizontal
+   snowline, sun-aware facet shading) and a lower NEAR range (slate-green, soft rim light),
+   with haze between the planes. Anchors are hand-placed art direction:
+     · a deep V-valley opens exactly above the river's forest doorway (x≈2548) — the river
+       reads as coming DOWN from the mountains;
+     · both ranges drop to a saddle above the trail's doorway (x≈930) — the trail reads as
+       heading OVER the pass;
+     · the sun (x1700) and moon (x2160) each sit in a col, never impaled on a summit. */
+function drawMountains(mtn,seasonName,dusky){
+  const ROCK=mtn[0], NEAR=mtn[1], SNOW=mtn[2], winter=seasonName==='winter';
+  const FAR=[[-140,236],[150,192],[400,158],[650,208],[810,182],[935,252],[1085,172],[1320,148],[1520,212],[1705,244],[1900,166],[2135,206],[2320,238],[2455,170],[2548,278],[2665,152],[2900,186],[3160,226]];
+  const NR =[[-120,286],[140,246],[330,270],[520,232],[700,262],[930,290],[1150,240],[1350,266],[1540,230],[1730,272],[1930,238],[2120,268],[2300,236],[2430,262],[2548,296],[2700,240],[2880,268],[3060,242],[3220,278]];
+  const hj=i=>((i*137+11)%13)-6;                       // deterministic jitter — same skyline every raster
+  const ridge=(A,cv)=>{ let d=`M${A[0][0]} ${A[0][1]}`;
+    for(let i=1;i<A.length;i++){ const x0=A[i-1][0],y0=A[i-1][1],x1=A[i][0],y1=A[i][1];
+      const seg=x1-x0, sag=Math.abs(y1-y0)*cv+2.5;     // slightly concave flanks — mountains, not waves
+      if(seg>150){
+        d+=` L${(x0+seg*0.38+hj(i)).toFixed(0)} ${(y0+(y1-y0)*0.38+sag*0.9+hj(i+3)*0.4).toFixed(0)}`;
+        d+=` L${(x0+seg*0.72-hj(i+1)).toFixed(0)} ${(y0+(y1-y0)*0.72+sag*0.7).toFixed(0)}`;
+      } else d+=` L${(x0+seg*0.5+hj(i)).toFixed(0)} ${((y0+y1)/2+sag).toFixed(0)}`;
+      d+=` L${x1} ${y1}`; }
+    return d; };
+  const close=(A,d)=>d+` L${A[A.length-1][0]} 372 L${A[0][0]} 372 Z`;
+  // snowline is (roughly) HORIZONTAL — only the high summits carry year-round caps; winter pulls it far down
+  const capB=(i)=>{ const y=FAR[i][1], l=FAR[i-1], r=FAR[i+1];
+    if(!l||!r) return y+3;
+    if(winter) return y+Math.max(14,(234-y)*0.85);
+    return y<204 ? Math.min(y+(234-y)*0.34,226) : y+1; };
+  const SL=FAR.map((p,i)=>[p[0]+((i&&i<FAR.length-1)?Math.round(hj(i)*0.5):0), Math.round(capB(i))]);
+  const SLD=SL.map((p,i)=>p[1]-FAR[i][1]);   // cap depth per anchor → finger size of the snow edge
+  // the rock's top edge = the snowline, drawn with alternating fingers so caps never read as poured sheets
+  const snowEdge=(A)=>{ let d=`M${A[0][0]} ${A[0][1]}`;
+    for(let i=1;i<A.length;i++){ const x0=A[i-1][0],y0=A[i-1][1],x1=A[i][0],y1=A[i][1];
+      const jag=Math.min(9,Math.max(SLD[i-1],SLD[i])*0.4);
+      if(jag>1.5){ [[0.26,1],[0.5,-0.7],[0.74,1.1]].forEach(([f,k],j)=>{
+        d+=` L${(x0+(x1-x0)*f+hj(i*3+j)*0.6).toFixed(0)} ${(y0+(y1-y0)*f+jag*k+Math.abs(y1-y0)*0.08).toFixed(0)}`; });
+      } else d+=` L${(x0+(x1-x0)*0.5).toFixed(0)} ${((y0+y1)/2+Math.abs(y1-y0)*0.10+2).toFixed(0)}`;
+      d+=` L${x1} ${y1}`; }
+    return d; };
+  const farSil=close(FAR,ridge(FAR,0.10)), rockPath=close(SL,snowEdge(SL));
+  // facet shading — a soft wedge hugging the flank away from the light (no hard vertical seams)
+  const lightX=dusky?2160:1700, shade=mix(ROCK,'#2C3352',0.32);
+  let facets='';
+  for(let i=1;i<FAR.length-1;i++){ const x=FAR[i][0],y=FAR[i][1], l=FAR[i-1], r=FAR[i+1];
+    if(!(y<l[1]&&y<r[1])) continue;
+    const n=(x<lightX)?l:r, dx=n[0]-x, dy=n[1]-y;
+    if(Math.abs(dy)<26) continue;                     // a near-level flank has no face to shade
+    const P=(f,drop)=>`${(x+dx*f).toFixed(0)} ${(y+dy*f+(drop||0)).toFixed(0)}`;
+    facets+=`<path d="M${P(0.24)} L${P(0.88)} L${P(0.66,16)} L${P(0.34,18)} Z" fill="${shade}" opacity=".22"/>`; }
+  const nearOpen=ridge(NR,0.07), nearFill=close(NR,nearOpen);
+  let s=`<defs><clipPath id="mtnClipF"><path d="${farSil}"/></clipPath>
+    <linearGradient id="mhz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBF7F2" stop-opacity="0"/><stop offset="1" stop-color="#FBF7F2" stop-opacity=".26"/></linearGradient></defs>`;
+  s+=`<path d="${farSil}" fill="${SNOW}"/>`;                                    // snow IS the silhouette — rock overlays it
+  s+=`<g clip-path="url(#mtnClipF)"><path d="${rockPath}" fill="${ROCK}"/>${facets}</g>`;
+  s+=`<rect x="0" y="150" width="${PANO_W}" height="185" fill="url(#mhz)" opacity="${dusky?0.35:0.8}"/>`;   // haze between the planes
+  s+=`<path d="${nearFill}" fill="${NEAR}"/>`;
+  s+=`<path d="${nearOpen}" fill="none" stroke="${winter?SNOW:mix(NEAR,'#FBF7F2',0.55)}" stroke-width="${winter?3:1.6}" stroke-linejoin="round" opacity="${winter?0.85:(dusky?0.2:0.35)}"/>`;
+  s+=`<rect x="0" y="228" width="${PANO_W}" height="120" fill="url(#mhz)" opacity="${dusky?0.3:0.6}"/>`;
+  s+=`<ellipse cx="2548" cy="290" rx="11" ry="26" fill="${SNOW}" opacity="${dusky?0.12:0.2}" filter="url(#glDof)"/>`;   // valley breath above the river doorway
+  s+=`<ellipse cx="930" cy="286" rx="15" ry="18" fill="${SNOW}" opacity="${dusky?0.08:0.13}" filter="url(#glDof)"/>`;   // and a softer one over the trail pass
+  return s;
 }
 function drawMidground(W,dusky){
   const PB=(dusky?['#46584F','#506357','#3C4D45']:['#9DC487','#A9CE93','#8CB877']).map(c=>nightStep(frost(c)));   // back row (atmospheric)
@@ -4410,7 +4484,7 @@ function renderMeadow(force,opt){
 
   const W=PANO_W,H=PANO_H, total=totalCare();
   const pb=phaseBlend();                       // cross-fade sky+hills across sunrise/sunset
-  const dusky=DUSKY(phase); let hills=blendHills(pb.a,pb.b,pb.t);
+  const dusky=DUSKY(phase); let hills=blendHills(pb.a,pb.b,pb.t);   // NB hills[0] retired in v78 — the mountains replaced its two strips; [1]=foothills, [2]/[3]=meadow floor
   // WINTER: snow the DISTANT planes too, not just the foreground — frost the rolling hills toward pale ice,
   // more on the nearer bands so they blend up into the foreground snow blanket (no green-behind / white-in-front)
   if(seasonName==='winter') hills=hills.map((c,i)=>mix(c,'#E9F1F6',(dusky?0.26:0.46)+i*0.08));
@@ -4447,10 +4521,11 @@ function renderMeadow(force,opt){
     st+=`<g stroke="#FFE9B8" stroke-width="2.4" opacity=".3" stroke-linecap="round"><path d="M${sunx} -4 L ${sunx} -38"/><path d="M${sunx+72} 44 L ${sunx+104} 18"/><path d="M${sunx-72} 44 L ${sunx-104} 18"/><path d="M${sunx+84} 118 L ${sunx+124} 118"/><path d="M${sunx-84} 118 L ${sunx-124} 118"/></g>`;
     st+=`<g stroke="#B89C86" stroke-width="1.6" fill="none" opacity=".38" stroke-linecap="round"><path d="M520 96 C 526 92 532 92 538 96"/><path d="M546 90 C 552 86 558 86 564 90"/><path d="M566 100 C 572 96 578 96 584 100"/><path d="M1180 86 C 1186 82 1192 82 1198 86"/><path d="M1206 92 C 1212 88 1218 88 1224 92"/></g>`;
   }
-  // continuous rolling ground (full width) + a faint far ridge for depth
-  st+=`<path d="${wavy(176,12)}" fill="${seasonName==='winter'?(dusky?'#7C90A0':'#DCE9EF'):(dusky?'#586A78':'#C2D6CE')}" opacity="${dusky?.5:.5}"/>`;
-  st+=`<path d="${wavy(206,16)}" fill="${hills[0]}" opacity=".5"/>`;
-  st+=`<path d="${wavy(240,18)}" fill="${hills[0]}" opacity=".72"/>`;
+  // REAL MOUNTAINS on the horizon (the old faint wavy strips read as nothing) — the river
+  // descends FROM their valley, the trail climbs TO their pass; green foothills roll in front
+  let mtn=blendMtn(pb.a,pb.b,pb.t);
+  if(seasonName==='winter') mtn=[mix(mtn[0],'#E9F1F6',dusky?0.26:0.4),mix(mtn[1],'#E9F1F6',dusky?0.3:0.48),mix(mtn[2],'#FFFFFF',0.35)];
+  st+=drawMountains(mtn,seasonName,dusky);
   st+=`<path d="${wavy(300,26)}" fill="${hills[1]}"/>`;
   st+=drawForest(W,dusky,seasonName==='winter');
   { let mist=''; for(let x=60;x<W;x+=300){ mist+=`<ellipse cx="${x}" cy="${336+((x*7)%18)}" rx="190" ry="14" fill="#FFFFFF" opacity="${dusky?.10:.2}" filter="url(#glDof)"/>`; } st+=`<g>${mist}</g>`; }
