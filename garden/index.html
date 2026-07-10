@@ -2337,38 +2337,22 @@ function drawMidground(W,dusky){
   const inStream=(x)=>Math.abs(x-(HABX.future+34))<85;   // keep the slope plants out of the river's corridor
   const inTrail=(x)=>Math.abs(x-(HABX.home+124))<72;      // …and out of the Home trail's corridor (it climbs the same slope)
   const inBearClearing=(x)=>Math.abs(x-BEARX)<BEARAMP+30; // …and clear a patch under the woods for the ambling bear
-  /* v81 — the second plane grows in broad, asymmetric DRIFTS rather than a continuous planted
-     strip. Each island follows the slope on a slight diagonal and leaves calm wedges of open grass
-     between it and the next one. Small staffage trees hold the outside shoulders while flowers,
-     shrubs and stones soften toward the open centres. Deterministic rng — nothing reshuffles. */
+  /* v79 — the two straight ranks read as PLANTED (Michał). Rebuilt on the Atlas sceneMeadow
+     pattern: depth ROWS from the forest's feet down the slope, each row a random-x scatter with
+     y-jitter, scale and haze proportional to depth — plus small staffage TREES pulled out of the
+     wood (the forest walks down into the meadow), Atlas shrubs of mixed species, and pebbles.
+     Deterministic rng — the slope never reshuffles between rebuilds. */
   const H2=GA.sceneHues(_gaSeason), rnd=GA.rng(4177);
   const SHRUBS=['hawthorn','box','juniper','elder','guelder'];   // leafy kinds only — broom/heather read as bare sticks at this scale
   const MIDSTONES=['flint','sandstone','chalk','limestone','marble','granite'];   // light kinds; the dark ones sink the slope
   const items=[];
-  const DRIFTS=[
-    [150,170,382,24,24,-8],[440,150,398,26,20,10],[760,125,376,20,17,-7],
-    [1125,165,397,27,23,12],[1435,150,374,21,19,-9],[1760,180,397,28,25,11],
-    [2110,175,380,23,22,-10],[2360,118,406,22,15,8],[2760,160,386,24,21,-9],
-    [3050,145,402,25,18,9]
-  ];
-  for(const [cx,rx,cy,ry,n,slope] of DRIFTS){
+  for(let y=358; y<440; y+=7+Math.round((y-358)*0.14)){
+    const depth=(y-358)/82;                                  // 0=at the treeline … 1=front of the band
+    const n=Math.round(lerp(16,10,depth));                   // denser far away (smaller things pack tighter); +15% v82 — the plane felt thin on the phone
     for(let i=0;i<n;i++){
-      // averaged random values gather plants naturally near the heart of a drift; the few wider
-      // samples feather its edge instead of drawing a hard oval or another horizontal row
-      const u=((rnd()+rnd()+rnd())/3)*2-1;
-      const x=cx+u*rx, edge=1-Math.abs(u);
-      const yy=cy+(rnd()*2-1)*ry*(0.38+edge*0.62)+u*slope;
-      if(x<18||x>W-18||inStream(x)||inTrail(x)||(yy<392&&inBearClearing(x))) continue;
-      const rv=rnd(), vv=rnd(), depth=clamp((yy-358)/82,0,1);
-      // real collision footprints, matched to the rendered vocabulary below. A candidate is kept
-      // only when both its crown/tuft width and its visible height clear every accepted neighbour.
-      let rxp=10+depth*5, ryp=8+depth*4;
-      if(rv>=0.42&&rv<0.60){ rxp=16+depth*7; ryp=11+depth*5; }
-      else if(rv>=0.60&&rv<0.74){ rxp=15+depth*8; ryp=12+depth*6; }
-      else if(rv>=0.74&&rv<0.86){ rxp=13+depth*7; ryp=17+depth*9; }
-      else if(rv>=0.86&&rv<0.94){ rxp=7; ryp=10; }
-      if(items.some(p=>Math.abs(x-p.x)<rxp+p.rxp+7 && Math.abs(yy-p.y)<ryp+p.ryp+4)) continue;
-      items.push({x,y:yy,r:rv,v:vv,rxp,ryp});
+      const x=20+rnd()*(W-40), yy=y+(rnd()*2-1)*4;
+      if(inStream(x)||inTrail(x)||(yy<392&&inBearClearing(x))) continue;
+      items.push({x,y:yy,r:rnd(),v:rnd()});
     }
   }
   items.sort((a,b)=>a.y-b.y);                                // paint back-to-front so overlaps layer correctly
@@ -4145,7 +4129,7 @@ function gaStoneArr(x,y,id,sc){ const sp=GA_SP[id]; if(!sp) return '';
 /* the ground walkers' foreground territories (KEEP IN SYNC with CAST in renderMeadow) — the animal
    overlay always paints above the canvas, so no near stone may spawn under a walker's feet:
    fox · ladybug · hedgehog · mouse(trail) · rabbit · turtle · stork(stream) · snail(pond front) */
-const FABLE_RUNS=[[38,162],[365,425],[600,680],[794,862],[1005,1115],[2322,2378],[2482,2558],[2876,2924]];
+const FABLE_RUNS=[[38,162],[365,425],[600,680],[766,834],[1005,1115],[2322,2378],[2482,2558],[2876,2924]];
 function drawFarStones(W,dusky){ let g='';
   const cores=HAB.map(id=>HABX[id]+(HAB_TX[id]||0));
   const placed=[];
@@ -4181,7 +4165,7 @@ function drawNearStones(W,dusky){ let g='';
   const cores=HAB.map(id=>HABX[id]+(HAB_TX[id]||0));
   const clear=x=> cores.some(c=>Math.abs(x-c)<104)                          // clear of every growth-tree
     || Math.abs(x-(HABX.future+34))<150 || Math.abs(x-HABX.calm)<190        // clear of stream + pool (incl. the rim arc)
-    || Math.abs(x-800)<74              || Math.abs(x-BEARX)<BEARAMP+18      // clear of the trail's FOREGROUND run (x≈800-855 after the v80 retrace) + bear clearing
+    || Math.abs(x-800)<74              || Math.abs(x-BEARX)<BEARAMP+18      // clear of the trail's FOREGROUND run (x≈770-830 down here) + bear clearing
     || Math.abs(x-(HABX.meaning+120))<70                                    // clear of the cairn above
     || FABLE_RUNS.some(r=>x>r[0]-24&&x<r[1]+24);                            // clear of every ground walker's territory — no rock floats under an animal
   let sx=150, si=0;
@@ -4196,11 +4180,12 @@ function drawNearStones(W,dusky){ let g='';
 
 /* ── distinct habitat environments (drawn around each growth-tree) ── */
 function envMeadow(cx,by,gr){ // Body — a full, healing wildflower meadow (tall poppies, daisies, cosmos, cornflowers)
-  // deliberately spaced specimens — meadow abundance without flowers being drawn through one another
-  let g=grassClump(cx-220,by+36)+grassClump(cx+220,by+38);
+  let g=grassClump(cx-176,by+24)+grassClump(cx+186,by+26)+grassClump(cx-30,by+34)+grassClump(cx+96,by+34)+grassClump(cx-120,by+30)+grassClump(cx+150,by+30);
+  // a back tier of taller flowers + a front tier of shorter ones, both sides (clear of the central tree)
   g+=scatterFlowers(cx,[
-    [-165,by+24,'poppy',null,.58,70],[-105,by+38,'cornflower',null,.46,56],[-45,by+22,'daisy','cream',.52,68],
-    [45,by+34,'cosmos',null,.48,58],[105,by+20,'poppy',null,.55,66],[165,by+38,'buttercup',null,.48,54]],gr);
+    [-172,by+18,'poppy',null,.62,72],[-140,by+24,'cornflower',null,.5,60],[-108,by+18,'daisy','cream',.56,76],[-76,by+26,'cosmos',null,.54,58],[-46,by+20,'poppy',null,.6,70],
+    [52,by+22,'daisy','gold',.58,72],[86,by+18,'cosmos',null,.56,78],[120,by+26,'poppy',null,.56,60],[152,by+20,'cornflower',null,.5,68],[184,by+26,'buttercup',null,.56,58],
+    [-150,by+40,'daisy','cream',.42,40],[-92,by+42,'buttercup',null,.42,40],[-40,by+44,'poppy',null,.42,40],[40,by+44,'daisy','gold',.4,38],[100,by+42,'cosmos',null,.42,40],[150,by+44,'poppy',null,.4,38]],gr);
   return g;
 }
 function envHome(cx,by,phase,gr){ // Home — a tended homestead garden
@@ -4209,15 +4194,16 @@ function envHome(cx,by,phase,gr){ // Home — a tended homestead garden
   // (shifted left so the nearest bush clears the oak's flared base + root buttresses — no root-on-bush overlap)
   // the tended hedgerow, from the pack: clipped box between a garden hydrangea and a lilac —
   // each instance seeded differently so the row never repeats one silhouette
-  g+=gaShrub(cx-226,by+10,'hydrangea',.28,2)
-    +gaShrub(cx-136,by+8,'box',.23,3,true)
-    +gaShrub(cx-50,by+11,'lilac',.28,4);
+  g+=gaShrub(cx-226,by+8,'box',.30,1)
+    +gaShrub(cx-180,by+10,'hydrangea',.34,2)
+    +gaShrub(cx-140,by+7,'box',.27,3,true)
+    +gaShrub(cx-98,by+11,'lilac',.36,4)
+    +gaShrub(cx-66,by+8,'box',.24,5,true);
   g+=`</g>`;
-  // THE ROAD — its first hairline now reaches back beneath the canopy and opens gradually through
-  // two planted shoulders. The longer, quieter S curve avoids the old cut-out mouth at the wood.
-  const ppts=[{x:cx+150,y:328,w:2},{x:cx+149,y:350,w:4},{x:cx+128,y:378,w:7},{x:cx+143,y:416,w:11},{x:cx+106,y:460,w:16},{x:cx+58,y:508,w:21},{x:cx+18,y:558,w:27},{x:cx-38,y:620,w:34}];
-  const roadMouth=nightStep(DUSKY(phase)?'#3A443D':'#53664A');
-  g+=`<ellipse cx="${cx+150}" cy="350" rx="13" ry="7" fill="${roadMouth}" opacity=".45"/>`;
+  // THE ROAD, as the pack draws it: a cart road setting out wide at the foot of the panorama and
+  // narrowing turn by turn until it slips INTO the forest doorway (x930 — it used to stop at y308,
+  // hanging in the air above the treeline). Wheel-ruts, a waymark stone and roadside tufts sell it.
+  const ppts=[{x:cx+150,y:350,w:4},{x:cx+106,y:384,w:8},{x:cx+142,y:428,w:13},{x:cx+66,y:482,w:18},{x:cx+8,y:540,w:23},{x:cx-24,y:620,w:28}];
   // only the gradient layer runs all the way to the doorway (and fades into its dark);
   // the solid under-edge and the bright core stop a bend short, so no light stub pokes the woods
   g+=`<path d="${ribbon(ppts.slice(1).map(p=>({x:p.x,y:p.y,w:p.w+3})))}" fill="#C7AE80" opacity=".55"/>`;
@@ -4232,22 +4218,23 @@ function envHome(cx,by,phase,gr){ // Home — a tended homestead garden
   g+=gaTint(`<g transform="translate(${cx-28} 544)"><path d="M -4.6 0 L -4 -14 Q 0 -17 4 -14 L 4.6 0 Z" fill="#8E8779"/><path d="M -2.2 -14.8 Q 0 -16.4 2.4 -14.5" stroke="#B9B2A0" stroke-width="1.4" fill="none"/>${_gaSeason.snow?'<ellipse cx="0" cy="-15.4" rx="4" ry="1.5" fill="#F2F6F4"/>':''}</g>`);
   // roadside tufts + pebbles hugging the verges, alternating sides — the road sits IN the meadow
   { const tc=nightStep(frost(phase==='dusk'||phase==='night'?'#42604A':'#679C55'));
-    [[2,-1],[3,1],[4,-1],[5,1],[6,-1]].forEach(([i,sgn])=>{ const p=ppts[i];
+    [[1,-1],[2,1],[3,-1],[4,1]].forEach(([i,sgn])=>{ const p=ppts[i];
       g+=GA.sceneTuft(p.x+sgn*(p.w+7),p.y+2,0.5+p.w*0.03,tc);
       if(i%2===0) g+=`<ellipse cx="${(p.x-sgn*(p.w+6)).toFixed(0)}" cy="${p.y+1}" rx="${(2.4+p.w*0.1).toFixed(1)}" ry="${(1.4+p.w*0.05).toFixed(1)}" fill="${nightStep('#8E8779')}" opacity=".8"/>`; }); }
-  // asymmetric gate planting: a low juniper shoulder on one side, fine grasses on the other
-  g+=gaShrub(cx+126,368,'juniper',.14,801,true)+gaGrass(cx+180,371,'fescue',.12,.82);
-  // two separate bed accents on the outside verge — neither sits on the road or inside another shrub
-  g+=scatterFlowers(cx,[[156,by+28,'daffodil',null,.52,56],[218,by+42,'tulip',null,.48,56]],gr);
+  // (birdhouse and potted flower removed — the tulip grows straight from the bed instead)
+  g+=`<g class="sway" style="animation-duration:7.6s;animation-delay:-2s"><g transform="translate(${cx+96} ${by+40})">${wildflower('tulip',null,.5,60,gr)}</g></g>`;
+  // tidy garden beds — tulips, daffodils and a rose, only beside the trail, never on it
+  g+=scatterFlowers(cx,[[-176,by+18,'tulip',null,.56,62],[-140,by+26,'daffodil',null,.56,56],[-104,by+30,'rose',null,.5,60],[132,by+22,'daisy','cream',.56],[166,by+30,'tulip',null,.5,58]],gr);
   return g;
 }
 function envThicket(cx,by,phase,gr){ // Connection — a green hedgerow thicket in soft WHITE blossom (hawthorn/elder, not pink)
   let g=''; const tk=nightTint('#6E5A3E',phase), l1=nightTint(frost('#7FB268'),phase), l2=nightTint(frost('#8FC078'),phase), l3=nightTint(frost('#6BA354'),phase), wf=nightTint('#FBF3E8',phase), cf=nightTint('#EAD9C2',phase);
   // the thicket itself, from the pack: a hawthorn and an elder — white sprinkle in spring,
   // white umbels in summer, red haws + black elderberries in autumn (true hedgerow whites)
-  g+=gaShrub(cx-166,by+14,'hawthorn',.38,6)
-    +gaShrub(cx+166,by+12,'elder',.40,7,true);
-  g+=scatterFlowers(cx,[[-82,by+32,'daisy','cream',.50],[-26,by+22,'lavender',null,.46,64],[34,by+34,'buttercup',null,.44],[92,by+24,'bluebell',null,.46,50]],gr);
+  g+=gaShrub(cx-150,by+14,'hawthorn',.42,6)
+    +gaShrub(cx+146,by+12,'elder',.44,7,true);
+  for(let i=0;i<9;i++){ const px=cx-150+i*38, py=by+30+(i%3)*6; g+=`<circle cx="${px}" cy="${py}" r="2" fill="${i%2?wf:l2}" opacity=".8"/>`; }
+  g+=scatterFlowers(cx,[[-138,by+24,'daisy','cream',.58],[-92,by+30,'lavender',null,.5,70],[-44,by+30,'buttercup',null,.46],[78,by+26,'daisy','cream',.6],[128,by+22,'bluebell',null,.52,52]],gr);
   return g;
 }
 function envKnoll(cx,by,phase,gr){ // Meaning — a sunlit knoll with a stone cairn
@@ -4266,11 +4253,12 @@ function envKnoll(cx,by,phase,gr){ // Meaning — a sunlit knoll with a stone ca
   // a cairn — the Atlas's slate renders as a natural stack of flat slabs, so one clean stone reads as a built
   // cairn; set LOW on the knoll's front, well below the grass roots + a small companion. (see stonescape below)
   // low heather domes on the sunny slope (evergreen; wears snow caps in winter)
-  g+=gaShrub(cx-56,by+48,'heather',.30,8)+gaShrub(cx+56,by+52,'heather',.28,9,true);
+  g+=gaShrub(cx-58,by+46,'heather',.36,8)+gaShrub(cx+34,by+52,'heather',.30,9,true);
   // the knoll's gold, v80: the pack's own wheat and oat swards (heads and all) replace the old
   // bare amber stroke-fans, which read as orange sticks next to the new, richer flora
-  g+=gaGrass(cx-178,by+34,'wheat',.19,.88)+gaGrass(cx+178,by+34,'oat',.18,.86);
-  g+=scatterFlowers(cx,[[-118,by+24,'sunflower',null,.52,76],[118,by+28,'daisy','gold',.48,58]],gr);
+  g+=gaGrass(cx-156,by+32,'wheat',.20,.9)+gaGrass(cx-96,by+34,'oat',.17,.85)
+    +gaGrass(cx+96,by+34,'oat',.18,.9)+gaGrass(cx+160,by+32,'wheat',.19,.85);
+  g+=scatterFlowers(cx,[[-150,by+22,'sunflower',null,.6,84],[-104,by+30,'daisy','gold',.5],[-50,by+30,'buttercup',null,.5,52],[64,by+30,'daisy','gold',.5],[168,by+22,'sunflower',null,.52,76]],gr);
   return g;
 }
 function envCraft(cx,by,phase,gr){ // Craft — a quiet apiary: a few straw hives, a spade at rest, warm marigold-gold flowers
@@ -4284,22 +4272,20 @@ function envCraft(cx,by,phase,gr){ // Craft — a quiet apiary: a few straw hive
     +`<ellipse cx="0" cy="8" rx="15" ry="6" fill="${nightTint('#C9924A',phase)}"/><ellipse cx="0" cy="1" rx="13" ry="6" fill="${nightTint('#D9A85C',phase)}"/><ellipse cx="0" cy="-5.5" rx="10.5" ry="5.4" fill="${nightTint('#C9924A',phase)}"/><ellipse cx="0" cy="-11" rx="7.5" ry="4.6" fill="${nightTint('#D9A85C',phase)}"/><circle cx="0" cy="-16" r="3.4" fill="${nightTint('#C9924A',phase)}"/>`
     +`<path d="M-3 10 A 3 3 0 0 1 3 10 Z" fill="${nightTint('#5A4026',phase)}"/></g>`;
   // the butterfly bush of the apiary, behind the skeps (bee- and butterfly-fodder in bloom)
-  g+=gaShrub(cx+226,by+4,'buddleja',.28,10);
-  g+=hive(cx-142,by+18,.94)+hive(cx+16,by+30,.82)+hive(cx+158,by+12,.96);
+  g+=gaShrub(cx+112,by+2,'buddleja',.34,10);
+  g+=hive(cx-152,by+18,1)+hive(cx+34,by+30,0.84)+hive(cx+176,by+8,1.08);
   // a spade resting in the soil, off to one side
-  g+=`<g transform="translate(${cx-218} ${by+24}) rotate(9)"><rect x="-1.6" y="-32" width="3.2" height="28" rx="1.6" fill="${wood}"/><rect x="-5" y="-36" width="10" height="4.4" rx="2.2" fill="${wood}"/><path d="M-5 -4 L5 -4 L4 8 C 2 11 -2 11 -4 8 Z" fill="${nightTint('#9AA1A8',phase)}"/></g>`;
+  g+=`<g transform="translate(${cx-196} ${by+24}) rotate(9)"><rect x="-1.6" y="-32" width="3.2" height="28" rx="1.6" fill="${wood}"/><rect x="-5" y="-36" width="10" height="4.4" rx="2.2" fill="${wood}"/><path d="M-5 -4 L5 -4 L4 8 C 2 11 -2 11 -4 8 Z" fill="${nightTint('#9AA1A8',phase)}"/></g>`;
   // marigold-gold flowers at the edges, in the working garden's warm tones
-  g+=scatterFlowers(cx,[[-78,by+48,'buttercup',null,.46,48],[92,by+56,'daisy','gold',.46,52]],gr);
-  g+=grassClump(cx-264,by+50);
+  g+=scatterFlowers(cx,[[-206,by+32,'buttercup',null,.5,50],[188,by+52,'daisy','gold',.5],[-196,by+58,'daisy','gold',.44],[122,by+62,'buttercup',null,.44,44]],gr);
+  g+=grassClump(cx-220,by+44)+grassClump(cx+214,by+40);
   return g;
 }
 function envStream(cx,by,dusky,gr){ // Future — a river springing from the woods, widening as it runs off the foreground
-  // a fine source reaches INTO the forest doorway, then widens in measured steps; the staggered
-  // banks make the mouth feel grown-in rather than punched through the treeline
-  const pts=[{x:cx+48,y:by-148,w:2},{x:cx+48,y:by-128,w:6},{x:cx+34,y:by-96,w:10},{x:cx+26,y:by-66,w:15},{x:cx+42,y:by-24,w:22},{x:cx+20,y:by+32,w:30},{x:cx+34,y:by+88,w:40},{x:cx+18,y:by+134,w:50},{x:cx+28,y:620,w:62}];
+  // head starts BELOW the treeline crowns (by-128); gentle wiggles only, widening steadily,
+  // so the river reads as flowing TOWARD the viewer and off the bottom edge
+  const pts=[{x:cx+48,y:by-128,w:9},{x:cx+26,y:by-76,w:15},{x:cx+42,y:by-24,w:22},{x:cx+20,y:by+32,w:30},{x:cx+34,y:by+88,w:40},{x:cx+18,y:by+134,w:50},{x:cx+28,y:620,w:62}];
   let g='';
-  const mouth=nightStep(dusky?'#33463F':'#55715D');
-  g+=`<ellipse cx="${cx+48}" cy="${by-126}" rx="14" ry="8" fill="${mouth}" opacity=".42"/>`;
   // the pack's riverScene bank: a soft wet-earth rim just outside the water (skips the head so
   // the source still melts into the forest doorway with no hard outline)
   g+=gaTint(`<path d="${ribbon(pts.slice(1).map(p=>({x:p.x,y:p.y,w:p.w*1.14})))}" fill="${GA.sceneHues(_gaSeason).bank}" opacity=".5"/>`);
@@ -4335,10 +4321,8 @@ function envStream(cx,by,dusky,gr){ // Future — a river springing from the woo
   }
   // reed beds from the atlas (feather reed — blades + seed heads), rooted on both banks;
   // the east clump is the darter's perch/roost. gaTint keeps them dimmed at dusk/night.
-  g+=gaGrass(cx-124,by+58,'reed',.27,.9)+gaGrass(cx+118,by+54,'reed',.25,.9);
-  // smaller upper-bank planting frames the source without closing the view into the valley
-  g+=gaGrass(cx+14,by-90,'fescue',.11,.78)+gaGrass(cx+80,by-88,'meadow',.10,.8);
-  g+=scatterFlowers(cx,[[-64,by+28,'iris',null,.46,56],[174,by+50,'cornflower','blue',.44,52]],gr);
+  g+=gaGrass(cx-92,by+54,'reed',.30,.9)+gaGrass(cx+96,by+52,'reed',.27,.9);
+  g+=scatterFlowers(cx,[[-96,by+46,'cornflower','blue',.5],[-72,by+18,'iris',null,.48,58],[126,by+34,'cornflower','blue',.48],[152,by+52,'iris',null,.46,56]],gr);
   // (the river now flows OUT of the forest doorway — the old source-blob is gone)
   return g;
 }
@@ -4358,9 +4342,9 @@ function envPool(cx,by,dusky,gr){ // Calm — a broad still reflecting pool, mis
   g+=`<ellipse cx="${cx}" cy="${by+22}" rx="158" ry="14" fill="#FFFFFF" opacity="${dusky?.12:.24}" filter="url(#glDof)"/>`;
   g+=`<ellipse cx="${cx+44}" cy="${by+14}" rx="94" ry="9" fill="#FFFFFF" opacity="${dusky?.1:.18}" filter="url(#glDof)"/>`;
   // true lavender spikes on the banks (the Atlas's spike bloom — grows and colours with care)
-  [[-172,52],[172,48]].forEach((p,i)=>{ const x=cx+p[0],y=by+p[1]; g+=`<g class="sway" style="animation-duration:${8.4+i*0.2}s;animation-delay:${-i}s"><g transform="translate(${x} ${y}) scale(${lavS.toFixed(3)})">${wildflower('lavender',null,.58,54,gr)}</g></g>`; });
+  [[-158,50],[168,44],[-128,60],[132,56]].forEach((p,i)=>{ const x=cx+p[0],y=by+p[1]; g+=`<g class="sway" style="animation-duration:${8.4+i*0.2}s;animation-delay:${-i}s"><g transform="translate(${x} ${y}) scale(${lavS.toFixed(3)})">${wildflower('lavender',null,(0.58+(i%2)*0.08),54,gr)}</g></g>`; });
   // violet wildflowers + bluebells on the banks (clear of the water)
-  g+=scatterFlowers(cx,[[-102,by+42,'bluebell',null,.46,48],[102,by+40,'cosmos','violet',.46,50]],gr);
+  g+=scatterFlowers(cx,[[-178,by+26,'cosmos','violet',.56],[-120,by+40,'bluebell',null,.5,48],[122,by+40,'cosmos','violet',.5],[176,by+28,'bluebell',null,.52,50]],gr);
   // the whole pool sits in the foreground, BELOW the tree — so the trunk stands on the grassy bank, not in the water
   return `<g transform="translate(0 32)">${g}</g>`;
 }
@@ -4815,15 +4799,12 @@ function renderMeadow(force,opt){
   if(seasonName==='winter') mtn=[mix(mtn[0],'#E9F1F6',dusky?0.26:0.4),mix(mtn[1],'#E9F1F6',dusky?0.3:0.48),mix(mtn[2],'#FFFFFF',0.35)];
   st+=drawMountains(mtn,seasonName,dusky);
   st+=`<path d="${wavy(300,26)}" fill="${hills[1]}"/>`;
-  // Mist belongs BEHIND the trunks. When it was painted over them it erased the ground contact
-  // and made the entire background wood look suspended above a pale horizontal gap.
-  { let mist=''; for(let x=60;x<W;x+=300){ mist+=`<ellipse cx="${x}" cy="${326+((x*7)%12)}" rx="190" ry="12" fill="#FFFFFF" opacity="${dusky?.06:.13}" filter="url(#glDof)"/>`; } st+=`<g>${mist}</g>`; }
-  // A narrow, darker forest-floor shelf sits under every trunk; the meadow lip drawn afterwards
-  // buries their bases by a few pixels, so the trees grow out of the ground instead of floating.
-  const forestFloor=nightStep(frost(dusky?'#3E4D43':'#668A59'));
-  st+=`<path d="${wavy(347,8)}" fill="${forestFloor}"/>`;
   st+=drawForest(W,dusky,seasonName==='winter');
-  st+=`<path d="${wavy(358,10)}" fill="${hills[2]}"/>`;
+  // the wood's FOOT SHADOW — a soft dark band right at the treeline base, so the forest stands
+  // ON the ground instead of hanging above it (the wall of trunks needs a contact line)
+  st+=`<rect x="0" y="349" width="${W}" height="10" fill="${dusky?'#1A241F':'#38523B'}" opacity="${dusky?.2:.16}" filter="url(#glDof)"/>`;
+  { let mist=''; for(let x=60;x<W;x+=300){ mist+=`<ellipse cx="${x}" cy="${336+((x*7)%18)}" rx="190" ry="14" fill="#FFFFFF" opacity="${dusky?.10:.2}" filter="url(#glDof)"/>`; } st+=`<g>${mist}</g>`; }
+  st+=`<path d="${wavy(362,22)}" fill="${hills[2]}"/>`;
   st+=`<path d="${wavy(432,18)}" fill="${hills[3]}"/>`;
   st+=drawMidground(W,dusky);
   // ── SEASON on the ground: a calm winter snow-blanket, or a drift of autumn leaves. A rest season, never loss.
@@ -4869,53 +4850,45 @@ function renderMeadow(force,opt){
   const TGR=['fescue','timothy','cocksfoot','meadow','fescue','timothy'];   // green only — the golden species live on the knoll
   { const tclear=x=>(Math.abs(x-(HABX.future+34))<120 || Math.abs(x-HABX.calm)<190 || Math.abs(x-800)<74);
     for(let i=0;i<HAB.length-1;i++){ const mx=(HABX[HAB[i]]+HABX[HAB[i+1]])/2, tgr=(gG[HAB[i]]+gG[HAB[i+1]])/2;
-      // Craft already ends with a buddleja at this boundary and Future begins with a clear river
-      // bank; another transition trio here produced the exact stacked shrub/grass collision we avoid.
-      if(i===4) continue;
+      st+=grassClump(mx-16,490)+grassClump(mx+22,494);
       const drift=TDRIFT[i%TDRIFT.length];
-      [[-82,0],[82,2]].forEach(([dx,k])=>{ const fx=mx+dx;
+      [[-84,0],[-34,1],[24,2],[74,3]].forEach(([dx,k])=>{ const fx=mx+dx+((i*13+k*7)%10)-5;
         if(tclear(fx)) return;
-        const fy=490+((i*7+k*11)%12), fsc=0.38+((k*13+i*5)%10)/100, fh=48+((k*19+i*7)%16);
+        const fy=488+((i*7+k*11)%16), fsc=0.36+((k*17+i*5)%16)/100, fh=46+((k*23+i*9)%22);
         st+=`<g class="sway" style="animation-duration:${(7.4+k*0.7).toFixed(1)}s;animation-delay:${(-i-k*0.9).toFixed(1)}s"><g transform="translate(${fx} ${fy})">${wildflower(drift[k][0],drift[k][1],fsc,fh,tgr)}</g></g>`;
       });
-      if(!tclear(mx)) st+=gaGrass(mx,504,TGR[i%TGR.length],.18,.88);
+      const gx2=mx+((i%2)?-58:52); if(!tclear(gx2)) st+=gaGrass(gx2,504,TGR[i%TGR.length],.20,.9);
     }
   }
-  // The west bank remains open: a former dogwood here collided with Craft's boundary buddleja.
-  // Reeds inside envStream now provide the single, clearly separated waterside planting.
-  // FIRST PLANE v81 — six asymmetric planting islands replace the evenly spaced carpet. Their
-  // edges overlap softly, while generous clearings remain around every tree, animal run and water/path entry.
-  const FRONT_DRIFTS=[[188,94,7,11],[472,76,6,23],[1370,104,8,37],[1850,118,8,51],[2235,96,7,67],[3090,92,7,83]];
-  const FRONT_ACCENT_X=FRONT_DRIFTS.map((d,i)=>d[0]+(i%2?-d[1]*.40:d[1]*.36));
-  { const cores=HAB.map(id=>HABX[id]+(HAB_TX[id]||0));
-    const clear=x=>(cores.some(c=>Math.abs(x-c)<112) || Math.abs(x-(HABX.future+34))<140 || Math.abs(x-HABX.calm)<200 || Math.abs(x-800)<84 || Math.abs(x-470)<38 || FABLE_RUNS.some(r=>x>r[0]-20&&x<r[1]+20));
+  // a lone dogwood on the stream's west bank (fully inside the Future camera frame) — its bare
+  // RED stems carry the winter waterside, exactly where a dogwood belongs
+  st+=gaShrub(HABX.future-96,510,'dogwood',.34,12);
+  // a denser carpet of LOW grass in the OPEN foreground — kept clear of the water (stream + pool), the
+  // home trail, and the habitat cores where the env plants live, so tufts only fill genuinely empty ground
+  { const clear=x=>(Math.abs(x-(HABX.future+34))<120 || Math.abs(x-HABX.calm)<190 || Math.abs(x-800)<74);   // stream · pool incl. rim · the trail's FOREGROUND run
     const GC=(dusky?['#3E5B46','#47654E','#39543F','#43604A']:['#5DA24C','#6FB05A','#559A46','#66A852']).map(c=>nightTint(c,_phase));
-    const placedX=[];
-    for(const [cx,span,n,seed] of FRONT_DRIFTS){ const rr=GA.rng(seed);
-      for(let i=0;i<n;i++){ const gx=cx+(rr()*2-1)*span;
-        if(clear(gx)||FRONT_ACCENT_X.some(x=>Math.abs(gx-x)<44)||placedX.some(x=>Math.abs(gx-x)<34)) continue;
-        const gy=524+rr()*26+Math.abs(gx-cx)/span*5, gsc=.28+rr()*.2;
-        st+=`<g transform="translate(${gx.toFixed(0)} ${gy.toFixed(0)}) scale(${gsc.toFixed(2)})">${grassClump(0,0,GC[(i+seed)%4],true,seed*13+i*7)}</g>`;
-        placedX.push(gx);
-      }
+    for(let gx=30,gi=0; gx<W; gx+=36+((gi*13)%20), gi++){
+      if(clear(gx)) continue;
+      const gy=522+((gi*17)%24), gsc=(0.32+((gi*11)%16)/100);   // low foreground band, below the env plants
+      st+=`<g transform="translate(${gx.toFixed(0)} ${gy}) scale(${gsc.toFixed(2)})">${grassClump(0,0,GC[gi%4],true,gi*7+3)}</g>`;
     }
   }
   // (autumn fallen leaves + spring petals + winter drift are owned by drawSeasonOverlay() on the live layer;
   //  the only ground-season treatment we add on the static canvas is the winter snow blanket up above, which
   //  must sit UNDER the plants/stones — something an on-top overlay cannot do.)
   st+=drawNearStones(W,dusky);   // STONES · near layer — cairn + sparse foreground rocks, in FRONT of the plants (never hiding them)
-  // one or two taller Atlas grasses crown each island; the offset alternates, creating rhythm
-  // without returning to a repeated picket line across the panorama
+  // grass layer 3 — FRONT accents: a handful of the atlas's rich grasses (meadow · fescue ·
+  // fountain) in the lowest open ground. Few and distinct — depth, not a wall of green.
   { const cores2=HAB.map(id=>HABX[id]+(HAB_TX[id]||0));
     const fclear=x=> cores2.some(c=>Math.abs(x-c)<110)
       || Math.abs(x-(HABX.future+34))<150 || Math.abs(x-HABX.calm)<200 || Math.abs(x-800)<80
       || Math.abs(x-BEARX)<BEARAMP+18 || FABLE_RUNS.some(r=>x>r[0]-30&&x<r[1]+30);
     const FG=['meadow','timothy','fescue','cocksfoot'];             // green swards only — fountain/tufted read as orange flames in the open meadow
-    FRONT_DRIFTS.forEach((d,fi)=>{ const fx=FRONT_ACCENT_X[fi];
-      if(fclear(fx)) return;
-      const fy=548+((fi*19)%24), fsc=.27+((fi*11)%10)/100;
-      st+=gaGrass(fx,fy,FG[(fi*3)%4],fsc,.84+((fi*7)%14)/100);
-    });
+    for(let fx=120,fi=0; fx<W-90; fx+=168+((fi*53)%84), fi++){    // v80: denser — the front plane fills with the pack's swards
+      if(fclear(fx)) continue;
+      const fy=550+((fi*23)%26), fsc=0.26+((fi*13)%12)/100;
+      st+=gaGrass(fx,fy,FG[fi%4],fsc,0.8+((fi*7)%20)/100);
+    }
   }
   // the six growth-trees: static host (accent tint + contact shadow + tree art). Their transient
   // rising glow sparkles ride on the LIVE overlay (lvGlow) so they animate + fade without re-rastering.
@@ -4929,16 +4902,6 @@ function renderMeadow(force,opt){
     if(!staticOnly) lvGlow+=`<g transform="translate(${cx} ${by})"><g id="glw-${id}">${glowSparkles(stg,scale,a.accent,f)}</g></g>`;
   });
 
-  // ── THE OWL'S BOUGH: the big foreground snag is gone (it never belonged in the meadow's front
-  // plane) — instead one bare bough leans out of the forest edge above Meaning, and the owl keeps
-  // its two lives there: asleep on the branch by day, awake and watching from dusk.
-  { const tk=nightTint(frost('#7E6D59'),phase), td=nightTint(frost('#5E5143'),phase);
-    st+=`<g transform="translate(1736 348)">`
-      +`<path d="M-8 2 C 0 -2 8 -6 17 -9 C 22 -10.6 26 -11 30 -10.6 C 26.5 -8.6 22 -7.6 17.5 -6.4 C 9.5 -4.4 2 -1.5 -4 4 Z" fill="${tk}"/>`
-      +`<path d="M17 -9 C 19 -12 20.5 -15 21 -18 C 22.3 -15.4 22.6 -12.4 21.6 -9.8 Z" fill="${td}"/>`
-      +`<path d="M27 -10.7 C 29.5 -12.2 31.5 -14 33 -16" stroke="${td}" stroke-width="1.2" fill="none" opacity=".7" stroke-linecap="round"/>`
-      +`</g>`;
-  }
   _lastStaticInner=`<defs>${defsInner}${hiddenDefs()}${gaGrassDefs()}</defs>`+st;
 
   // a tend re-rasters ONLY the static bitmap (with a gentle cross-fade); the overlay/animals stay put
@@ -5011,7 +4974,7 @@ function renderMeadow(force,opt){
     {id:'fox',      x:100,  y:500, sc:.92, off:.35, amp:62, yd:10},   // open ground left of Body's flower tiers
     {id:'ladybug',  x:395,  y:526, sc:.45, off:.05, amp:30, yd:6},
     {id:'hedgehog', x:640,  y:512, sc:.80, off:.65, amp:40, yd:8},    // between Home's bushes and the trail
-    {id:'mouse',    x:828,  y:526, sc:.50, off:.48, amp:34, yd:6},    // patrols the trail's painted foot (v80 retrace: road centre ≈828 at this depth)
+    {id:'mouse',    x:800,  y:526, sc:.50, off:.48, amp:34, yd:6},    // patrols the trail's painted foot
     {id:'rabbit',   x:1060, y:508, sc:.95, off:.10, amp:55, yd:12},   // the open run before the blossom thicket
     {id:'turtle',   x:2350, y:536, sc:.60, off:.70, amp:28, yd:3},    // clear of the cattail + bank flowers
     {id:'stork',    x:2520, y:534, sc:1,   off:.45, amp:38, yd:5, extra:` opacity="${dusky?.9:1}"`},  // wades the stream, clear of the willow trunk
@@ -5024,7 +4987,7 @@ function renderMeadow(force,opt){
   if(night){
     /* ── THE GARDEN SLEEPS (deep night): a deliberately SPARSER cast, not a dimmed day.
        The small night shift stays out (hedgehog, mouse, snail, the croaking frog — and the
-       owl below); the fox curls up asleep on its ground and two deer bed down on the far
+       fox curls up asleep on its ground and two deer bed down on the far
        hillside (per Michal's wish the garden sleeps FULLY); bear, rabbit, turtle, ladybug
        and every butterfly/bee rest OUT OF
        SIGHT until dawn; and a few sleepers remain to be found, each in the pack's dedicated
@@ -5033,9 +4996,9 @@ function renderMeadow(force,opt){
        the odonata roosting on the reeds. All are gentle in-place floats on the same flipbook
        engine — same reduced-motion / motion-calm gates, no new animation machinery. */
     CAST.push(
-    // the small night shift stays out (hedgehog · mouse · snail · the croaking frog · the owl below)
+    // the small night shift stays out (hedgehog · mouse · snail · the croaking frog)
     {id:'hedgehog', x:640,  y:512, sc:.80, off:.65, amp:40, yd:8},
-    {id:'mouse',    x:828,  y:526, sc:.50, off:.48, amp:34, yd:6},
+    {id:'mouse',    x:800,  y:526, sc:.50, off:.48, amp:34, yd:6},
     {id:'snail',    x:2900, y:566, sc:.55, off:.85, amp:24, yd:2},
     {id:'frog',     mid:'croak', x:HABX.calm-120, y:530, sc:.70, off:.55, flt:18, fltAmp:2, fltSeed:302},   // the night chorus at the water's edge
     {id:'fox',      mid:'sleep', x:240,  y:516, sc:.92, off:.35, flt:30, fltAmp:1.5, fltSeed:308},   // curled up among Body's meadow flowers, inside the camera frame
@@ -5049,40 +5012,18 @@ function renderMeadow(force,opt){
     {id:'fish',     mid:'rest',  x:HABX.calm-92, y:520, sc:.45, off:.25, flt:24, fltAmp:2, fltSeed:307, extra:' opacity=".3"'},    // settled low under the dark water
     {id:'firefly',  mid:'lantern', x:500,  y:470, sc:.5, off:.2, flt:15, fltAmp:34, fltSeed:506},   // wandering lanterns
     {id:'firefly',  mid:'lantern', x:2600, y:498, sc:.5, off:.7, flt:17, fltAmp:28, fltSeed:507},
-    {id:'firefly',  mid:'beacon',  x:1749, y:334, sc:.5, off:.4, flt:20, fltAmp:1,  fltSeed:508},   // one beacons from the owl's bough at the wood's edge
+    {id:'firefly',  mid:'beacon',  x:1749, y:340, sc:.5, off:.4, flt:20, fltAmp:1,  fltSeed:508},   // one beacons at the wood's edge above Meaning
     {id:'bumblebee',mid:'flowerbed',x:300, y:486, sc:.48,off:.3, flt:24, fltAmp:1,  fltSeed:509},   // asleep inside a meadow flower
     {id:'grasshopper',mid:'roost', x:2412, y:502, sc:.5, off:.6, flt:22, fltAmp:1,  fltSeed:510},   // clinging to the west reeds
     {id:'darter',    mid:'roost', x:HABX.future+96, y:HABY.future-4, sc:.52, off:.20, flt:26, fltAmp:2, fltSeed:303},  // asleep on the east reeds
     {id:'demoiselle',mid:'roost', x:HABX.calm-158,  y:HABY.calm+26,  sc:.48, off:.60, flt:28, fltAmp:2, fltSeed:304}    // asleep on the lavender
     );
   }
-  // the owl LIVES on the bare bough at the forest's edge: asleep on it by day, watching from dusk
-  // ── rare guests (deterministic per day/phase — a reason to visit at different hours):
-  //    a heron stalking the pond's east shallows at dawn (and on 'heron days' in daylight),
-  //    swallows skimming the summer sky, a kestrel windhovering over the knoll ──
-  const dayHash=GA.hashId(localYMD(new Date()));
-  if(!night){
-    if(phase==='dawn' || (dayHash%3===0 && phase==='day'))
-      CAST.push({id:'heron', x:2980, y:524, sc:.9, off:.3, amp:28, yd:3, extra:' opacity=".95"'});
-    if(seasonName==='summer' && !dusky){
-      CAST.push({id:'swallow', mid:'flight', x:900,  y:138, sc:.6, off:.15, flt:11, fltAmp:46, fltSeed:401});
-      CAST.push({id:'swallow', mid:'flight', x:1980, y:118, sc:.52, off:.6, flt:12, fltAmp:52, fltSeed:402});
-    }
-    if(phase==='dawn')
-      CAST.push({id:'hare', x:815, y:342, sc:.6, off:.5, amp:45, yd:6, extra:' opacity=".85"'});
-    if(phase==='day' && dayHash%5===1)
-      CAST.push({id:'mole', mid:'surface', x:1600, y:502, sc:.6, off:.3, flt:30, fltAmp:1, fltSeed:505});
-    if(phase==='day' && dayHash%4===2)
-      CAST.push({id:'grasssnake', x:2728, y:548, sc:.7, off:.6, amp:30, yd:3, extra:' opacity=".9"'});
-    if(phase==='day' && (dayHash%2===1))
-      CAST.push({id:'kestrel', mid:'hover', x:HABX.meaning+56, y:236, sc:.55, off:.4, flt:14, fltAmp:5, fltSeed:403});
-  }
-  if(dusky) CAST.push({id:'owl',mid:'perch',x:1756,y:331,sc:.4,off:.5,amp:0,yd:0,extra:' opacity=".9"'});   // y: feet (groundY 16×.4) land ON the bough top (~338)
-  else CAST.push({id:'owl',mid:'sleep',x:1756,y:331,sc:.4,off:.5,flt:36,fltAmp:1,fltSeed:311,extra:' opacity=".85"'});
+  // (the owl has left the meadow — Michał's call: the foreground snag never suited the front
+  //  plane, and a perch-less owl floated; she may return one day on a live branch IN the woods)
   if(!night && total>=12) CAST.push({id:'commonblue',mid:'flit',x:HABX.meaning-90,y:HABY.meaning-150,sc:.48,off:.33,flt:20});
   if(!night && total>=20) CAST.push({id:'peacock',mid:'flutter',x:HABX.future-60,y:HABY.future-130,sc:.5,off:.5,flt:21,fltAmp:24});
   if(!night && total>=28) CAST.push({id:'swallowtail',mid:'flit',x:HABX.calm-170,y:HABY.calm-170,sc:.5,off:.66,flt:22});   // over the pond's west edge, clear of the pine crown
-  // (the owl's bough is CANVAS art — see THE OWL'S BOUGH in the static layers above)
   // painter's order: farther (smaller y) first, nearer last — a nearer animal always crosses IN FRONT
   // (deterministic, so fableCollect's id|x|off snapshot keys survive every rebuild unchanged)
   CAST.slice().sort((a,b)=>a.y-b.y).forEach(o=>{ lv+=FB(o); });
