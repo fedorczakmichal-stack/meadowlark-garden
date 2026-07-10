@@ -1,6 +1,6 @@
 # Meadowlark „calm garden" — HANDOFF
 
-**Stan:** v79 (2026-07-10) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
+**Stan:** v80 (2026-07-10) · **repo podstawowe / źródło prawdy:** `meadowlark-garden`
 **Live strona (comeback):** https://fedorczakmichal-stack.github.io/meadowlark-garden/
 **Live apka (calm garden PWA):** https://fedorczakmichal-stack.github.io/meadowlark-garden/garden/
 
@@ -53,7 +53,7 @@ Dane localStorage: `meadowlark.garden` (+`.pressed`, `.compass`, `.letters`, **`
   translate(1550 342), nightTint per-hex regexem, BRAMY gapXs=[-620,998] = trail 930 i rzeka 2548)**→mgła→wzgórza→
   midground→(zima: koc śniegu)→daleka trawa-tło→drawFarStones→env-siedliska (krzewy z paczki przez `gaShrub`,
   rzeka z lodem zimą)→przejścia+samotny dereń→dywan trawy→nearStones+celowe kamienie→darnie frontowe `gaGrass`→
-  drzewa `tw-*`→**STARY DĄB (snag, dom sowy) na PIERWSZYM planie przy cairnie (1740,498) — rysowany PO drzewach**.
+  drzewa `tw-*`→**GAŁĄŹ SOWY na skraju lasu (translate 1736 348; snag z pierwszego planu WYCIĘTY w v80) — rysowana PO drzewach**.
 - **GA (Growth Atlas, port w index.html)**: drzewa/kwiaty/**20 krzewów** (`shrubAbove`, per-instancja seed w `gaShrub`)/
   **12 traw** (darnie `grassAbove` z areaW/clumps; front przez `gaGrass`)/**kamienie 11 zwykłych rodzajów**
   (`STONE_KINDS` BEZ kryształów; menhiry/dolmeny itp. świadomie nieportowane)/**scatterPts** (owoce/jagody/kwiecie
@@ -67,7 +67,7 @@ Dane localStorage: `meadowlark.garden` (+`.pressed`, `.compass`, `.letters`, **`
   jelonki/kaczka/bocian/ptaszek-na-lilaku/ryba-rest/roost ważek+konika/trzmiel-w-kwiecie; reszta znika. **Goście wg
   `dayHash=GA.hashId(ymd)`**: czapla(świt|%3), jaskółki(lato), pustułka(%2), zając(świt), kret(%5), zaskroniec(%4).
   Skowronek `song` nad Body codziennie. ⚠ REGUŁA OKIEN: snap-kadry kamer = HABX±138 j.; bohaterowie muszą lądować
-  W oknach; przy siedliskach uwzględniać PEŁNY rozrost koron (±150). Sowa: dzień=`sleep` na dębie, zmierzch/noc=`perch`.
+  W oknach; przy siedliskach uwzględniać PEŁNY rozrost koron (±150). Sowa: dzień=`sleep`, zmierzch/noc=`perch` — kotwica (1756,331), stopy lądują NA gałęzi (~338).
 - **Podlewanie**: `sceneTap`→dymek→arkusz→`doTend`→`wateringCan` (konewka, 8 kropel, pluski `.wsplash`, mokra ziemia
   `.wetpatch`, listki `.wleaf`) + `growHabitat` cross-fade + `maybeFinding` (znaleziska: hash%6, max 1/dzień →
   fold „Findings"). Long-press 500 ms → `focusHabitat` (zoom 1.8; `_zoomGet/_zoomSet` wystawione z init).
@@ -93,7 +93,7 @@ Dane localStorage: `meadowlark.garden` (+`.pressed`, `.compass`, `.letters`, **`
   asercje nie widzą (lewitacje, kolizje, sezonowe niespójności) — używać przy zmianach sceny.
 - ⚠ shellowe pułapki: heredoc NIE w środku łańcucha `&&` (rozrywa go); sed-range może obciąć nagłówek metody.
 
-## 5. Otwarte / ryzyka (stan v79)
+## 5. Otwarte / ryzyka (stan v80)
 
 - **Perf**: string lasu ~370 KB/raster (4 rzędy × ~90 drzew) — jeśli re-rastry (zmiany fazy) haczą na starszych
   iPhone'ach, zmniejszyć gęstość rzędów/step. Boot ~340 KB inline JS — temat startu wciąż otwarty.
@@ -537,3 +537,26 @@ aranżacje stoneAbove (skala transformem, zimą podmiana cieni na blade); kopczy
 (nowy renderer robił z pojedynczego łupka 0.5 SCHODY); + erratyk granitowy x1448. Murek suchy i piarg PRÓBOWANE
 I WYCIĘTE (siatka cegiełek / schody). CACHE `v79`. Zrzuty macierzy 9 pór×sezonów OK; feedback-uploady w projekcie
 design to STARE zrzuty v76 (bloby już naprawione w v77).
+
+**v80** (2026-07-10): **GRUNTOWNA PRZEBUDOWA TŁA** (Michał: góry/tło od nowa, plany wypełnić roślinami paczki
+z zachowaniem habitatów, sowa nie pasuje na pierwszoplanowym drzewie, droga kończy się w powietrzu; „pomysł
+z The road/The river jako tła"). (1) **GÓRY = grzbiety Gaussa z paczki**: do GA_CLS doszły `mtnProfile/mtnH/
+mtnRidge/mtnTops/mtnSnow` (verbatim + param halfSpan, plansza miała sztywne ±172); drawMountains = 3 miękkie
+pasma (peaks w koordach центrowanych, translate(1550 0), najbliższe najwyższe amp 185), słoneczna krawędź grani
+(mtnTops stroke), zimą linia śniegu (mtnSnow .6/.7) zamiast całorocznych czap; mgiełki #mhz między planami;
+⚠ tint dalekiego pasma MUSI zależeć od fazy (farK: noc .14/dusk .34/dzień .45 — stały mix świecił nocą jaśniej
+od nieba). Dolina nad bramą rzeki (+998), siodła nad ścieżką (−620), słońce (+150) i księżyc (+610) w przełęczach.
+(2) **DROGA à la The Road**: trasa przełożona — kończy się W bramie lasu (930,350; stary szczyt y308 wisiał nad
+drzewami bo env rysuje PO lesie), pathGrad .42→.14, podkład+rdzeń od ppts.slice(1) (bez jasnego niedopału w
+bramie), KOLEINY (2 dashed krzywe ±44% półszerokości), kamień milowy przy skraju (gaTint, zimą czapka), kępy+
+kamyki na poboczach; stopnie-kamienie USUNIĘTE. (3) **RZEKA à la The River**: obwódka mokrego brzegu
+(sceneHues.bank, slice(1) — źródło dalej wtapia się w bramę), nitki przybrzeżne ±68%, głaz w nurcie ze smugą
+(nie zimą). (4) **SNAG WYCIĘTY** — sowa na GAŁĘZI wystającej ze skraju lasu (translate 1736 348; CAST owl
+1756,340 sc .4; beacon-świetlik 1749,334). (5) **Wypełnienie planów**: przejścia = dryfy 4 kwiatów paczki per
+granica (TDRIFT, gatunki od sąsiadów, tclear od wody/ścieżki) + darń TGR; przedni rząd darni gęściej (step 168,
+4 zielone gatunki — fountain/tufted/oat wyglądały jak pomarańczowe płomyki, WYCIĘTE z pól ogólnych); złota trawa
+pagórka = pszenica+owies gaGrass (stare bursztynowe wachlarze-badyle out); kopczyk Meaning = granite_cairn
+(slate=schody). (6) ⚠ **PERF darni**: jeden grassAbove = 80-170 KB stringa → gaGrass przepisany na DEF-CACHE
+(`_gaGrassDefs`, reset w renderMeadow, defs doklejane do <defs> _lastStaticInner, instancje=<use>); bucket g
+zaokrąglany do .1. Statyka ~2,2 MB, renderMeadow ~52 ms. ⚠ RÓWNOLEGŁA SESJA dosadzała w tym samym pliku
+(jałowiec+kostrzewa przy bramie, trawki przy źródle, sw.js v81) — zmiany addytywne, scalone. CACHE `v81`.
