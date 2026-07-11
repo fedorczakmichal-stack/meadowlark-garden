@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f7efe4">
+  <meta name="description" content="Krótka analiza czasu i kosztów stworzenia klasycznego Meadowlark na iOS i Androida.">
+  <meta property="og:title" content="Meadowlark — czas i koszt realizacji">
+  <meta property="og:description" content="Realistyczny plan publikacji klasycznego Meadowlark na iOS i Androida.">
+  <title>Meadowlark — czas i koszt realizacji</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=Figtree:wght@400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #fbf7f2;
+      --cream-deep: #f3e8da;
+      --paper: rgba(255, 253, 249, .86);
+      --ink: #39334c;
+      --muted: #746b7c;
+      --line: rgba(57, 51, 76, .11);
+      --coral: #e88972;
+      --gold: #e69a45;
+      --green: #6fa487;
+      --violet: #9a7bb5;
+      --shadow: 0 24px 65px -38px rgba(65, 49, 77, .42);
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--cream); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+      background:
+        radial-gradient(circle at 82% 8%, rgba(255, 238, 190, .9), transparent 28rem),
+        linear-gradient(180deg, #e9ccda 0, #f5c58f 18rem, var(--cream) 38rem);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      z-index: -1;
+      border-radius: 999px;
+      filter: blur(2px);
+      pointer-events: none;
+    }
+    body::before {
+      width: 18rem;
+      height: 18rem;
+      right: -8rem;
+      top: 11rem;
+      background: rgba(255, 247, 220, .45);
+    }
+    body::after {
+      width: 15rem;
+      height: 15rem;
+      left: -9rem;
+      bottom: 5rem;
+      background: rgba(111, 164, 135, .12);
+    }
+
+    main {
+      width: min(100% - 30px, 860px);
+      margin: 0 auto;
+      padding: max(28px, env(safe-area-inset-top)) 0 max(38px, env(safe-area-inset-bottom));
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(57, 51, 76, .78);
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -.02em;
+    }
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, .7);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .48);
+      box-shadow: 0 12px 30px -22px rgba(57, 51, 76, .6);
+    }
+
+    .hero { padding: 52px 4px 34px; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      color: #a25e22;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 22px;
+      height: 1px;
+      background: currentColor;
+    }
+    h1 {
+      max-width: 720px;
+      margin: 0;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: clamp(38px, 8.5vw, 68px);
+      line-height: .98;
+      letter-spacing: -.045em;
+      font-weight: 600;
+    }
+    h1 em { color: #b96835; font-style: normal; }
+    .lead {
+      max-width: 600px;
+      margin: 20px 0 0;
+      color: #5e5669;
+      font-size: clamp(17px, 3vw, 20px);
+    }
+
+    .headline-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 22px 0 16px;
+    }
+    .metric,
+    .card {
+      border: 1px solid rgba(255, 255, 255, .74);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .metric {
+      min-height: 132px;
+      padding: 20px 18px;
+      border-radius: 22px;
+    }
+    .metric strong {
+      display: block;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: clamp(27px, 5vw, 40px);
+      line-height: 1;
+      letter-spacing: -.04em;
+    }
+    .metric span {
+      display: block;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .metric.accent {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(145deg, #d77b64, #e39a4a);
+    }
+    .metric.accent span { color: rgba(255, 255, 255, .78); }
+
+    .note {
+      margin: 0 0 28px;
+      padding: 0 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .card {
+      padding: 24px;
+      border-color: var(--line);
+      border-radius: 24px;
+    }
+    .card h2 {
+      margin: 0 0 5px;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 23px;
+      line-height: 1.1;
+      letter-spacing: -.025em;
+    }
+    .sub {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .person { margin-top: 17px; }
+    .person-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .person-head strong {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 15px;
+    }
+    .track {
+      height: 9px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #eee6dc;
+    }
+    .track span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--coral), var(--gold));
+    }
+    .track .primary-hours { width: 73%; }
+    .track .secondary-hours { width: 27%; }
+    .person:nth-of-type(2) .track span {
+      background: linear-gradient(90deg, var(--green), #96b7a3);
+    }
+
+    .cost-list { margin-top: 16px; }
+    .cost-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+    }
+    .cost-row:last-child { border-bottom: 0; }
+    .cost-row span { color: var(--muted); }
+    .cost-row b {
+      color: var(--ink);
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .verdict {
+      position: relative;
+      overflow: hidden;
+      margin-top: 14px;
+      padding: 28px;
+      border-radius: 25px;
+      color: #fff;
+      background: linear-gradient(130deg, #3f6656, #6f9d80 55%, #9bb493);
+      box-shadow: 0 28px 65px -38px rgba(37, 77, 59, .7);
+    }
+    .verdict::after {
+      content: "";
+      position: absolute;
+      right: -75px;
+      bottom: -115px;
+      width: 230px;
+      height: 230px;
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 50%;
+      box-shadow: 0 0 0 24px rgba(255, 255, 255, .04), 0 0 0 52px rgba(255, 255, 255, .025);
+    }
+    .verdict small {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      opacity: .75;
+    }
+    .verdict h2 {
+      max-width: 550px;
+      margin: 8px 0 6px;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: clamp(25px, 5vw, 36px);
+      line-height: 1.08;
+      letter-spacing: -.03em;
+    }
+    .verdict p {
+      max-width: 600px;
+      margin: 0;
+      color: rgba(255, 255, 255, .79);
+      font-size: 14px;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 22px 5px 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    @media (max-width: 650px) {
+      .hero { padding-top: 40px; }
+      .headline-grid { grid-template-columns: 1fr 1fr; }
+      .metric:first-child { grid-column: 1 / -1; min-height: 118px; }
+      .section-grid { grid-template-columns: 1fr; }
+      .card { padding: 21px; }
+      footer { display: block; }
+      footer span { display: block; margin-top: 5px; }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .metric, .card, .verdict { animation: rise .65s cubic-bezier(.2,.8,.25,1) both; }
+      .metric:nth-child(2) { animation-delay: .07s; }
+      .metric:nth-child(3) { animation-delay: .14s; }
+      .card:nth-child(2) { animation-delay: .1s; }
+      .verdict { animation-delay: .16s; }
+      @keyframes rise {
+        from { opacity: 0; transform: translateY(14px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="25" height="25" viewBox="0 0 25 25" fill="none">
+          <path d="M4 19.5c3.2-5.2 6.8-8.1 11-8.5-2.7 2.1-4.4 4.6-5.1 7.5" stroke="#6F9D80" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M11.8 11.6c.7-4.1 3.2-6.5 7.7-7.2-.4 4.2-2.8 6.7-7.7 7.2Z" fill="#E69A45"/>
+          <circle cx="18.5" cy="4.8" r="1" fill="#39334C"/>
+        </svg>
+      </span>
+      Meadowlark
+    </div>
+
+    <header class="hero">
+      <div class="eyebrow">Plan realizacji · lipiec 2026</div>
+      <h1>Od działającej PWA do <em>obu sklepów.</em></h1>
+      <p class="lead">Klasyczny Meadowlark, rozwijany samodzielnie przez dwóch programistów z pomocą AI — bez kosztu wynagrodzeń i bez budowania gry.</p>
+    </header>
+
+    <section class="headline-grid" aria-label="Najważniejsze liczby">
+      <article class="metric accent">
+        <strong>~5 300 zł</strong>
+        <span>najbardziej prawdopodobny koszt gotówkowy</span>
+      </article>
+      <article class="metric">
+        <strong>~445 h</strong>
+        <span>łączny czas pracy</span>
+      </article>
+      <article class="metric">
+        <strong>5 mies.</strong>
+        <span>realny czas do publikacji</span>
+      </article>
+    </section>
+    <p class="note">Realistyczny przedział: <strong>4 000–6 400 zł</strong>. Bezpieczna rezerwa: <strong>7 600 zł</strong>.</p>
+
+    <section class="section-grid">
+      <article class="card">
+        <h2>Podział czasu</h2>
+        <p class="sub">Około 20–21 godzin pracy tygodniowo łącznie.</p>
+
+        <div class="person">
+          <div class="person-head"><span>Główny programista</span><strong>325 h</strong></div>
+          <div class="track" aria-hidden="true"><span class="primary-hours"></span></div>
+        </div>
+        <div class="person">
+          <div class="person-head"><span>Drugi programista</span><strong>120 h</strong></div>
+          <div class="track" aria-hidden="true"><span class="secondary-hours"></span></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>Gdzie idą pieniądze?</h2>
+        <p class="sub">Modelowy budżet dla pięciu miesięcy pracy.</p>
+        <div class="cost-list">
+          <div class="cost-row"><span>Claude — główny programista</span><b>500–1 000 USD</b></div>
+          <div class="cost-row"><span>Claude — drugi programista</span><b>100 USD</b></div>
+          <div class="cost-row"><span>ChatGPT Sol</span><b>200 USD</b></div>
+          <div class="cost-row"><span>Apple + Google Play</span><b>124 USD</b></div>
+          <div class="cost-row"><span>Backend i dodatki</span><b>125–250 USD</b></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="verdict">
+      <small>Wniosek</small>
+      <h2>To jest wykonalny projekt bootstrapowy.</h2>
+      <p>Największą inwestycją będzie około 445 godzin pracy, nie oprogramowanie. Istniejąca PWA pozwala zachować jedną bazę kodu i wypuścić wersję iOS oraz Android bez przepisywania całej aplikacji od początku.</p>
+    </section>
+
+    <footer>
+      <div>Założenie: brak wynagrodzeń oraz płatnego zewnętrznego developera.</div>
+      <span>Kurs orientacyjny: 1 USD = 3,8025 zł.</span>
+    </footer>
+  </main>
+</body>
+</html>
