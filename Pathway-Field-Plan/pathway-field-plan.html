@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="Pathway Field Plan — własna propozycja wdrożenia Living Map z renderami produktu i bramkami decyzyjnymi." />
+  <title>Pathway — Field Plan · własna propozycja wdrożenia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #12181f;
+      --ink-soft: #2a3540;
+      --muted: #5c6b78;
+      --fog: #e7eef4;
+      --mist: #f3f7fa;
+      --paper: #f7fafc;
+      --line: rgba(18, 24, 31, 0.12);
+      --teal: #1f8a7a;
+      --teal-deep: #0f5c52;
+      --teal-soft: #b8e0d8;
+      --amber: #d4922a;
+      --amber-soft: #f0d9a8;
+      --sky: #6ea8c9;
+      --clay: #c4785a;
+      --field-night: #0b1716;
+      --field-mid: #143530;
+      --field-lit: #1f5c4f;
+      --display: "Instrument Serif", Georgia, serif;
+      --body: "Sora", system-ui, sans-serif;
+      --phone-w: 290px;
+      --phone-h: 600px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--body);
+      font-size: 15px;
+      line-height: 1.6;
+      background:
+        radial-gradient(ellipse 80% 50% at 10% -10%, rgba(110, 168, 201, 0.28), transparent 55%),
+        radial-gradient(ellipse 70% 45% at 95% 5%, rgba(31, 138, 122, 0.18), transparent 50%),
+        linear-gradient(180deg, #d9e6ef 0%, var(--mist) 28%, var(--paper) 100%);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--teal-deep); }
+    a:hover { color: var(--amber); }
+
+    .wrap {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    /* —— Hero —— */
+    .hero {
+      position: relative;
+      min-height: min(100vh, 920px);
+      display: grid;
+      align-items: end;
+      overflow: hidden;
+      color: #f4faf8;
+      background:
+        radial-gradient(ellipse 90% 70% at 70% 20%, rgba(212, 146, 42, 0.18), transparent 55%),
+        radial-gradient(ellipse 60% 50% at 20% 80%, rgba(31, 138, 122, 0.35), transparent 60%),
+        linear-gradient(165deg, #071412 0%, #0f2a26 42%, #163d36 100%);
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          -12deg,
+          transparent 0 18px,
+          rgba(255, 255, 255, 0.015) 18px 19px
+        );
+      pointer-events: none;
+      animation: drift 28s linear infinite;
+    }
+    @keyframes drift {
+      from { transform: translateX(0); }
+      to { transform: translateX(-40px); }
+    }
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      width: min(1120px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: clamp(48px, 8vw, 96px) 0 clamp(56px, 9vw, 100px);
+      display: grid;
+      gap: 28px;
+      max-width: 720px;
+    }
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      animation: rise 0.9s ease both;
+    }
+    .brand-mark {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 0 6px rgba(212, 146, 42, 0.18);
+      animation: pulse 2.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 6px rgba(212, 146, 42, 0.18); }
+      50% { box-shadow: 0 0 0 12px rgba(212, 146, 42, 0.06); }
+    }
+    .brand b {
+      font-family: var(--display);
+      font-size: clamp(42px, 7vw, 72px);
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      line-height: 0.95;
+    }
+    .brand span {
+      color: var(--amber-soft);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      margin: 0;
+      max-width: 16ch;
+      font-family: var(--display);
+      font-size: clamp(28px, 4.2vw, 44px);
+      font-weight: 400;
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+      animation: rise 0.9s 0.12s ease both;
+    }
+    .hero-lead {
+      margin: 0;
+      max-width: 46ch;
+      color: rgba(244, 250, 248, 0.72);
+      font-size: 16px;
+      line-height: 1.55;
+      animation: rise 0.9s 0.22s ease both;
+    }
+    .hero-cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      animation: rise 0.9s 0.32s ease both;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 20px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      font: 600 13px/1 var(--body);
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary {
+      background: var(--amber);
+      color: #1a1206;
+    }
+    .btn-ghost {
+      background: transparent;
+      border-color: rgba(244, 250, 248, 0.28);
+      color: #f4faf8;
+    }
+    .hero-field {
+      position: absolute;
+      right: max(-40px, 4vw);
+      bottom: 8%;
+      width: min(520px, 48vw);
+      height: min(560px, 70vh);
+      opacity: 0.9;
+      pointer-events: none;
+      animation: floaty 7s ease-in-out infinite;
+    }
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* —— Nav —— */
+    .toc {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(14px);
+      background: rgba(243, 247, 250, 0.86);
+      border-bottom: 1px solid var(--line);
+    }
+    .toc-inner {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 10px 0;
+      scrollbar-width: none;
+    }
+    .toc-inner::-webkit-scrollbar { display: none; }
+    .toc a {
+      flex: 0 0 auto;
+      padding: 8px 12px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      border-radius: 4px;
+    }
+    .toc a:hover { color: var(--ink); background: rgba(18, 24, 31, 0.05); }
+
+    /* —— Sections —— */
+    section {
+      padding: clamp(56px, 8vw, 96px) 0;
+      scroll-margin-top: 56px;
+    }
+    section + section { border-top: 1px solid var(--line); }
+    .kicker {
+      margin: 0 0 12px;
+      color: var(--teal);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    h2 {
+      margin: 0 0 16px;
+      max-width: 18ch;
+      font-family: var(--display);
+      font-size: clamp(32px, 4.5vw, 48px);
+      font-weight: 400;
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+    }
+    .lede {
+      margin: 0 0 28px;
+      max-width: 62ch;
+      color: var(--muted);
+      font-size: 16px;
+    }
+    .prose { max-width: 68ch; }
+    .prose p { margin: 0 0 14px; color: var(--ink-soft); }
+    .prose ul { margin: 0 0 16px; padding-left: 1.2em; color: var(--ink-soft); }
+    .prose li + li { margin-top: 6px; }
+    .prose strong { color: var(--ink); font-weight: 600; }
+    .pull {
+      margin: 28px 0;
+      padding: 22px 0 22px 22px;
+      border-left: 3px solid var(--amber);
+      font-family: var(--display);
+      font-size: clamp(22px, 2.6vw, 28px);
+      line-height: 1.25;
+      color: var(--teal-deep);
+    }
+
+    .diff-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      margin-top: 36px;
+      background: var(--line);
+      border: 1px solid var(--line);
+    }
+    .diff-grid article {
+      padding: 22px 20px;
+      background: var(--mist);
+    }
+    .diff-grid h3 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--teal-deep);
+    }
+    .diff-grid p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 14px;
+    }
+
+    /* —— Renders —— */
+    .renders {
+      background:
+        radial-gradient(ellipse 50% 40% at 50% 0%, rgba(31, 138, 122, 0.1), transparent 60%),
+        var(--paper);
+    }
+    .render-shell {
+      display: grid;
+      grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
+    }
+    .tabs {
+      display: grid;
+      gap: 4px;
+    }
+    .tabs button {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      align-items: start;
+      width: 100%;
+      padding: 12px 12px;
+      border: 0;
+      border-left: 2px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      text-align: left;
+      font: inherit;
+      cursor: pointer;
+      transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+    .tabs button span:first-child {
+      font-family: var(--display);
+      font-size: 18px;
+      color: var(--amber);
+      line-height: 1.1;
+    }
+    .tabs button b {
+      display: block;
+      color: inherit;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .tabs button small {
+      display: block;
+      margin-top: 2px;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.35;
+      color: inherit;
+      opacity: 0.85;
+    }
+    .tabs button[aria-selected="true"] {
+      border-left-color: var(--teal);
+      background: rgba(31, 138, 122, 0.08);
+      color: var(--ink);
+    }
+    .tabs button:hover { color: var(--ink); }
+
+    .stage {
+      position: relative;
+      min-height: 680px;
+      display: grid;
+      place-items: center;
+      padding: 24px 12px 40px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(15, 42, 38, 0.04), transparent 40%),
+        var(--fog);
+      overflow: hidden;
+    }
+    .stage-copy {
+      position: absolute;
+      left: 24px;
+      top: 22px;
+      max-width: 260px;
+      z-index: 2;
+    }
+    .stage-copy .number {
+      font-family: var(--display);
+      font-size: 40px;
+      color: var(--amber);
+      line-height: 1;
+    }
+    .stage-copy h3 {
+      margin: 6px 0 8px;
+      font-family: var(--display);
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--ink);
+    }
+    .stage-copy p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .phone {
+      position: relative;
+      width: var(--phone-w);
+      height: var(--phone-h);
+      border-radius: 36px;
+      padding: 10px;
+      background: linear-gradient(160deg, #2a3238, #12181f 55%, #0a0e12);
+      box-shadow:
+        0 40px 80px rgba(12, 20, 24, 0.28),
+        0 8px 20px rgba(12, 20, 24, 0.18),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      transform: translateY(12px);
+      animation: phoneIn 0.55s ease both;
+    }
+    @keyframes phoneIn {
+      from { opacity: 0; transform: translateY(28px) scale(0.97); }
+      to { opacity: 1; transform: translateY(12px) scale(1); }
+    }
+    .phone-screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 28px;
+      overflow: hidden;
+      background: var(--field-night);
+      color: #eef7f4;
+    }
+    .notch {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 92px;
+      height: 22px;
+      border-radius: 20px;
+      background: #0a0e12;
+      z-index: 5;
+    }
+    .status {
+      position: absolute;
+      top: 12px;
+      left: 18px;
+      right: 18px;
+      z-index: 4;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(238, 247, 244, 0.7);
+      letter-spacing: 0.04em;
+    }
+    .screen-body {
+      position: absolute;
+      inset: 0;
+      padding: 44px 16px 72px;
+    }
+    .screen-title {
+      margin: 0 0 4px;
+      font-family: var(--display);
+      font-size: 26px;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+    }
+    .screen-sub {
+      margin: 0 0 14px;
+      color: rgba(238, 247, 244, 0.58);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .tabbar {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 2px;
+      padding: 8px 4px;
+      border-radius: 18px;
+      background: rgba(8, 16, 15, 0.72);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      z-index: 4;
+    }
+    .tabbar span {
+      display: grid;
+      place-items: center;
+      gap: 3px;
+      color: rgba(238, 247, 244, 0.45);
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .tabbar span i {
+      width: 18px;
+      height: 3px;
+      border-radius: 2px;
+      background: currentColor;
+    }
+    .tabbar span.on { color: var(--amber-soft); }
+
+    /* Field map SVG scene */
+    .field-map {
+      position: absolute;
+      inset: 90px 0 78px;
+      overflow: hidden;
+    }
+    .field-map svg { width: 100%; height: 100%; display: block; }
+    .trail {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .trail-main {
+      stroke: #d4922a;
+      stroke-width: 3.2;
+      stroke-dasharray: 420;
+      stroke-dashoffset: 420;
+      animation: drawTrail 1.8s 0.2s ease forwards;
+    }
+    .trail-side {
+      stroke: rgba(184, 224, 216, 0.55);
+      stroke-width: 2;
+      stroke-dasharray: 320;
+      stroke-dashoffset: 320;
+      animation: drawTrail 1.6s 0.45s ease forwards;
+    }
+    @keyframes drawTrail {
+      to { stroke-dashoffset: 0; }
+    }
+    .node {
+      fill: #0b1716;
+      stroke: #b8e0d8;
+      stroke-width: 2;
+    }
+    .node.done {
+      fill: #d4922a;
+      stroke: #f0d9a8;
+    }
+    .node.next {
+      fill: #1f8a7a;
+      stroke: #f4faf8;
+      animation: nodePulse 2s ease-in-out infinite;
+    }
+    @keyframes nodePulse {
+      0%, 100% { r: 6; }
+      50% { r: 7.2; }
+    }
+    .map-label {
+      fill: rgba(238, 247, 244, 0.82);
+      font-family: var(--body);
+      font-size: 9px;
+      font-weight: 600;
+    }
+    .you-chip {
+      position: absolute;
+      left: 50%;
+      bottom: 12px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(15, 42, 38, 0.9);
+      border: 1px solid rgba(212, 146, 42, 0.35);
+      font-size: 10px;
+      font-weight: 600;
+      color: #f0d9a8;
+      white-space: nowrap;
+    }
+    .you-chip b {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--amber);
+      color: #1a1206;
+      font-size: 9px;
+    }
+
+    /* Axis screen */
+    .axis-list { display: grid; gap: 8px; margin-top: 8px; }
+    .axis-step {
+      display: grid;
+      grid-template-columns: 22px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .axis-step.done { opacity: 0.55; }
+    .axis-step.next {
+      background: rgba(31, 138, 122, 0.18);
+      border-color: rgba(184, 224, 216, 0.35);
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(184, 224, 216, 0.35);
+      margin: auto;
+    }
+    .axis-step.done .dot { background: var(--amber); }
+    .axis-step.next .dot {
+      background: var(--teal);
+      box-shadow: 0 0 0 4px rgba(31, 138, 122, 0.25);
+    }
+    .axis-step b {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .axis-step small {
+      display: block;
+      margin-top: 2px;
+      color: rgba(238, 247, 244, 0.5);
+      font-size: 10px;
+    }
+    .axis-step em {
+      font-style: normal;
+      font-size: 10px;
+      color: var(--amber-soft);
+      font-weight: 600;
+    }
+    .progress-rail {
+      height: 4px;
+      margin: 10px 0 16px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+    .progress-rail span {
+      display: block;
+      width: 42%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--teal), var(--amber));
+      animation: growBar 1.2s ease both;
+    }
+    @keyframes growBar {
+      from { width: 0; }
+      to { width: 42%; }
+    }
+
+    /* Focus */
+    .focus-card {
+      margin-top: 8px;
+      padding: 14px;
+      border-radius: 16px;
+      background: linear-gradient(160deg, rgba(31, 138, 122, 0.22), rgba(18, 40, 38, 0.5));
+      border: 1px solid rgba(184, 224, 216, 0.22);
+      animation: rise 0.5s ease both;
+    }
+    .focus-card + .focus-card {
+      margin-top: 10px;
+      animation-delay: 0.1s;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .focus-card .tag {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: var(--amber-soft);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .focus-card h4 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+    .focus-card p {
+      margin: 0 0 12px;
+      color: rgba(238, 247, 244, 0.55);
+      font-size: 11px;
+    }
+    .focus-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .pill {
+      flex: 1;
+      min-height: 32px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--amber);
+      color: #1a1206;
+      font: 700 10px/1 var(--body);
+      cursor: pointer;
+    }
+    .pill.ghost {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: rgba(238, 247, 244, 0.75);
+    }
+
+    /* Route cards (Engine) */
+    .route {
+      margin-top: 8px;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+      cursor: pointer;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+    .route.selected,
+    .route:hover {
+      border-color: rgba(212, 146, 42, 0.55);
+      background: rgba(212, 146, 42, 0.08);
+    }
+    .route header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .route header b { font-size: 13px; }
+    .route header span {
+      color: var(--amber-soft);
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .route p {
+      margin: 0;
+      color: rgba(238, 247, 244, 0.55);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .route ul {
+      margin: 8px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 4px;
+    }
+    .route li {
+      color: rgba(238, 247, 244, 0.78);
+      font-size: 10px;
+      padding-left: 12px;
+      position: relative;
+    }
+    .route li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 5px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+    .cta-bar {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 78px;
+      display: grid;
+      gap: 8px;
+    }
+    .cta-bar button {
+      min-height: 40px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--amber);
+      color: #1a1206;
+      font: 700 12px/1 var(--body);
+      cursor: pointer;
+    }
+
+    /* Growth */
+    .growth-burst {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(212, 146, 42, 0.28), transparent 42%),
+        var(--field-night);
+    }
+    .growth-burst .ring {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 2px solid rgba(240, 217, 168, 0.45);
+      display: grid;
+      place-items: center;
+      animation: ringPop 0.8s ease both;
+      margin: 0 auto 18px;
+    }
+    @keyframes ringPop {
+      from { transform: scale(0.6); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .growth-burst .ring span {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, var(--amber), var(--teal));
+      box-shadow: 0 0 40px rgba(212, 146, 42, 0.35);
+    }
+    .growth-burst h4 {
+      margin: 0 0 8px;
+      font-family: var(--display);
+      font-size: 28px;
+      font-weight: 400;
+    }
+    .growth-burst p {
+      margin: 0;
+      color: rgba(238, 247, 244, 0.6);
+      font-size: 12px;
+    }
+
+    /* Return */
+    .return-panel {
+      margin-top: 40px;
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(15, 42, 38, 0.55);
+      border: 1px solid rgba(184, 224, 216, 0.18);
+    }
+    .return-panel h4 {
+      margin: 0 0 6px;
+      font-size: 15px;
+    }
+    .return-panel p {
+      margin: 0 0 14px;
+      color: rgba(238, 247, 244, 0.58);
+      font-size: 11px;
+    }
+    .return-panel .focus-actions .pill { font-size: 9px; }
+
+    /* Timeline / plan */
+    .phases {
+      display: grid;
+      gap: 0;
+      margin-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+    .phase {
+      display: grid;
+      grid-template-columns: 88px minmax(0, 1fr);
+      gap: 20px;
+      padding: 22px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .phase time {
+      color: var(--teal);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .phase h3 {
+      margin: 0 0 6px;
+      font-family: var(--display);
+      font-size: 24px;
+      font-weight: 400;
+    }
+    .phase p { margin: 0 0 10px; color: var(--muted); max-width: 62ch; }
+    .phase .gate {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      background: var(--fog);
+      color: var(--ink-soft);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .phase .gate::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--amber);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0;
+      margin: 36px 0 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .metrics div {
+      padding: 20px 16px 18px 0;
+    }
+    .metrics div + div {
+      padding-left: 18px;
+      border-left: 1px solid var(--line);
+    }
+    .metrics dt {
+      margin: 0;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .metrics dd {
+      margin: 8px 0 0;
+      font-family: var(--display);
+      font-size: clamp(28px, 3.5vw, 40px);
+      line-height: 1;
+      color: var(--teal-deep);
+    }
+    .metrics small {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: var(--body);
+    }
+
+    .stack-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 32px;
+      margin-top: 8px;
+      align-items: start;
+    }
+    .compare {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .compare th,
+    .compare td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    .compare th {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .compare td:first-child { color: var(--ink); font-weight: 600; width: 28%; }
+    .compare .mine { color: var(--teal-deep); }
+
+    .budget {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+    }
+    .budget article {
+      padding: 22px 20px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--mist), var(--fog));
+    }
+    .budget .label {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .budget strong {
+      display: block;
+      font-family: var(--display);
+      font-size: 36px;
+      font-weight: 400;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .budget p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .budget article.rec {
+      border-color: rgba(31, 138, 122, 0.45);
+      background: linear-gradient(180deg, rgba(184, 224, 216, 0.35), var(--mist));
+    }
+
+    .actions {
+      counter-reset: act;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0;
+      border-top: 1px solid var(--line);
+    }
+    .actions li {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr);
+      gap: 14px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--ink-soft);
+    }
+    .actions li::before {
+      counter-increment: act;
+      content: counter(act, decimal-leading-zero);
+      font-family: var(--display);
+      font-size: 22px;
+      color: var(--amber);
+      line-height: 1.1;
+    }
+    .actions b { color: var(--ink); }
+
+    .note {
+      margin-top: 28px;
+      padding: 16px 18px;
+      border: 1px solid rgba(212, 146, 42, 0.35);
+      background: rgba(240, 217, 168, 0.22);
+      color: var(--ink-soft);
+      font-size: 13px;
+    }
+
+    footer {
+      padding: 40px 0 64px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    footer .wrap {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .panel-hidden { display: none !important; }
+
+    @media (max-width: 900px) {
+      .hero-field { display: none; }
+      .render-shell,
+      .stack-grid,
+      .diff-grid,
+      .budget,
+      .metrics { grid-template-columns: 1fr; }
+      .metrics div + div {
+        padding-left: 0;
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+      .stage { min-height: 740px; }
+      .stage-copy {
+        position: static;
+        max-width: none;
+        margin-bottom: 8px;
+        padding: 0 8px;
+      }
+      .phase { grid-template-columns: 1fr; gap: 6px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero" id="top">
+    <svg class="hero-field" viewBox="0 0 520 560" aria-hidden="true">
+      <defs>
+        <linearGradient id="hg" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stop-color="#1f8a7a" stop-opacity="0.15"/>
+          <stop offset="100%" stop-color="#d4922a" stop-opacity="0.55"/>
+        </linearGradient>
+      </defs>
+      <path d="M60 500 C120 420, 140 360, 160 280 S220 140, 250 70" fill="none" stroke="url(#hg)" stroke-width="3"/>
+      <path d="M260 500 C280 410, 300 330, 340 240 S400 120, 430 60" fill="none" stroke="rgba(184,224,216,.35)" stroke-width="2"/>
+      <path d="M180 500 C200 430, 210 370, 200 300 S170 180, 150 110" fill="none" stroke="rgba(184,224,216,.28)" stroke-width="2"/>
+      <circle cx="250" cy="70" r="7" fill="#d4922a"/>
+      <circle cx="200" cy="300" r="5" fill="#b8e0d8"/>
+      <circle cx="340" cy="240" r="5" fill="#b8e0d8"/>
+      <circle cx="160" cy="280" r="5" fill="#1f8a7a"/>
+      <circle cx="260" cy="500" r="10" fill="#d4922a" opacity="0.9"/>
+    </svg>
+    <div class="hero-inner">
+      <div class="brand">
+        <i class="brand-mark" aria-hidden="true"></i>
+        <div>
+          <b>Pathway</b>
+          <span>Field Plan</span>
+        </div>
+      </div>
+      <h1>Własna propozycja wdrożenia Living Map — z renderami, nie z kopią masterplanu.</h1>
+      <p class="hero-lead">
+        Ten dokument nie edytuje oryginalnego planu. Proponuje inną metaforę wizualną (Trailfield),
+        inną kolejność dowodu (PWA przed Flutterem) i inną hierarchię celów (jeden aktywny szlak + orbity).
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#renders">Zobacz rendery</a>
+        <a class="btn btn-ghost" href="#thesis">Czym się różnię</a>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Spis treści">
+    <div class="wrap toc-inner">
+      <a href="#thesis">Teza</a>
+      <a href="#renders">Rendery</a>
+      <a href="#product">Produkt</a>
+      <a href="#engine">Engine</a>
+      <a href="#roadmap">Roadmapa</a>
+      <a href="#stack">Stack</a>
+      <a href="#budget">Budżet</a>
+      <a href="#actions">Następne kroki</a>
+    </div>
+  </nav>
+
+  <main>
+    <section id="thesis">
+      <div class="wrap">
+        <p class="kicker">01 · Teza</p>
+        <h2>Budować tę samą obietnicę — inną ścieżką dowodu.</h2>
+        <p class="lede">
+          Masterplan ma rację w rdzeniu: Living Map + Engine + Focus, bez Life OS na start.
+          Mój plan zmienia to, <em>jak</em> dochodzimy do pewności i <em>jak</em> mapa czyta się w telefonie.
+        </p>
+        <div class="prose">
+          <p>
+            <strong>Obietnica zostaje:</strong> „See the goals that shape your life on one living map.
+            Pathway turns each goal into a clear route—and always shows the next move.”
+          </p>
+          <p>
+            <strong>Zmieniam trzy rzeczy:</strong> (1) metaforę z radialnych gałęzi na <strong>Trailfield</strong> —
+            szlaki wznoszące się z trailhead „You”, czytelniejsze przy 1–3 celach;
+            (2) hierarchię <strong>1 Active Trail + do 2 Orbiters</strong> zamiast trzech równych gałęzi;
+            (3) dowód wartości na <strong>interaktywnej PWA</strong> przed decyzją o Flutterze.
+          </p>
+        </div>
+        <p class="pull">Mapa ma prowadzić rękę, nie tylko oko. Dlatego najpierw dowodzę ruchu — potem natywnej jakości.</p>
+        <div class="diff-grid">
+          <article>
+            <h3>Masterplan</h3>
+            <p>Radialna mapa → klikalny prototyp → ręczny pilotaż → spike Flutter/Firebase → alfa.</p>
+          </article>
+          <article>
+            <h3>Field Plan</h3>
+            <p>Trailfield PWA → pilotaż na prawdziwym użyciu → dopiero potem port natywny albo kontynuacja web+wrapper.</p>
+          </article>
+          <article>
+            <h3>Po co</h3>
+            <p>Założyciele szybciej uczą się z żywego produktu; mniej ryzyka, że mapa będzie ładna, ale martwa.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="renders" id="renders">
+      <div class="wrap">
+        <p class="kicker">02 · Rendery produktu</p>
+        <h2>Nie jeden mockup. Pięć ekranów Trailfield.</h2>
+        <p class="lede">
+          Interaktywne rendery — przełączaj ekrany. To propozycja języka wizualnego, nie ostateczny design system.
+        </p>
+
+        <div class="render-shell">
+          <div class="tabs" role="tablist" aria-label="Ekrany Pathway">
+            <button type="button" role="tab" aria-selected="true" aria-controls="panel-field" id="tab-field" data-tab="field">
+              <span>01</span>
+              <span><b>Trailfield</b><small>Całe życie jako pole szlaków</small></span>
+            </button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="panel-axis" id="tab-axis" data-tab="axis">
+              <span>02</span>
+              <span><b>Trail Axis</b><small>Jedna droga w szczegółach</small></span>
+            </button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="panel-focus" id="tab-focus" data-tab="focus">
+              <span>03</span>
+              <span><b>Focus</b><small>1–3 ruchy na dziś</small></span>
+            </button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="panel-routes" id="tab-routes" data-tab="routes">
+              <span>04</span>
+              <span><b>Route Cards</b><small>Engine: wybierz wariant drogi</small></span>
+            </button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="panel-growth" id="tab-growth" data-tab="growth">
+              <span>05</span>
+              <span><b>Growth</b><small>Szlak się rozświetla</small></span>
+            </button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="panel-return" id="tab-return" data-tab="return">
+              <span>06</span>
+              <span><b>Quiet Return</b><small>Powrót bez kary</small></span>
+            </button>
+          </div>
+
+          <div class="stage" id="render-stage">
+            <div class="stage-copy" id="stage-copy">
+              <div class="number">01</div>
+              <h3>Trailfield</h3>
+              <p>Trailhead na dole. Active Trail świeci bursztynem. Orbity to cieńsze szlaki — widać życie, bez chaosu radialnego.</p>
+            </div>
+
+            <!-- FIELD -->
+            <div class="phone" id="panel-field" role="tabpanel" aria-labelledby="tab-field">
+              <div class="phone-screen">
+                <div class="notch"></div>
+                <div class="status"><span>9:41</span><span>Pathway</span></div>
+                <div class="screen-body">
+                  <p class="screen-title">Your field</p>
+                  <p class="screen-sub">1 active trail · 2 orbiting</p>
+                </div>
+                <div class="field-map" aria-hidden="true">
+                  <svg viewBox="0 0 260 380" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                      <linearGradient id="fogband" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#1f5c4f" stop-opacity="0.35"/>
+                        <stop offset="100%" stop-color="#0b1716" stop-opacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    <rect x="0" y="0" width="260" height="110" fill="url(#fogband)"/>
+                    <text x="16" y="28" class="map-label" opacity="0.45">HORIZON</text>
+                    <text x="16" y="150" class="map-label" opacity="0.45">SEASON</text>
+                    <text x="16" y="270" class="map-label" opacity="0.45">NEAR</text>
+                    <!-- orbiters -->
+                    <path class="trail trail-side" d="M70 340 C60 280, 48 220, 55 160 S90 70, 110 40"/>
+                    <path class="trail trail-side" d="M190 340 C200 290, 215 230, 205 170 S180 90, 170 45"/>
+                    <!-- active -->
+                    <path class="trail trail-main" d="M130 345 C125 290, 118 230, 130 175 S155 95, 148 42"/>
+                    <circle class="node done" cx="128" cy="300" r="5"/>
+                    <circle class="node done" cx="122" cy="245" r="5"/>
+                    <circle class="node next" cx="130" cy="175" r="6"/>
+                    <circle class="node" cx="145" cy="110" r="5"/>
+                    <circle class="node" cx="148" cy="42" r="5"/>
+                    <circle class="node" cx="55" cy="160" r="4"/>
+                    <circle class="node" cx="205" cy="170" r="4"/>
+                    <text x="142" y="180" class="map-label">Run 10K</text>
+                    <text x="62" y="155" class="map-label">Save $2k</text>
+                    <text x="168" y="165" class="map-label">Ship side project</text>
+                    <circle cx="130" cy="348" r="9" fill="#d4922a"/>
+                    <circle cx="130" cy="348" r="4" fill="#1a1206"/>
+                  </svg>
+                  <div class="you-chip"><b>MF</b> You · trailhead</div>
+                </div>
+                <div class="tabbar" aria-hidden="true">
+                  <span class="on"><i></i>Field</span>
+                  <span><i></i>Focus</span>
+                  <span><i></i>+</span>
+                  <span><i></i>You</span>
+                  <span><i></i>More</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- AXIS -->
+            <div class="phone panel-hidden" id="panel-axis" role="tabpanel" aria-labelledby="tab-axis" hidden>
+              <div class="phone-screen">
+                <div class="notch"></div>
+                <div class="status"><span>9:41</span><span>Trail</span></div>
+                <div class="screen-body">
+                  <p class="screen-title">Run 10K</p>
+                  <p class="screen-sub">Steady route · week 3 of 12 · from library</p>
+                  <div class="progress-rail"><span></span></div>
+                  <div class="axis-list">
+                    <div class="axis-step done"><i class="dot"></i><div><b>Easy 2K loops</b><small>Done · built base</small></div><em>✓</em></div>
+                    <div class="axis-step done"><i class="dot"></i><div><b>Three runs / week</b><small>Done · habit lock</small></div><em>✓</em></div>
+                    <div class="axis-step next"><i class="dot"></i><div><b>First 5K continuous</b><small>Next · ~35 min</small></div><em>NOW</em></div>
+                    <div class="axis-step"><i class="dot"></i><div><b>Hill repeats</b><small>Milestone ahead</small></div><em></em></div>
+                    <div class="axis-step"><i class="dot"></i><div><b>Race day 10K</b><small>Horizon</small></div><em></em></div>
+                  </div>
+                </div>
+                <div class="tabbar" aria-hidden="true">
+                  <span class="on"><i></i>Field</span>
+                  <span><i></i>Focus</span>
+                  <span><i></i>+</span>
+                  <span><i></i>You</span>
+                  <span><i></i>More</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- FOCUS -->
+            <div class="phone panel-hidden" id="panel-focus" role="tabpanel" aria-labelledby="tab-focus" hidden>
+              <div class="phone-screen">
+                <div class="notch"></div>
+                <div class="status"><span>9:41</span><span>Focus</span></div>
+                <div class="screen-body">
+                  <p class="screen-title">Today</p>
+                  <p class="screen-sub">Two moves from your field — not a todo dump.</p>
+                  <div class="focus-card">
+                    <span class="tag">Active · Run 10K</span>
+                    <h4>First 5K continuous</h4>
+                    <p>Why: unlocks the hill block. Keep conversational pace.</p>
+                    <div class="focus-actions">
+                      <button class="pill" type="button">Start</button>
+                      <button class="pill ghost" type="button">Smaller</button>
+                    </div>
+                  </div>
+                  <div class="focus-card">
+                    <span class="tag">Orbiter · Save $2k</span>
+                    <h4>Move $40 to buffer</h4>
+                    <p>Why: keeps the money trail warm without stealing run energy.</p>
+                    <div class="focus-actions">
+                      <button class="pill" type="button">Done</button>
+                      <button class="pill ghost" type="button">Defer</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="tabbar" aria-hidden="true">
+                  <span><i></i>Field</span>
+                  <span class="on"><i></i>Focus</span>
+                  <span><i></i>+</span>
+                  <span><i></i>You</span>
+                  <span><i></i>More</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ROUTES -->
+            <div class="phone panel-hidden" id="panel-routes" role="tabpanel" aria-labelledby="tab-routes" hidden>
+              <div class="phone-screen">
+                <div class="notch"></div>
+                <div class="status"><span>9:41</span><span>Engine</span></div>
+                <div class="screen-body">
+                  <p class="screen-title">Pick a route</p>
+                  <p class="screen-sub">Engine offers variants — you choose before the trail appears.</p>
+                  <div class="route selected" data-route>
+                    <header><b>Steady</b><span>12 weeks</span></header>
+                    <p>3 runs/week. Best acceptance in pilots for first-time 10K.</p>
+                    <ul>
+                      <li>Base → 5K → hills → taper</li>
+                      <li>~2.5 h / week</li>
+                    </ul>
+                  </div>
+                  <div class="route" data-route>
+                    <header><b>Gentle</b><span>16 weeks</span></header>
+                    <p>More walk intervals. Same finish line, kinder ramp.</p>
+                  </div>
+                  <div class="route" data-route>
+                    <header><b>Sprint</b><span>8 weeks</span></header>
+                    <p>Only if you already run 5K easy. Higher drop-off risk.</p>
+                  </div>
+                </div>
+                <div class="cta-bar">
+                  <button type="button">Place this trail on my field</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- GROWTH -->
+            <div class="phone panel-hidden" id="panel-growth" role="tabpanel" aria-labelledby="tab-growth" hidden>
+              <div class="phone-screen">
+                <div class="notch"></div>
+                <div class="growth-burst">
+                  <div>
+                    <div class="ring"><span></span></div>
+                    <h4>Trail grew</h4>
+                    <p>5K continuous is lit. Hill repeats just appeared on your field.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- RETURN -->
+            <div class="phone panel-hidden" id="panel-return" role="tabpanel" aria-labelledby="tab-return" hidden>
+              <div class="phone-screen">
+                <div class="notch"></div>
+                <div class="status"><span>9:41</span><span>Welcome back</span></div>
+                <div class="screen-body">
+                  <p class="screen-title">Still your field</p>
+                  <p class="screen-sub">Nothing reset. Your next waypoint waited.</p>
+                  <div class="field-map" style="inset: 120px 0 160px" aria-hidden="true">
+                    <svg viewBox="0 0 260 220" preserveAspectRatio="xMidYMid meet">
+                      <path class="trail trail-main" d="M40 180 C80 150, 110 120, 140 90 S190 40, 220 20" style="animation:none;stroke-dashoffset:0"/>
+                      <circle class="node done" cx="80" cy="150" r="5"/>
+                      <circle class="node next" cx="140" cy="90" r="6"/>
+                      <circle class="node" cx="220" cy="20" r="5"/>
+                      <text x="150" y="95" class="map-label">Next waypoint</text>
+                    </svg>
+                  </div>
+                  <div class="return-panel">
+                    <h4>Continue from First 5K?</h4>
+                    <p>Or shrink the step — the trail stays intact either way.</p>
+                    <div class="focus-actions">
+                      <button class="pill" type="button">Continue</button>
+                      <button class="pill ghost" type="button">Smaller</button>
+                      <button class="pill ghost" type="button">Retune</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="product">
+      <div class="wrap">
+        <p class="kicker">03 · Produkt</p>
+        <h2>Trailfield: hierarchia zamiast równych gałęzi.</h2>
+        <p class="lede">
+          Trzy cele naraz zostają w Free — ale jeden jest Active Trail (pełna oś), dwa to Orbiters (cieńsze szlaki, rzadszy Focus).
+        </p>
+        <div class="prose">
+          <p><strong>Dlaczego nie czysty radial?</strong> Przy trzech równorzędnych gałęziach etykiety i gesty szybko się biją. Trailfield czyta się od dołu (teraz) do góry (horyzont) — naturalny kierunek „dokąd idę”.</p>
+          <p><strong>Pętla wartości:</strong> wybierz cel → Engine pokazuje 2–3 Route Cards → zatwierdź szlak → wykonaj ruch z Focus → szlak się rozświetla → opcjonalnie dodaj orbiter.</p>
+          <p><strong>Lista zawsze równolegle.</strong> Każde działanie z mapy istnieje na liście (a11y, awaria renderu, preferencja użytkownika). Jeśli testy pokażą, że mapa nie prowadzi do ruchu — lista może stać się domyślna, ale Trailfield zostaje tożsamością marki.</p>
+          <ul>
+            <li><strong>Onboarding:</strong> monogram → jeden cel → Route Cards → pierwszy mikro-ruch → ożywa Active Trail.</li>
+            <li><strong>Free:</strong> 1 Active + do 2 Orbiters; biblioteka ~10 dróg; Focus; Quiet Return.</li>
+            <li><strong>Paid (hipoteza):</strong> więcej orbit / AI long-tail / głębsze wnioski — dopiero po D30 i jakości Engine.</li>
+            <li><strong>Świadomie poza MVP:</strong> social feed, Life OS, streak-punish, sklep kosmetyczny, porady medyczne/inwestycyjne.</li>
+          </ul>
+        </div>
+        <dl class="metrics">
+          <div>
+            <dt>Zrozumienie mapy</dt>
+            <dd>≥80%<small>bez wyjaśnienia prowadzącego</small></dd>
+          </div>
+          <div>
+            <dt>Map → Move</dt>
+            <dd>&lt;24h<small>pierwszy realny ruch</small></dd>
+          </div>
+          <div>
+            <dt>WMP T2</dt>
+            <dd>≥40%<small>pilotaż ręczny / PWA</small></dd>
+          </div>
+          <div>
+            <dt>D7 Field Return</dt>
+            <dd>bramka<small>mapa + kolejny ruch</small></dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <section id="engine">
+      <div class="wrap">
+        <p class="kicker">04 · Engine</p>
+        <h2>Route Cards najpierw. AI dopiero na długim ogonie.</h2>
+        <div class="stack-grid">
+          <div class="prose">
+            <p>
+              Zgadzam się z masterplanem: Engine to nie chatbot. U mnie użytkownik <strong>zawsze wybiera wariant drogi</strong>
+              (Steady / Gentle / Sprint lub 2–3 sensowne alternatywy), zanim szlak ląduje na polu.
+            </p>
+            <p><strong>v0 — kuracja ręczna (tyg. 5–8):</strong> 8–12 archetypów, 10 dopracowanych szablonów, zero produkcyjnego AI. Founderzy składają drogi; mierzymy akceptację i WMP.</p>
+            <p><strong>v1 — hybrid:</strong> risk tier → retrieval szablonu → reguły czasu/energii → AI tylko gdy brak szablonu i ryzyko niskie → schema + safety + zatwierdzenie człowieka.</p>
+            <p><strong>v2 — evidence-ranked:</strong> dopiero po D30 i zgodzie na dane behawioralne; reranking szablonów, rollback, eval suite ≥200 case’ów.</p>
+          </div>
+          <div>
+            <table class="compare">
+              <thead>
+                <tr><th>Wersja</th><th>Rola AI</th><th>Brama</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>v0</td>
+                  <td>Brak</td>
+                  <td>Akceptacja ≥60%, WMP T2 ≥40%</td>
+                </tr>
+                <tr>
+                  <td class="mine">v1</td>
+                  <td class="mine">Long-tail, structured</td>
+                  <td class="mine">≥85% quality 4/5; p95 &lt;15s</td>
+                </tr>
+                <tr>
+                  <td>v2</td>
+                  <td>Rerank + tempo</td>
+                  <td>Lift bez regresji safety</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="note">Każda Route Card pokazuje źródło (biblioteka / reguły / AI), pewność i „why this step”. Edycja tworzy nową wersję planu — historia nie znika.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="roadmap">
+      <div class="wrap">
+        <p class="kicker">05 · Roadmapa</p>
+        <h2>Najpierw żywe pole. Potem natywność.</h2>
+        <p class="lede">Bramki jak w masterplanie (G0–G6), ale artefakt walidacji to PWA Trailfield, nie sam Figma/prototype pack.</p>
+        <div class="phases">
+          <article class="phase">
+            <time>W1</time>
+            <div>
+              <h3>G0 · Jedna teza</h3>
+              <p>Zakres Field Plan: Trailfield + Route Cards + Focus + 1+2 cele. Zakazy: social, Life OS, AI high-risk.</p>
+              <span class="gate">G0 · podpisany zakres</span>
+            </div>
+          </article>
+          <article class="phase">
+            <time>W2–W3</time>
+            <div>
+              <h3>G1 · Problem w USA</h3>
+              <p>20–24 wywiady: utrata obrazu całości przy 2–4 celach. Szukamy obejść (notatki, Notion, głowa).</p>
+              <span class="gate">G1 · ≥60% potwierdza problem</span>
+            </div>
+          </article>
+          <article class="phase">
+            <time>W4–W5</time>
+            <div>
+              <h3>G2 · Trailfield vs radial vs lista</h3>
+              <p>Trzy klikalne warianty + smoke landingów. Decyzja o domyślnym Home na podstawie zachowania, nie gustu.</p>
+              <span class="gate">G2 · mapa prowadzi do poprawnego ruchu</span>
+            </div>
+          </article>
+          <article class="phase">
+            <time>W6–W9</time>
+            <div>
+              <h3>G3 · PWA pilot (nie kod produkcyjny)</h3>
+              <p>Interaktywna PWA z lokalnym zapisem, 10 szablonów, ręcznym Engine, Focus i Quiet Return. 30–40 osób z USA, 14 dni, realny WTP/depozyt.</p>
+              <span class="gate">G3 · CONTINUE / PIVOT / STOP · max $8–12k do tej bramki</span>
+            </div>
+          </article>
+          <article class="phase">
+            <time>W10</time>
+            <div>
+              <h3>G4 · Spike natywny (warunkowy)</h3>
+              <p>5 dni: mapa/lista, offline, auth, AI adapter, płatności. Porównaj Flutter vs kontynuacja PWA+Capacitor. Wybór po dowodzie.</p>
+              <span class="gate">G4 · każdy obszar albo działa, albo ma fallback</span>
+            </div>
+          </article>
+          <article class="phase">
+            <time>M4–M12</time>
+            <div>
+              <h3>G5–G6 · Alfa → beta → staged US launch</h3>
+              <p>Jak w masterplanie: 0 P0/P1, a11y, privacy, D30, płatności, 1%→5%→25%→100%. Społeczność i Life OS dopiero po retencji.</p>
+              <span class="gate">G6 · WMP W4 ≥35% · D30 ≥20%</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="stack">
+      <div class="wrap">
+        <p class="kicker">06 · Stack</p>
+        <h2>Nie wybierać Fluttera z miłości — wybrać go po sparingu.</h2>
+        <div class="stack-grid">
+          <div class="prose">
+            <p>
+              <strong>Faza dowodu:</strong> statyczna / PWA Trailfield (HTML+JS, local-first) — ten sam styl pracy co Meadowlark:
+              szybkie iteracje, headless screenshots, zero App Store tarcia.
+            </p>
+            <p>
+              <strong>Faza produktu sklepowego (po G3):</strong> default-hipoteza jak w masterplanie —
+              Flutter + Firebase + RevenueCat + server-only AI — ale tylko jeśli spike G4 nie przegra z PWA+Capacitor
+              na mapie, offline i a11y.
+            </p>
+            <p>
+              Telefon nieufny, reguły deny-by-default, zero raw goal text w analytics, AI za adapterem z kill-switchem —
+              te zasady z masterplanu przyjmuję w całości.
+            </p>
+          </div>
+          <table class="compare">
+            <thead>
+              <tr><th>Temat</th><th>Masterplan</th><th>Field Plan</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Metafora UI</td>
+                <td>Radial branches</td>
+                <td class="mine">Trailfield + Active/Orbit</td>
+              </tr>
+              <tr>
+                <td>Walidacja</td>
+                <td>Prototype + manual pilot</td>
+                <td class="mine">PWA as pilot product</td>
+              </tr>
+              <tr>
+                <td>Engine UX</td>
+                <td>Jeden plan do edycji</td>
+                <td class="mine">Route Cards (2–3 warianty)</td>
+              </tr>
+              <tr>
+                <td>Natywność</td>
+                <td>Flutter early path</td>
+                <td class="mine">Po G3, po sparingu</td>
+              </tr>
+              <tr>
+                <td>Free scope</td>
+                <td>Do 3 równych gałęzi</td>
+                <td class="mine">1 Active + 2 Orbiters</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="budget">
+      <div class="wrap">
+        <p class="kicker">07 · Pieniądze</p>
+        <h2>Founder-led cash. Transze za bramkami.</h2>
+        <p class="lede">Pensje founderów = $0 cash. Płacimy za research, review, QA, prawo, safety i chmurę — etapami.</p>
+        <div class="budget">
+          <article>
+            <p class="label">Do G3 (PWA pilot)</p>
+            <strong>$4–10k</strong>
+            <p>Design polish, 24–40 testów/pilot, nagrody, narzędzia. Twardszy stop-loss niż „od razu natywnie”.</p>
+          </article>
+          <article class="rec">
+            <p class="label">Bazowy do launchu</p>
+            <strong>~$85k</strong>
+            <p>Rekomendacja Field Plan: nieco niżej niż $95k masterplanu dzięki PWA-first; rezerwa zostaje.</p>
+          </article>
+          <article>
+            <p class="label">Sufit planistyczny</p>
+            <strong>$120k</strong>
+            <p>Więcej senior review, urządzeń, counsel. Nie zatwierdzamy pierwszego dnia.</p>
+          </article>
+        </div>
+        <div class="prose" style="margin-top:28px">
+          <p>
+            Transze: Prototyp/PWA → Pilotaż → Alfa → Beta → Staged US → Rezerwa.
+            Słaby wynik = stop lub poprawa zakresu, nie większy zespół.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="actions">
+      <div class="wrap">
+        <p class="kicker">08 · Start</p>
+        <h2>Dziesięć ruchów, zanim padnie linia kodu produkcyjnego.</h2>
+        <ol class="actions">
+          <li><div><b>Podpisać Field Plan vs masterplan:</b> Trailfield + Active/Orbit + PWA-first jako robocza teza do testu A/B z radialem.</div></li>
+          <li><div><b>Zamrozić zakazy MVP</b> (social, Life OS, high-risk AI, streak-punish).</div></li>
+          <li><div><b>Narysować 3 Home:</b> Trailfield / radial / lista — ten sam content, różne layouty.</div></li>
+          <li><div><b>Zbudować klikalną PWA skeleton</b> (Field, Axis, Focus, Route Cards, Growth, Return).</div></li>
+          <li><div><b>Zebrać 10 szablonów</b> z rubricą safety i capacity bands.</div></li>
+          <li><div><b>Zrekrutować cohort USA</b> z 2–4 realnymi celami — nie „lubię produktywność”.</div></li>
+          <li><div><b>Uruchomić 14-dniowy pilotaż</b> z ręcznym Engine i pomiarem WMP + D7 Field Return.</div></li>
+          <li><div><b>Prawdziwy sygnał ceny</b> (depozyt / preorder / checkout), nie ankieta.</div></li>
+          <li><div><b>G3 decision memo</b> CONTINUE / PIVOT / STOP z limitem cash.</div></li>
+          <li><div><b>Dopiero wtedy G4 spike</b> Flutter vs PWA-wrapper — wybór technologii po sparingu.</div></li>
+        </ol>
+        <p class="note">
+          Oryginalny plik <code>Pathway_Implementation_Masterplan.html</code> pozostaje nietknięty.
+          Ten dokument to osobna propozycja do porównania — nie zastąpienie decyzji founderów.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>Pathway · Field Plan · 16 lipca 2026</span>
+      <span>Własna propozycja wdrożenia · rendery Trailfield</span>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const copy = {
+        field: {
+          n: "01",
+          t: "Trailfield",
+          d: "Trailhead na dole. Active Trail świeci bursztynem. Orbity to cieńsze szlaki — widać życie, bez chaosu radialnego."
+        },
+        axis: {
+          n: "02",
+          t: "Trail Axis",
+          d: "Pełna droga Active Trail: kamienie, tempo, źródło planu. Orbiters mają lżejszą oś po tapnięciu."
+        },
+        focus: {
+          n: "03",
+          t: "Focus",
+          d: "Most między pięknem a działaniem. 1–3 ruchy, zwykle z Active + najwyżej jeden z orbity."
+        },
+        routes: {
+          n: "04",
+          t: "Route Cards",
+          d: "Engine nie narzuca jednej ścieżki. Pokazuje warianty — wybór użytkownika zanim szlak pojawi się na polu."
+        },
+        growth: {
+          n: "05",
+          t: "Growth",
+          d: "Ukończenie to nie checkbox. Węzeł się zapala, kolejny fragment szlaku wchodzi w pole widzenia."
+        },
+        return: {
+          n: "06",
+          t: "Quiet Return",
+          d: "Po przerwie to samo pole. Bez zerowania, bez czerwonej kary — continue / smaller / retune."
+        }
+      };
+
+      const tabs = Array.from(document.querySelectorAll('[data-tab]'));
+      const panels = {
+        field: document.getElementById("panel-field"),
+        axis: document.getElementById("panel-axis"),
+        focus: document.getElementById("panel-focus"),
+        routes: document.getElementById("panel-routes"),
+        growth: document.getElementById("panel-growth"),
+        return: document.getElementById("panel-return")
+      };
+      const stageCopy = document.getElementById("stage-copy");
+
+      function show(id) {
+        tabs.forEach((btn) => {
+          const on = btn.dataset.tab === id;
+          btn.setAttribute("aria-selected", on ? "true" : "false");
+        });
+        Object.entries(panels).forEach(([key, el]) => {
+          const on = key === id;
+          el.hidden = !on;
+          el.classList.toggle("panel-hidden", !on);
+          if (on) {
+            el.style.animation = "none";
+            // reflow for phoneIn
+            void el.offsetWidth;
+            el.style.animation = "";
+          }
+        });
+        const c = copy[id];
+        if (c && stageCopy) {
+          stageCopy.innerHTML =
+            '<div class="number">' + c.n + "</div><h3>" + c.t + "</h3><p>" + c.d + "</p>";
+        }
+      }
+
+      tabs.forEach((btn) => {
+        btn.addEventListener("click", () => show(btn.dataset.tab));
+      });
+
+      document.querySelectorAll("[data-route]").forEach((card) => {
+        card.addEventListener("click", () => {
+          document.querySelectorAll("[data-route]").forEach((c) => c.classList.remove("selected"));
+          card.classList.add("selected");
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
